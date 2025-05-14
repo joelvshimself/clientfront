@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/api"; // cambia el puerto si tu backend corre en otro
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const venderProductos = async (productos) => {
     try {

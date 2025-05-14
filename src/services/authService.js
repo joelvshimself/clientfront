@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000/api";
+//importar el token de la API
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 // Guardar token 
 const setToken = (token) => localStorage.setItem("token", token);

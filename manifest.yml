@@ -1,0 +1,6 @@
+applications:
+  - name: clientfront-app
+    memory: 64M
+    buildpacks:
+      - staticfile_buildpack
+    path: dist

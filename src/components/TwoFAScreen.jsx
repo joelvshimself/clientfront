@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function TwoFAScreen() {
   const [qr, setQr] = useState(null);
   const [token, setToken] = useState("");
@@ -10,7 +12,7 @@ export default function TwoFAScreen() {
 
   useEffect(() => {
     const check2FA = async () => {
-      const res = await fetch("http://localhost:3000/api/auth/2fa/status", {
+      const res = await fetch(`${API_URL}/auth/2fa/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -28,7 +30,7 @@ export default function TwoFAScreen() {
   }, [email]);
 
   const generate2FA = async () => {
-    const res = await fetch("http://localhost:3000/api/auth/2fa/generate", {
+    const res = await fetch(`${API_URL}/auth/2fa/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -39,7 +41,7 @@ export default function TwoFAScreen() {
   };
 
   const verify2FA = async () => {
-    const res = await fetch("http://localhost:3000/api/auth/2fa/verify", {
+    const res = await fetch(`${API_URL}/auth/2fa/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, email }),
@@ -81,7 +83,7 @@ export default function TwoFAScreen() {
             maxWidth: "400px",
             width: "100%",
             textAlign: "center",
-            color: "#000000", // ✅ Texto en negro
+            color: "#000000",
           }}
         >
           <img
@@ -96,7 +98,9 @@ export default function TwoFAScreen() {
 
           {qr === null && (
             <>
-              <p style={{ color: "#000" }}>Presiona para generar tu código QR:</p>
+              <p style={{ color: "#000" }}>
+                Presiona para generar tu código QR:
+              </p>
               <button onClick={generate2FA}>Generar QR</button>
             </>
           )}
@@ -128,10 +132,10 @@ export default function TwoFAScreen() {
                   marginBottom: "1rem",
                   borderRadius: "6px",
                   border: "1px solid #ccc",
-                  backgroundColor: "#333",    
-                  color: "#fff",              
-                  fontSize: "16px",            
-                  textAlign: "center"          
+                  backgroundColor: "#333",
+                  color: "#fff",
+                  fontSize: "16px",
+                  textAlign: "center",
                 }}
               />
               <button onClick={verify2FA}>Verificar Código</button>
