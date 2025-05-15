@@ -29,7 +29,6 @@ import { Select, Option } from "@ui5/webcomponents-react";
 
 
 
-const drawerWidth = 240;
 
 export default function Ordenes() {
   const navigate = useNavigate();

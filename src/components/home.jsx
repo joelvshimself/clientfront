@@ -4,7 +4,6 @@ import {
   ShellBar,
   SideNavigation,
   SideNavigationItem,
-  Card,
   Title,
   Text,
   FlexBox,
@@ -12,7 +11,6 @@ import {
   Popover
 } from "@ui5/webcomponents-react";
 import { Toaster } from "react-hot-toast";
-import { Grid } from "@mui/material";
 
 import { agregarNotificacion, mensajesNotificaciones } from "./Notificaciones";
 

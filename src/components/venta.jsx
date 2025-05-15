@@ -47,7 +47,10 @@ export default function Venta() {
         const data = await getVentas();
         setVentas(data);
       } catch (error) {
+        console.error("Error al cargar ventas:", error);
         alert("Error al cargar ventas");
+
+
       }
     };
     cargarVentas();
@@ -105,8 +108,9 @@ export default function Venta() {
       setVentasSeleccionadas([]);
 
       alert("Ventas eliminadas correctamente");
-    } catch (error) {
-      alert("Error al eliminar ventas. Inténtalo de nuevo.");
+    } catch(error){
+      alert("Error al eliminar ventas. Inténtalo de nuevo.")
+      print(error);
     }
   };
   const guardarEdicion = async () => {
@@ -139,6 +143,7 @@ export default function Venta() {
       alert(`Venta ${ventaEditar.id} actualizada correctamente`);
     } catch (error) {
       alert("Error al actualizar la venta");
+      console.error("Error al actualizar la venta:", error);
     }
   };
   const actualizarProductoEdicion = (index, campo, valor) => {
