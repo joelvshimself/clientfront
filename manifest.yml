@@ -1,6 +1,9 @@
 applications:
   - name: clientfront-app
-    memory: 64M
     buildpacks:
       - staticfile_buildpack
     path: dist
+    memory: 64M
+    random-route: false
+    routes:
+      - route: clientfront-app.cfapps.us10-001.hana.ondemand.com

@@ -1,0 +1,43 @@
+name: Deploy Frontend to SAP Cloud Foundry
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install Cloud Foundry CLI
+        run: |
+          wget -q https://packages.cloudfoundry.org/stable?release=linux64-binary -O cf-cli.tgz
+          tar -xvzf cf-cli.tgz
+          sudo mv cf /usr/local/bin/
+
+      - name: Authenticate and target Cloud Foundry
+        env:
+          CF_USERNAME: ${{ secrets.CF_USERNAME }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+          CF_API: https://api.cf.us10-001.hana.ondemand.com
+        run: |
+          cf api "$CF_API"
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o f3673abbtrial -s dev
+
+      - name: Push frontend app
+        run: cf push clientfront-app -f manifest.yml
