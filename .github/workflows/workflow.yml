@@ -26,10 +26,10 @@ jobs:
       - name: Run Tests
         run: npm test
 
-
-
       - name: Build frontend
         run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Install Cloud Foundry CLI
         run: |
