@@ -12,9 +12,13 @@ import {
 } from "@ui5/webcomponents-react";
 import { toast, Toaster } from "react-hot-toast";
 
-import { obtenerNotificaciones, agregarNotificacionStorage, eliminarNotificacionStorage } from "../utils/notificacionesStorage";
+import {
+  obtenerNotificaciones,
+  agregarNotificacionStorage,
+  eliminarNotificacionStorage
+} from "../utils/notificacionesStorage";
 import { mensajesNotificaciones } from "./Notificaciones";
-import { crearNotificacion } from "../services/notificacionesService"; // ✅ NUEVO IMPORT
+import { crearNotificacion } from "../services/notificacionesService";
 
 import "@ui5/webcomponents-icons/dist/home.js";
 import "@ui5/webcomponents-icons/dist/retail-store.js";
@@ -33,25 +37,23 @@ export default function Home() {
   const [notificaciones, setNotificaciones] = useState([]);
   const notiButtonRef = useRef(null);
 
-  // ✅ Cargar notificaciones persistidas
+  // Cargar notificaciones persistidas
   useEffect(() => {
     const guardadas = obtenerNotificaciones();
     setNotificaciones(guardadas);
   }, []);
 
-  // ✅ Función para agregar notificación local + backend
+  // Función para agregar notificación local + backend
   const handleAgregarNotificacion = async (tipo, mensaje) => {
     const nuevas = agregarNotificacionStorage(tipo, mensaje);
     setNotificaciones(nuevas);
 
-    // Enviar al backend
     const result = await crearNotificacion({
       tipo,
       mensaje,
-      id_usuario: 1, // Ajusta si tienes el ID del usuario dinámicamente
+      id_usuario: 1, // Ajustar si el ID del usuario es dinámico
     });
 
-    // Mostrar toast
     switch (tipo) {
       case "success":
         toast.success(mensaje);
@@ -72,7 +74,7 @@ export default function Home() {
     }
   };
 
-  // ✅ Función para eliminar notificación
+  // Eliminar notificación
   const handleEliminarNotificacion = (id) => {
     const nuevas = eliminarNotificacionStorage(id);
     setNotificaciones(nuevas);

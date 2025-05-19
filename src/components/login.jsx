@@ -37,16 +37,38 @@ export default function Login() {
   
 
   return (
+  <div style={{ height: "100vh", width: "100vw" }}>
+    <style>
+      {`
+        @media (max-width: 768px) {
+          .login-container {
+            flex-direction: column !important;
+          }
+
+          .login-image {
+            display: none !important;
+          }
+
+          .login-form {
+            width: 100% !important;
+            height: 100% !important;
+          }
+        }
+      `}
+    </style>
+
     <FlexBox
+      className="login-container"
       direction={FlexBoxDirection.Row}
       style={{
-        height: "100vh",
-        width: "100vw",
+        height: "100%",
+        width: "100%",
         overflow: "hidden",
       }}
     >
       {/* Mitad izquierda: formulario */}
       <FlexBox
+        className="login-form"
         direction={FlexBoxDirection.Column}
         style={{
           width: "50%",
@@ -72,7 +94,7 @@ export default function Login() {
             style={{ width: "150px", margin: "0 auto 20px auto" }}
           />
 
-          <Title level="H4">Iniciar Sesion</Title>
+          <Title level="H4">Iniciar Sesión</Title>
 
           <form onSubmit={handleSubmit} style={{ marginTop: "1rem" }}>
             <Input
@@ -140,7 +162,7 @@ export default function Login() {
           </form>
 
           <Text style={{ fontSize: "12px", textAlign: "center", marginTop: "1rem" }}>
-            <Link href="#">Terminos & Condiciones</Link> |{" "}
+            <Link href="#">Términos & Condiciones</Link> |{" "}
             <Link href="#">Soporte</Link> |{" "}
             <Link href="#">Legal & Opciones</Link>
           </Text>
@@ -149,6 +171,7 @@ export default function Login() {
 
       {/* Mitad derecha: imagen */}
       <div
+        className="login-image"
         style={{
           width: "50%",
           backgroundImage: "url('/carne.png')",
@@ -158,5 +181,7 @@ export default function Login() {
         }}
       />
     </FlexBox>
-  );
+  </div>
+);
+
 }
