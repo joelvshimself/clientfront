@@ -1,48 +1,24 @@
-// src/utils/notificacionesStorage.js
+// src/services/notificacionesService.js
+import axios from "axios";
 
-const STORAGE_KEY = "notificaciones";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
-// Obtener notificaciones guardadas
-export const obtenerNotificaciones = () => {
+export const crearNotificacion = async (notificacionData) => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch (e) {
-    return [];
+    const response = await axios.post(`${BASE_URL}/notificaciones`, notificacionData);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear notificación:", error.response?.data || error.message);
+    return null;
   }
 };
 
-// Guardar lista completa
-export const guardarNotificaciones = (notificaciones) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notificaciones));
-};
-
-// Agregar una notificación nueva
-export const agregarNotificacionStorage = (tipo, mensaje) => {
-  const actuales = obtenerNotificaciones();
-  const nueva = {
-    id: Date.now(),
-    mensaje,
-    tipo,
-  };
-  const actualizadas = [...actuales, nueva];
-  guardarNotificaciones(actualizadas);
-  return actualizadas;
-};
-
-// Limpiar (si necesitas eliminar todas)
-export const limpiarNotificaciones = () => {
-  localStorage.removeItem(STORAGE_KEY);
-};
-
-export const eliminarNotificacionStorage = (id) => {
-  // Obtenemos las notificaciones del localStorage
-  const notificaciones = JSON.parse(localStorage.getItem("notificaciones")) || [];
-
-  // Filtramos la notificación con el id proporcionado
-  const nuevasNotificaciones = notificaciones.filter((noti) => noti.id !== id);
-
-  // Guardamos las notificaciones actualizadas en el localStorage
-  localStorage.setItem("notificaciones", JSON.stringify(nuevasNotificaciones));
-
-  return nuevasNotificaciones;  // Devolvemos las notificaciones actualizadas
+export const getNotificaciones = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/notificaciones`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener notificaciones:", error.response?.data || error.message);
+    return [];
+  }
 };
