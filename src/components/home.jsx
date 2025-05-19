@@ -12,13 +12,9 @@ import {
 } from "@ui5/webcomponents-react";
 import { toast, Toaster } from "react-hot-toast";
 
-import {
-  obtenerNotificaciones,
-  agregarNotificacionStorage,
-  eliminarNotificacionStorage
-} from "../utils/notificacionesStorage";
+import { obtenerNotificaciones, agregarNotificacionStorage, eliminarNotificacionStorage } from "../utils/notificacionesStorage";
 import { mensajesNotificaciones } from "./Notificaciones";
-import { crearNotificacion } from "../services/notificacionesService";
+import { crearNotificacion } from "../services/notificacionesService"; // ✅ NUEVO IMPORT
 
 import "@ui5/webcomponents-icons/dist/home.js";
 import "@ui5/webcomponents-icons/dist/retail-store.js";
@@ -37,21 +33,25 @@ export default function Home() {
   const [notificaciones, setNotificaciones] = useState([]);
   const notiButtonRef = useRef(null);
 
+  // ✅ Cargar notificaciones persistidas
   useEffect(() => {
     const guardadas = obtenerNotificaciones();
     setNotificaciones(guardadas);
   }, []);
 
+  // ✅ Función para agregar notificación local + backend
   const handleAgregarNotificacion = async (tipo, mensaje) => {
     const nuevas = agregarNotificacionStorage(tipo, mensaje);
     setNotificaciones(nuevas);
 
+    // Enviar al backend
     const result = await crearNotificacion({
       tipo,
       mensaje,
-      id_usuario: 1,
+      id_usuario: 1, // Ajusta si tienes el ID del usuario dinámicamente
     });
 
+    // Mostrar toast
     switch (tipo) {
       case "success":
         toast.success(mensaje);
@@ -72,6 +72,7 @@ export default function Home() {
     }
   };
 
+  // ✅ Función para eliminar notificación
   const handleEliminarNotificacion = (id) => {
     const nuevas = eliminarNotificacionStorage(id);
     setNotificaciones(nuevas);
@@ -99,7 +100,7 @@ export default function Home() {
         }}
       />
 
-      {/* Botón de notificaciones */}
+      {/* Botón flotante de notificaciones */}
       <div
         style={{
           position: "fixed",
@@ -172,7 +173,7 @@ export default function Home() {
         </Text>
       </FlexBox>
 
-      {/* Popup de notificaciones */}
+      {/* POPUP DE NOTIFICACIONES */}
       {notiButtonRef.current && (
         <Popover
           headerText="Notificaciones recientes"
