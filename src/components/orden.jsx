@@ -26,10 +26,6 @@ import { deleteOrden, updateOrden } from "../services/ordenesService";
 import { completarOrden } from "../services/ordenesService";
 import { Select, Option } from "@ui5/webcomponents-react";
 
-
-
-
-
 export default function Ordenes() {
   const navigate = useNavigate();
   const [openCrear, setOpenCrear] = useState(false);
@@ -56,7 +52,6 @@ export default function Ordenes() {
     precio: "",
     fecha_caducidad: ""
   });
-  
 
   const loadOrdenes = async () => {
     const data = await getOrdenes();
@@ -86,6 +81,7 @@ export default function Ordenes() {
     setOrdenesSeleccionadas([]);
     await loadOrdenes();
   };
+
   const manejarCompletarOrden = async () => {
     const ordenId = ordenesSeleccionadas[0];
     try {
@@ -97,6 +93,7 @@ export default function Ordenes() {
       alert(error.response?.data?.error || "Error al completar la orden.");
     }
   };
+
   const agregarProducto = () => {
     setNuevaOrden({
       ...nuevaOrden,
@@ -109,7 +106,7 @@ export default function Ordenes() {
     const datos = {
       correo_solicita: nuevaOrden.usuario_solicita,
       correo_provee: nuevaOrden.usuario_provee,
-      productos: nuevaOrden.productos  // ya no es necesario map
+      productos: nuevaOrden.productos
     };
 
     console.log("📦 Payload que se enviará:", datos);
@@ -134,7 +131,6 @@ export default function Ordenes() {
       alert("Error al crear orden");
     }
   };
-
 
   const handleEditarGuardar = async () => {
     const ok = await updateOrden(ordenEditar.id, ordenEditar);
@@ -171,26 +167,23 @@ export default function Ordenes() {
         </SideNavigation>
       </div>
 
-
       <FlexBox direction="Column" style={{ flexGrow: 1, padding: "2rem", marginTop: "4rem", backgroundColor: "#fafafa" }}>
         <Title level="H3">Órdenes</Title>
 
         <FlexBox direction="Row" justifyContent="End" style={{ marginBottom: "1rem", gap: "0.75rem" }}>
           <Button design="Negative" icon="delete" onClick={eliminarOrdenesSeleccionadas} disabled={ordenesSeleccionadas.length === 0}>Eliminar</Button>
+
+          {/* ✅ CAMBIO AQUÍ: solo se reemplaza este botón */}
           <Button
             design="Emphasized"
             icon="add"
             onClick={() => {
-              const emailUsuario = localStorage.getItem("userEmail") || "";
-              setNuevaOrden(prev => ({
-                ...prev,
-                usuario_solicita: emailUsuario  // precargar
-              }));
-              setOpenCrear(true);
+              navigate("/orden/nueva/proveedor");
             }}
           >
             Crear
           </Button>
+
           <Button design="Attention" icon="edit" disabled={ordenesSeleccionadas.length !== 1} onClick={() => {
             const ordenToEdit = ordenes.find(o => o.id === ordenesSeleccionadas[0]);
             if (ordenToEdit) {
@@ -207,8 +200,6 @@ export default function Ordenes() {
             Completar
           </Button>
         </FlexBox>
-
-
 
         <Card style={{
           marginTop: "2rem",
@@ -271,74 +262,6 @@ export default function Ordenes() {
           </div>
         </Card>
 
-        <Dialog
-          headerText="Agregar Orden"
-          open={openCrear}
-          onAfterClose={() => setOpenCrear(false)}
-          footer={
-            <Button
-              design="Emphasized"
-              onClick={() => {
-                if (!nuevaOrden.usuario_solicita.trim() || !nuevaOrden.usuario_provee.trim()) {
-                  alert("⚠️ Por favor completa los correos de quien solicita y quien provee.");
-                  return;
-                }
-                agregarOrden();
-                setOpenCrear(false);
-              }}
-            >
-              Guardar
-            </Button>
-
-          }
-        >
-          <FlexBox style={{ padding: "1rem", gap: "1rem" }} direction="Column">
-            {/* Sección de correos */}
-            <Title level="H6">Información de usuarios</Title>
-            <Input
-              placeholder="Correo quien solicita"
-              value={nuevaOrden.usuario_solicita}
-              onInput={(e) => setNuevaOrden({ ...nuevaOrden, usuario_solicita: e.target.value })}
-            />
-            <Input
-              placeholder="Correo quien provee"
-              value={nuevaOrden.usuario_provee}
-              onInput={(e) => setNuevaOrden({ ...nuevaOrden, usuario_provee: e.target.value })}
-            />
-
-            {/* Sección de productos */}
-            <Title level="H6">Producto a agregar</Title>
-            <Select
-              onChange={(e) =>
-                setNuevoProducto({ ...nuevoProducto, producto: e.target.selectedOption.textContent })
-              }
-            >
-              <Option selected={nuevoProducto.producto === "arrachera"}>arrachera</Option>
-              <Option selected={nuevoProducto.producto === "ribeye"}>ribeye</Option>
-              <Option selected={nuevoProducto.producto === "tomahawk"}>tomahawk</Option>
-              <Option selected={nuevoProducto.producto === "diezmillo"}>diezmillo</Option>
-            </Select>
-            <Input
-              placeholder="Cantidad"
-              value={nuevoProducto.cantidad}
-              onInput={(e) => setNuevoProducto({ ...nuevoProducto, cantidad: e.target.value })}
-            />
-            <Input
-              placeholder="Precio"
-              value={nuevoProducto.precio}
-              onInput={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })}
-            />
-            <Input
-              placeholder="Fecha de Caducidad"
-              value={nuevoProducto.fecha_caducidad}
-              onInput={(e) => setNuevoProducto({ ...nuevoProducto, fecha_caducidad: e.target.value })}
-            />
-            <Button onClick={agregarProducto} design="Transparent">
-              Agregar producto
-            </Button>
-
-          </FlexBox>
-        </Dialog>
         <Dialog headerText="Editar Orden" open={openEditar} onAfterClose={() => setOpenEditar(false)} footer={<Button design="Emphasized" onClick={handleEditarGuardar}>Guardar</Button>}>
           {ordenEditar && (
             <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
