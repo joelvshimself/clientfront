@@ -61,20 +61,23 @@ export default function Home() {
     getOrdenes()
       .then(raw => {
         const ahora = new Date();
-        const conteo = raw
-          .map(o => new Date(o.FECHA_EMISION))
-          .filter(d => {
-            const diff =
-              (ahora.getFullYear() - d.getFullYear()) * 12 +
-              (ahora.getMonth() - d.getMonth());
-            return diff >= 0 && diff < 6;
-          })
-          .reduce((acc, d) => {
-            const key = d.toLocaleString("es-MX", { year: "numeric", month: "short" });
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-          }, {});
-        const arr = Object.entries(conteo).map(([mes, total]) => ({ mes, total }));
+        const meses = Array.from({ length: 6 }).map((_, i) => {
+          const d = new Date(ahora.getFullYear(), ahora.getMonth() - 5 + i, 1);
+          return d.toLocaleString("es-MX", { year: "numeric", month: "short" });
+        });
+        const conteo = raw.reduce((acc, o) => {
+          const d = new Date(o.FECHA_EMISION);
+          const key = d.toLocaleString("es-MX", { year: "numeric", month: "short" });
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Arreglo ordenado y completo de meses
+        const arr = meses.map(mes => ({
+          mes,
+          total: conteo[mes] || 0
+        }));
+
         const extended = arr.map((d, i, a) => ({
           mes: d.mes,
           total: d.total,
@@ -83,7 +86,7 @@ export default function Home() {
               ? Math.round((a[i].total + a[i - 1].total + a[i - 2].total) / 3)
               : null
         }));
-        extended.sort((a, b) => parseMes(a.mes) - parseMes(b.mes));
+
         setOrdenesChartData(extended);
       })
       .catch(console.error);
