@@ -18,7 +18,6 @@ import { Toaster } from "react-hot-toast";
 
 import "./Home.css";
 import { agregarNotificacion, mensajesNotificaciones } from "./Notificaciones";
-import { getVentas } from "../services/ventaService";
 import { getOrdenes } from "../services/ordenesService";
 import { getInventario } from "../services/inventarioService";
 
@@ -35,57 +34,88 @@ const drawerWidth = 240;
 export default function Home() {
   const navigate = useNavigate();
   const notiButtonRef = useRef(null);
-  const [isSidebarOpen] = useState(true);
   const [openNotificaciones, setOpenNotificaciones] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
 
-  // ── Inventario disponible ─────────────────────────────────────────
+  // Stock
   const [inventario, setInventario] = useState([]);
   useEffect(() => {
-    getInventario()
-      .then(data => setInventario(data))
-      .catch(console.error);
+    getInventario().then(setInventario).catch(console.error);
   }, []);
 
-  // ── Ventas últimos 6 meses ─────────────────────────────────────────
-  const [ventasDataExtended, setVentasDataExtended] = useState([]);
+  // 6 meses
+  const [ordenesChartData, setOrdenesChartData] = useState([]);
+  // Ordenar
+  function parseMes(mesStr) {
+    if (!mesStr) return new Date(0, 0, 1);
+    const [mes, año] = mesStr.split(" ");
+    const meses = [
+      "ene", "feb", "mar", "abr", "may", "jun",
+      "jul", "ago", "sep", "oct", "nov", "dic"
+    ];
+    const mesLimpio = mes.replace(".", "").toLowerCase();
+    const mesIdx = meses.indexOf(mesLimpio);
+    return new Date(Number(año), mesIdx === -1 ? 0 : mesIdx, 1);
+  }
   useEffect(() => {
-    getVentas()
+    getOrdenes()
       .then(raw => {
         const ahora = new Date();
-        const filtradas = raw
-          .map(x => ({ fecha: new Date(x.fecha), total: Number(x.total) }))
-          .filter(({ fecha }) => {
-            const diffMeses =
-              (ahora.getFullYear() - fecha.getFullYear()) * 12 +
-              (ahora.getMonth() - fecha.getMonth());
-            return diffMeses >= 0 && diffMeses < 6;
-          });
-
-        const totalesPorMes = filtradas.reduce((acc, { fecha, total }) => {
-          const key = fecha.toLocaleString("es-MX", { year: "numeric", month: "short" });
-          acc[key] = (acc[key] || 0) + total;
-          return acc;
-        }, {});
-
-        const ventasArray = Object.entries(totalesPorMes).map(
-          ([mes, total]) => ({ mes, total })
-        );
-
-        const extended = ventasArray.map((d, i, arr) => {
-          const ma =
+        const conteo = raw
+          .map(o => new Date(o.FECHA_EMISION))
+          .filter(d => {
+            const diff =
+              (ahora.getFullYear() - d.getFullYear()) * 12 +
+              (ahora.getMonth() - d.getMonth());
+            return diff >= 0 && diff < 6;
+          })
+          .reduce((acc, d) => {
+            const key = d.toLocaleString("es-MX", { year: "numeric", month: "short" });
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+          }, {});
+        const arr = Object.entries(conteo).map(([mes, total]) => ({ mes, total }));
+        const extended = arr.map((d, i, a) => ({
+          mes: d.mes,
+          total: d.total,
+          mediaMovil:
             i >= 2
-              ? Math.round((arr[i].total + arr[i - 1].total + arr[i - 2].total) / 3)
-              : null;
-          return { ...d, mediaMovil: ma };
-        });
-
-        setVentasDataExtended(extended);
+              ? Math.round((a[i].total + a[i - 1].total + a[i - 2].total) / 3)
+              : null
+        }));
+        extended.sort((a, b) => parseMes(a.mes) - parseMes(b.mes));
+        setOrdenesChartData(extended);
       })
       .catch(console.error);
   }, []);
 
-  // ── Órdenes recientes ───────────────────────────────────────────────
+  // Costo compra últimos 36 meses
+  const [costChartData, setCostChartData] = useState([]);
+  useEffect(() => {
+    getOrdenes()
+      .then(raw => {
+        const ahora = new Date();
+        const start = new Date(ahora.getFullYear(), ahora.getMonth() - 35, 1);
+        const months = Array.from({ length: 36 }).map((_, i) => {
+          const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+          return d.toLocaleString("es-MX", { year: "numeric", month: "short" });
+        });
+        const costos = raw.reduce((acc, o) => {
+          const d = new Date(o.FECHA_EMISION);
+          if (d >= start) {
+            const key = d.toLocaleString("es-MX", { year: "numeric", month: "short" });
+            acc[key] = (acc[key] || 0) + Number(o.COSTO_COMPRA || 0);
+          }
+          return acc;
+        }, {});
+        const data = months.map(mes => ({ mes, totalCost: costos[mes] || 0 }));
+        data.sort((a, b) => parseMes(a.mes) - parseMes(b.mes));
+        setCostChartData(data);
+      })
+      .catch(console.error);
+  }, []);
+
+  // Ordenes recientes
   const [ordenesData, setOrdenesData] = useState([]);
   useEffect(() => {
     getOrdenes()
@@ -107,46 +137,34 @@ export default function Home() {
     if (route) navigate(route);
   };
 
-  // ── Datos dummy para notificaciones y leaderboard ────────────────
-  const salesToday = { revenue: 3.66, salesCount: 68, revChange: -48, salesChange: -43 };
-  const leaderBoard = [
-    { name: "Mary", value: 785 },
-    { name: "Rosie", value: 635 },
-    { name: "Bret", value: 604 },
-    { name: "Taylor", value: 506 },
-    { name: "Ralph", value: 471 },
-    { name: "Jamie", value: 306 },
-    { name: "Erica", value: 209 },
-    { name: "Miles", value: 142 }
-  ];
-
   return (
-    <div className="page">
+    <>
       <ShellBar
         logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
         primaryTitle="Dashboard"
-        onProfileClick={() => navigate("/login")}
         profile={{ image: "/viba1.png" }}
         style={{
           position: "fixed",
           top: 0,
-          width: "100%",
+          left: 0,
+          right: 0,
           background: "#B71C1C",
           color: "white",
           zIndex: 1201
         }}
       />
 
-      {isSidebarOpen && (
-        <div
-          style={{
-            width: drawerWidth,
-            marginTop: "3.5rem",
-            height: "calc(100vh - 3.5rem)",
-            backgroundColor: "#fff",
-            boxShadow: "2px 0 5px rgba(0,0,0,0.05)"
-          }}
-        >
+      <FlexBox
+        direction="Row"
+        style={{
+          marginTop: "3.5rem",
+          height: "calc(100vh - 3.5rem)",
+          width: "100vw", 
+          overflow: "hidden" 
+        }}
+      >
+        {/* Sidebar */}
+        <div style={{ width: drawerWidth, backgroundColor: "#fff", minWidth: drawerWidth }}>
           <SideNavigation onSelectionChange={handleNavigationClick}>
             <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
             <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
@@ -155,203 +173,208 @@ export default function Home() {
             <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
           </SideNavigation>
         </div>
-      )}
 
-      <div className="main">
-        <div className="content" style={{ padding: "1.5rem" }}>
+        {/* Contenido */}
+        <div
+          style={{
+            flexGrow: 1,
+            overflowY: "auto",
+            padding: "1.5rem",
+            minWidth: 0 
+          }}
+        >
           <Title style={{ fontSize: "2.5rem" }}>¡Bienvenido a Logiviba!</Title>
           <Text style={{ fontSize: "1.1rem", color: "#666", marginBottom: "2rem" }}>
             Tu sistema de gestión logística inteligente
           </Text>
 
-          {/* Today's widgets */}
-          <FlexBox wrap style={{ gap: "1rem", marginBottom: "2rem" }}>
-            {/* Today's sales */}
-            <Card heading="Today's sales" style={{ flex: '1 1 250px', padding: '1rem' }}>
-              <Title>${salesToday.revenue.toFixed(2)}k</Title>
-              <Text>Revenue</Text>
-              <Text style={{ color: salesToday.revChange < 0 ? '#d32f2f' : '#388e3c' }}>
-                {Math.abs(salesToday.revChange)}% vs last week
-              </Text>
+          {/* Stock por producto */}
+          <Title level="H4" style={{ marginBottom: 8 }}>Stock por producto</Title>
+          <Card style={{ marginBottom: "1.5rem" }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th style={{ textAlign: "right" }}>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inventario.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>{item.PRODUCTO}</td>
+                    <td style={{ textAlign: "right" }}>{item.CANTIDAD}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
 
-              <Title style={{ marginTop: '1rem' }}>{salesToday.salesCount}</Title>
-              <Text>Number of sales</Text>
-              <Text style={{ color: salesToday.salesChange < 0 ? '#d32f2f' : '#388e3c' }}>
-                {Math.abs(salesToday.salesChange)}% vs last week
-              </Text>
-            </Card>
+          {/* Ordenes últimos 6 meses y Ordenes Recientes alineados */} 
+          <FlexBox direction="Row" style={{ gap: "1.5rem", marginBottom: "1.5rem" }}>
+            {/* Gráfica de órdenes */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Title level="H4" style={{ marginBottom: 8 }}>Órdenes últimos 6 meses</Title>
+              <Card style={{ height: 420, display: "flex", flexDirection: "column" }}>
+                {ordenesChartData.length === 0 ? (
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span>Cargando...</span>
+                  </div>
+                ) : (
+                  <LineChart
+                    dataset={ordenesChartData}
+                    dimensions={[{ accessor: "mes", label: "Mes" }]}
+                    measures={[
+                      { accessor: "total", label: "Total Órdenes", color: "#1976d2" },
+                      { accessor: "mediaMovil", label: "Media Móvil (3m)", color: "#d32f2f" }
+                    ]}
+                    width="100%"
+                    height="350px"
+                    config={{
+                      title: { visible: true, text: "Órdenes últimos 6 meses" },
+                      legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
+                      xAxis: {
+                        title: { visible: true, text: "Mes" },
+                        label: { rotation: 0, fontSize: 12 }
+                      },
+                      yAxis: {
+                        title: { visible: true, text: "Órdenes" },
+                        min: 0,
+                        label: { fontSize: 12 },
+                        grid: { visible: true }
+                      },
+                      tooltip: { visible: true },
+                      dataLabel: { visible: true }
+                    }}
+                  />
+                )}
+              </Card>
+            </div>
 
-            {/* Stock por producto */}
-            <Card heading="Stock por producto" style={{ flex: '2 1 500px', padding: '1rem' }}>
-              <div className="tableWrapper">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th style={{ textAlign: 'right' }}>Cantidad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventario.map((item, idx) => (
-                      <tr key={idx}>
-                        <td>{item.PRODUCTO}</td>
-                        <td style={{ textAlign: 'right' }}>{item.CANTIDAD}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-
-            {/* Leaderboard */}
-            <Card heading="Today's leaderboard" style={{ flex: '1 1 200px', padding: '1rem' }}>
-              <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <tbody>
-                  {leaderBoard.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                      <td>{item.name}</td>
-                      <td style={{ textAlign: 'right' }}>${item.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
+            {/* Tabla de ordenes recientes */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Title level="H4" style={{ marginBottom: 8 }}>Órdenes Recientes</Title>
+              <Card style={{ height: 420, display: "flex", flexDirection: "column" }}>
+                <div style={{ flex: 1, overflowY: "auto" }}>
+                  {ordenesData.length === 0 ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                      <span>Cargando...</span>
+                    </div>
+                  ) : (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Fecha Emisión</th>
+                          <th>Estado</th>
+                          <th>Solicitante</th>
+                          <th>Proveedor</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ordenesData.slice(0, 5).map((o, i) => (
+                          <tr key={i}>
+                            <td>{new Date(o.fecha).toLocaleDateString()}</td>
+                            <td>{o.estado}</td>
+                            <td>{o.solicitante}</td>
+                            <td>{o.proveedor}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </Card>
+            </div>
           </FlexBox>
 
-          {/* Charts */}
-          <FlexBox wrap style={{ gap: "1rem" }}>
-            {/* Ventas últimos 6 meses */}
-            <Card
-              heading="Ventas últimos 6 meses"
-              style={{
-                minWidth: "340px",
-                flex: "1 1 640px",
-                background: "linear-gradient(120deg, #fafbfd 0%, #f1f6fa 100%)",
-                borderRadius: "18px",
-                boxShadow: "0 8px 32px rgba(40,40,80,0.08)",
-                border: "1.5px solid #e2eafc",
-                padding: "0.75rem"
+          {/* Costos Compra últimos 36 meses */}
+          <Title level="H4" style={{ marginBottom: 8 }}>Costos Compra últimos 36 meses</Title>
+          <Card>
+            <LineChart
+              dataset={costChartData}
+              dimensions={[{ accessor: "mes", label: "Mes" }]}
+              measures={[{ accessor: "totalCost", label: "Costo Compra (MXN)", color: "#388e3c" }]}
+              width="100%"
+              height="300px"
+              config={{
+                title: { visible: true, text: "Costos Compra últimos 36 meses" },
+                legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
+                xAxis: {
+                  title: { visible: true, text: "Mes" },
+                  label: { rotation: 0, fontSize: 12 }
+                },
+                yAxis: {
+                  title: { visible: true, text: "MXN" },
+                  min: 0,
+                  label: { fontSize: 12 },
+                  grid: { visible: true }
+                },
+                tooltip: { visible: true },
+                dataLabel: { visible: false }
               }}
-            >
-              <div style={{ height: "370px", padding: "1.5rem 1rem 1rem 1rem" }}>
-                <LineChart
-                  dataset={ventasDataExtended}
-                  dimensions={[{ accessor: "mes", label: "Mes" }]}
-                  measures={[
-                    {
-                      accessor: "total",
-                      label: "Total Ventas",
-                      formatter: value =>
-                        new Intl.NumberFormat("es-MX", {
-                          style: "currency",
-                          currency: "MXN",
-                          maximumFractionDigits: 0
-                        }).format(value)
-                    },
-                    {
-                      accessor: "mediaMovil",
-                      label: "Media Móvil (3m)",
-                      formatter: value =>
-                        value
-                          ? new Intl.NumberFormat("es-MX", {
-                              style: "currency",
-                              currency: "MXN",
-                              maximumFractionDigits: 0
-                            }).format(value)
-                          : ""
-                    }
-                  ]}
-                  width="100%"
-                  height="100%"
-                  config={{
-                    title: { visible: true, text: "Ventas últimos 6 meses" },
-                    lineType: "Monotone",
-                    dataPoint: { visible: true, size: 7, hover: { scale: 1.35 } },
-                    tooltip: { visible: true },
-                    legend: { visible: true, position: "bottom" },
-                    plotArea: { gridline: { visible: true } },
-                    xAxis: {
-                      visible: true,
-                      title: { visible: true, text: "Mes" },
-                      label: { rotation: 0 }
-                    },
-                    yAxis: {
-                      visible: true,
-                      title: { visible: true, text: "Ventas (MXN)" },
-                      label: {
-                        formatter: v =>
-                          new Intl.NumberFormat("es-MX", {
-                            style: "currency",
-                            currency: "MXN",
-                            maximumFractionDigits: 0
-                          }).format(v)
-                      }
-                    },
-                    animation: { initial: { enabled: true } }
-                  }}
-                  style={{
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.97)",
-                    boxShadow: "0 2px 8px rgba(80,80,80,0.04)"
-                  }}
-                />
-              </div>
-            </Card>
-
-            {/* Órdenes Recientes */}
-            <Card
-              heading="Órdenes Recientes"
-              style={{ flex: "1 1 300px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-            >
-              <div className="tableWrapper">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Fecha Emisión</th>
-                      <th>Estado</th>
-                      <th>Solicitante</th>
-                      <th>Proveedor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ordenesData.slice(0, 5).map((o, i) => (
-                      <tr key={i}>
-                        <td>{new Date(o.fecha).toLocaleDateString()}</td>
-                        <td>{o.estado}</td>
-                        <td>{o.solicitante}</td>
-                        <td>{o.proveedor}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </FlexBox>
+            />
+          </Card>
         </div>
-      </div>
+      </FlexBox>
 
       {/* Notificaciones */}
       <div style={{ position: "fixed", top: 10, right: 60, zIndex: 1500 }}>
-        <Button icon="bell" design="Transparent" ref={notiButtonRef} onClick={() => setOpenNotificaciones(true)} />
-        <span style={{ position: "absolute", top: -4, right: -4, backgroundColor: "red", color: "white", borderRadius: "50%", padding: "2px 6px", fontSize: 10, fontWeight: "bold" }}>
+        <Button
+          icon="bell"
+          design="Transparent"
+          ref={notiButtonRef}
+          onClick={() => setOpenNotificaciones(true)}
+        />
+        <span
+          style={{
+            position: "absolute",
+            top: -4,
+            right: -4,
+            backgroundColor: "red",
+            color: "white",
+            borderRadius: "50%",
+            padding: "2px 6px",
+            fontSize: 10,
+            fontWeight: "bold"
+          }}
+        >
           {notificaciones.length}
         </span>
       </div>
       {notiButtonRef.current && (
-        <Popover headerText="Notificaciones recientes" open={openNotificaciones} opener={notiButtonRef.current} onClose={() => setOpenNotificaciones(false)}>
-          <FlexBox direction="Column" style={{ padding: "1rem", gap: "0.5rem", maxHeight: 300, overflowY: "auto" }}>
+        <Popover
+          headerText="Notificaciones recientes"
+          open={openNotificaciones}
+          opener={notiButtonRef.current}
+          onClose={() => setOpenNotificaciones(false)}
+        >
+          <FlexBox
+            direction="Column"
+            style={{ padding: "1rem", gap: "0.5rem", maxHeight: 300, overflowY: "auto" }}
+          >
             {notificaciones.map(n => (
               <div key={n.id} style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>
                 <Text>{n.mensaje}</Text>
               </div>
             ))}
-            <Button onClick={() => agregarNotificacion("success", mensajesNotificaciones.exito, setNotificaciones)}>Agregar Éxito</Button>
-            <Button onClick={() => agregarNotificacion("info", mensajesNotificaciones.info, setNotificaciones)}>Agregar Info</Button>
-            <Button onClick={() => agregarNotificacion("error", mensajesNotificaciones.error, setNotificaciones)}>Agregar Error</Button>
+            <Button
+              onClick={() => agregarNotificacion("success", mensajesNotificaciones.exito, setNotificaciones)}
+            >
+              Agregar Éxito
+            </Button>
+            <Button
+              onClick={() => agregarNotificacion("info", mensajesNotificaciones.info, setNotificaciones)}
+            >
+              Agregar Info
+            </Button>
+            <Button
+              onClick={() => agregarNotificacion("error", mensajesNotificaciones.error, setNotificaciones)}
+            >
+              Agregar Error
+            </Button>
           </FlexBox>
         </Popover>
       )}
       <Toaster position="top-center" reverseOrder={false} />
-    </div>
+    </>
   );
 }
