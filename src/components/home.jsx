@@ -16,7 +16,7 @@ import {
 import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
 import { Toaster } from "react-hot-toast";
 
-import "./Home.css";
+import "./home.css";
 import { agregarNotificacion, mensajesNotificaciones } from "./Notificaciones";
 import { getOrdenes } from "../services/ordenesService";
 import { getInventario, getInventarioVendido } from "../services/inventarioService";
