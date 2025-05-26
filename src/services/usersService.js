@@ -7,8 +7,10 @@ const getToken = () => {
 
 export const getUsuarios = async () => {
   const response = await fetch(`${API_URL}/usuarios`, {
+    method: "GET",
+    credentials: "include", // THIS ensures cookies (with the token) are sent
     headers: {
-      "Authorization": getToken()
+      "Content-Type": "application/json"
     }
   });
   return response.ok ? await response.json() : [];
@@ -28,6 +30,7 @@ export const createUsuario = async (usuario) => {
 export const updateUsuario = async (id, usuario) => {
   const response = await fetch(`${API_URL}/usuarios/${id}`, {
     method: "PUT",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       "Authorization": getToken()
@@ -40,6 +43,7 @@ export const updateUsuario = async (id, usuario) => {
 export const deleteUsuario = async (id) => {
   const response = await fetch(`${API_URL}/usuarios/${id}`, {
     method: "DELETE",
+    credentials: "include",
     headers: {
       "Authorization": getToken()
     }
