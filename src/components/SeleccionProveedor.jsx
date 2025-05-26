@@ -1,46 +1,64 @@
+// src/components/SeleccionProveedor.jsx
+
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import {
-  Button,
-  Title,
-  FlexBox,
-  Card,
   ShellBar,
   SideNavigation,
-  SideNavigationItem
+  SideNavigationItem,
+  FlexBox,
+  Card,
+  Title,
+  Button
 } from "@ui5/webcomponents-react";
 
 export default function SeleccionProveedor() {
   const navigate = useNavigate();
+  const [proveedores, setProveedores] = useState([]);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState("");
+
+  // Al montar: trae directamente de la API todos los usuarios,
+  // filtra por rol "proveedor" y genera el listado.
+useEffect(() => {
+  fetch("http://localhost:3000/api/usuarios", {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(res => res.json())
+    .then(users => {
+      const provs = users
+        .filter(u =>
+          typeof u.ROL === "string" &&
+          u.ROL.toLowerCase() === "proveedor"    // <-- aquí ignoramos mayúsculas/minúsculas
+        )
+        .map(u => ({
+          id: u.ID_USUARIO,
+          nombre: u.NOMBRE
+        }));
+      setProveedores(provs);
+    })
+    .catch(err => {
+      console.error("Error cargando proveedores:", err);
+      alert("No se pudieron cargar los proveedores");
+    });
+}, []);
+
 
   const handleContinuar = () => {
     if (!proveedorSeleccionado) {
       alert("Selecciona un proveedor para continuar.");
       return;
     }
-    navigate("/orden/nueva/producto", { state: { proveedorSeleccionado } });
+    navigate("/orden/nueva/producto", {
+      state: { proveedorSeleccionado }
+    });
   };
-
-  const proveedores = [
-    "Distribuidora Norte",
-    "Frigo Aguascalientes",
-    "Cárnicos del Centro",
-    "La Silla Select",
-    "Monterrey Prime",
-    "Ganadera San Juan",
-    "El Gran Buey",
-    "Bovinos Premium",
-    "Exportaciones TIF",
-    "Santa Fe Selecta"
-  ];
 
   return (
     <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
       <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
+        logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
         primaryTitle="Fs"
-        profile={{ image: "/viba1.png" }}
         style={{
           width: "100%",
           background: "#B71C1C",
@@ -51,15 +69,14 @@ export default function SeleccionProveedor() {
       />
       <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
         <SideNavigation>
-          <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-          <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-          <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
+          <SideNavigationItem icon="home" text="Dashboard" />
+          <SideNavigationItem icon="retail-store" text="Producto" />
+          <SideNavigationItem icon="employee" text="Usuarios" />
+          <SideNavigationItem icon="shipping-status" text="Órdenes" />
+          <SideNavigationItem icon="cart" text="Ventas" />
         </SideNavigation>
       </div>
 
-      {/* CONTENIDO A LA DERECHA */}
       <FlexBox
         direction="Column"
         alignItems="Center"
@@ -69,53 +86,58 @@ export default function SeleccionProveedor() {
           padding: "6rem 2rem 2rem 2rem"
         }}
       >
-        {/* TÍTULO DE PANTALLA */}
-        <Title level="H3" style={{ fontSize: "1.8rem", marginBottom: "1.5rem" }}>
+        <Title level="H3" style={{ marginBottom: "1.5rem" }}>
           Selecciona el proveedor
         </Title>
 
-        {/* CARD CENTRAL */}
         <Card
           style={{
             width: "100%",
-            maxWidth: "850px",
+            maxWidth: 850,
             padding: "2rem",
             backgroundColor: "#f7faff",
             border: "1px solid #dde3ea",
-            borderRadius: "16px",
+            borderRadius: 16,
             boxShadow: "0px 2px 8px rgba(0,0,0,0.1)"
           }}
         >
-          <div style={{ paddingLeft: "1rem", paddingRight: "1rem" }}>
-            <p style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <p style={{ fontWeight: "bold", marginBottom: 4 }}>
               Nombre del proveedor
             </p>
-            <p style={{ fontSize: "0.95rem", color: "#444", marginBottom: "1.5rem" }}>
+            <p style={{ color: "#444" }}>
               Selecciona un proveedor registrado en el sistema para comenzar la orden.
             </p>
           </div>
 
           <div
             style={{
-              maxHeight: "250px",
+              maxHeight: 250,
               overflowY: "auto",
               border: "2px solid #b0bec5",
-              borderRadius: "8px",
+              borderRadius: 8,
               backgroundColor: "#fff"
             }}
           >
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <tbody>
-                {proveedores.map((nombre, index) => (
-                  <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
+                {proveedores.length === 0 && (
+                  <tr>
+                    <td style={{ padding: 16, textAlign: "center", color: "#888" }}>
+                      Cargando proveedores…
+                    </td>
+                  </tr>
+                )}
+                {proveedores.map(({ id, nombre }) => (
+                  <tr key={id} style={{ borderBottom: "1px solid #ccc" }}>
                     <td style={{ padding: "0.75rem 1rem", fontSize: "1.05rem" }}>
                       <input
                         type="radio"
                         name="proveedor"
-                        value={nombre}
-                        checked={proveedorSeleccionado === nombre}
-                        onChange={() => setProveedorSeleccionado(nombre)}
-                        style={{ marginRight: "0.5rem" }}
+                        value={id}
+                        checked={proveedorSeleccionado === id}
+                        onChange={() => setProveedorSeleccionado(id)}
+                        style={{ marginRight: 8 }}
                       />
                       {nombre}
                     </td>
@@ -126,15 +148,10 @@ export default function SeleccionProveedor() {
           </div>
         </Card>
 
-        {/* BOTÓN CONTINUAR CENTRADO */}
         <Button
           onClick={handleContinuar}
           design="Emphasized"
-          style={{
-            marginTop: "1.5rem",
-            padding: "0.6rem 2.5rem",
-            fontSize: "1rem"
-          }}
+          style={{ marginTop: "1.5rem", padding: "0.6rem 2.5rem" }}
         >
           Continuar
         </Button>
