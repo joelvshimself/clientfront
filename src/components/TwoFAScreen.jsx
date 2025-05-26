@@ -14,8 +14,7 @@ export default function TwoFAScreen() {
     const check2FA = async () => {
       const res = await fetch(`${API_URL}/auth/2fa/status`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        credentials: "include", // important: send cookies
       });
 
       const data = await res.json();
@@ -24,27 +23,27 @@ export default function TwoFAScreen() {
       }
     };
 
-    if (email) {
-      check2FA();
-    }
-  }, [email]);
+    check2FA(); // don't wait for email — just check
+  }, []);
+
 
   const generate2FA = async () => {
     const res = await fetch(`${API_URL}/auth/2fa/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      credentials: "include", // send cookies
     });
 
     const data = await res.json();
     setQr(data.qr);
   };
 
+
   const verify2FA = async () => {
     const res = await fetch(`${API_URL}/auth/2fa/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, email }),
+      credentials: "include",
+      body: JSON.stringify({ token }), // only send token (6-digit code)
     });
 
     const data = await res.json();
@@ -54,6 +53,7 @@ export default function TwoFAScreen() {
       alert("❌ Código incorrecto");
     }
   };
+
 
   return (
     <div

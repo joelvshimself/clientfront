@@ -1,37 +1,18 @@
-//importar el token de la API
 const API_URL = import.meta.env.VITE_API_URL;
 
-
-// Guardar token 
-const setToken = (token) => localStorage.setItem("token", token);
-const getToken = () => localStorage.getItem("token");
-const removeToken = () => localStorage.removeItem("token");
-
-// Verificar si el usuario esta autenticado
-const isAuthenticated = () => !!getToken();
-
+// Login
 const login = async (email, password) => {
   try {
     const response = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // Para cookie
       body: JSON.stringify({ email, password }),
     });
 
     const data = await response.json();
     if (response.ok) {
-      const token = data.token;
-      setToken(token);
-
-      // Decodificar el token para obtener el email
-      const payloadBase64 = token.split(".")[1];
-      const decodedPayload = JSON.parse(atob(payloadBase64));
-      const userEmail = decodedPayload.email;
-
-      // Guardar el email del usuario
-      localStorage.setItem("userEmail", userEmail);
-
-      return { success: true };
+      return { success: true, data };
     } else {
       return { success: false, message: data.message };
     }
@@ -40,13 +21,13 @@ const login = async (email, password) => {
   }
 };
 
-
-// Registro
+// Register
 const register = async (name, email, password) => {
   try {
     const response = await fetch(`${API_URL}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // optional but safe to include
       body: JSON.stringify({ name, email, password }),
     });
 
@@ -61,9 +42,30 @@ const register = async (name, email, password) => {
   }
 };
 
-// Logout
-const logout = () => {
-  removeToken();
+// Check if user is authenticated (based on backend session)
+const isAuthenticated = async () => {
+  try {
+    const response = await fetch(`${API_URL}/check-auth`, {
+      method: "GET",
+      credentials: "include", // 👈 get cookies
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+// Logout (clear cookie via backend)
+const logout = async () => {
+  try {
+    await fetch(`${API_URL}/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (err) {
+    console.error("Error al cerrar sesión:", err);
+  }
 };
 
 export { login, register, logout, isAuthenticated };
