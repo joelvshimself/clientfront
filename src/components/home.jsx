@@ -13,13 +13,13 @@ import {
   Popover,
   Card
 } from "@ui5/webcomponents-react";
-import { LineChart } from "@ui5/webcomponents-react-charts";
+import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
 import { Toaster } from "react-hot-toast";
 
 import "./Home.css";
 import { agregarNotificacion, mensajesNotificaciones } from "./Notificaciones";
 import { getOrdenes } from "../services/ordenesService";
-import { getInventario } from "../services/inventarioService";
+import { getInventario, getInventarioVendido } from "../services/inventarioService";
 
 import "@ui5/webcomponents-icons/dist/home.js";
 import "@ui5/webcomponents-icons/dist/retail-store.js";
@@ -135,6 +135,25 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
+  // Productos más vendidos (gráfica de pastel)
+  const [productosVendidos, setProductosVendidos] = useState([]);
+  useEffect(() => {
+    getInventarioVendido()
+      .then(data => {
+        // data = [{ PRODUCTO, CANTIDAD }, …]
+        const top = data
+          .sort((a, b) => b.CANTIDAD - a.CANTIDAD)
+          .slice(0, 8)
+          .map(item => ({
+            producto: item.PRODUCTO,
+            vendido: item.CANTIDAD
+          }));
+        setProductosVendidos(top);
+      })
+      .catch(console.error);
+  }, []);
+
+
   const handleNavigationClick = e => {
     const route = e.detail.item.dataset.route;
     if (route) navigate(route);
@@ -162,8 +181,8 @@ export default function Home() {
         style={{
           marginTop: "3.5rem",
           height: "calc(100vh - 3.5rem)",
-          width: "100vw", 
-          overflow: "hidden" 
+          width: "100vw",
+          overflow: "hidden"
         }}
       >
         {/* Sidebar */}
@@ -183,7 +202,7 @@ export default function Home() {
             flexGrow: 1,
             overflowY: "auto",
             padding: "1.5rem",
-            minWidth: 0 
+            minWidth: 0
           }}
         >
           <Title style={{ fontSize: "2.5rem" }}>¡Bienvenido a Logiviba!</Title>
@@ -212,7 +231,7 @@ export default function Home() {
             </table>
           </Card>
 
-          {/* Ordenes últimos 6 meses y Ordenes Recientes alineados */} 
+          {/* Ordenes últimos 6 meses y Ordenes Recientes alineados */}
           <FlexBox direction="Row" style={{ gap: "1.5rem", marginBottom: "1.5rem" }}>
             {/* Gráfica de órdenes */}
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -315,6 +334,30 @@ export default function Home() {
                 dataLabel: { visible: false }
               }}
             />
+          </Card>
+
+          {/* Productos más vendidos - Gráfica de pastel */}
+          <Title level="H4" style={{ marginBottom: 8 }}>Productos más vendidos</Title>
+          <Card style={{ marginBottom: "1.5rem" }}>
+            {productosVendidos.length === 0 ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
+                <span>Cargando...</span>
+              </div>
+            ) : (
+              <PieChart
+                dataset={productosVendidos}
+                dimension={{ accessor: "producto", label: "Producto" }}
+                measure={{ accessor: "vendido", label: "Cantidad Vendida", color: "#1976d2" }}
+                width="100%"
+                height="300px"
+                config={{
+                  title: { visible: true, text: "Productos más vendidos" },
+                  legend: { visible: true, position: "right", textStyle: { fontSize: 14 } },
+                  tooltip: { visible: true },
+                  dataLabel: { visible: true }
+                }}
+              />
+            )}
           </Card>
         </div>
       </FlexBox>
