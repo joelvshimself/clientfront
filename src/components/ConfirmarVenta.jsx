@@ -5,11 +5,9 @@ import {
   Button,
   Title,
   FlexBox,
-  Card,
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem
+  Card
 } from "@ui5/webcomponents-react";
+import Layout from "./Layout";
 
 export default function ConfirmarVenta() {
   const navigate = useNavigate();
@@ -27,29 +25,7 @@ export default function ConfirmarVenta() {
   };
 
   return (
-    <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
-      <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
-        primaryTitle="Fs"
-        profile={{ image: "/viba1.png" }}
-        style={{
-          width: "100%",
-          background: "#B71C1C",
-          color: "white",
-          position: "fixed",
-          zIndex: 1201
-        }}
-      />
-      <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
-        <SideNavigation>
-          <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-          <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-          <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
-        </SideNavigation>
-      </div>
-
+    <Layout>
       <FlexBox
         direction="Column"
         alignItems="Center"
@@ -73,7 +49,6 @@ export default function ConfirmarVenta() {
             <table
               style={{
                 width: "100%",
-                maxWidth: "100%",
                 borderCollapse: "collapse",
                 marginBottom: "1rem"
               }}
@@ -132,7 +107,7 @@ export default function ConfirmarVenta() {
           Confirmar venta
         </Button>
       </FlexBox>
-    </FlexBox>
+    </Layout>
   );
 }
 

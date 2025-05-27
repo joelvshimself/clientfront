@@ -276,7 +276,7 @@ export default function Ordenes() {
             </FlexBox>
           )}
         </Dialog>
-      </FlexBox>
+      </FlexBox>  
     </FlexBox>
   );
 }
