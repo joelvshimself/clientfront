@@ -10,17 +10,63 @@ import {
   SideNavigation,
   SideNavigationItem
 } from "@ui5/webcomponents-react";
+import { createOrden } from "../services/ordenesService";
 
 export default function ConfirmarVenta() {
   const navigate = useNavigate();
   const location = useLocation();
-  const productos = location.state?.productos || [];
+
+  const proveedorSeleccionado = location.state?.proveedorSeleccionado || localStorage.getItem("proveedorSeleccionado");
+  const productoSeleccionado = location.state?.productoSeleccionado || JSON.parse(localStorage.getItem("productoSeleccionado"));
+
+  const productos = productoSeleccionado ? [productoSeleccionado] : [];
 
   const costoTotal = productos.reduce((acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0), 0);
 
-  const handleConfirmar = () => {
-    alert("Venta confirmada correctamente.");
-    navigate("/venta");
+  const handleConfirmar = async () => {
+    const correo_solicita = localStorage.getItem("correo");
+    const correo_provee = proveedorSeleccionado;
+
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const fecha_emision = `${yyyy}-${mm}-${dd}`;
+
+
+    const payload = {
+      correo_solicita,
+      correo_provee,
+      fecha_emision,
+      productos: productos.map(p => ({
+        producto: p.producto,
+        cantidad: Number(p.cantidad),
+        precio: Number(p.precio)
+      }))
+    };
+
+
+    if (!correo_solicita || !correo_provee || !productos.length || !fecha_emision) {
+      alert("Faltan datos para crear la orden.");
+      return;
+    }
+
+
+    console.log("Payload enviado a la API:", JSON.stringify(payload, null, 2));
+
+    try {
+      const response = await createOrden(payload);
+      if (response && response.id_orden) {
+        localStorage.removeItem("proveedorSeleccionado");
+        localStorage.removeItem("productoSeleccionado");
+        alert(`Orden creada exitosamente con ID: ${response.id_orden}`);
+        navigate("/orden");
+      } else {
+        alert("Error al crear orden");
+      }
+    } catch (error) {
+      alert("Error al crear orden");
+    }
   };
 
   return (

@@ -1,0 +1,106 @@
+/* Home.css */
+
+/* Fondo claro y sólo scroll vertical en toda la app */
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  background-color: #fafafa;
+  overflow-x: hidden;  /* bloquea scroll horizontal */
+  overflow-y: auto;    /* permite sólo scroll vertical */
+}
+
+:root {
+  --card-radius: 12px;
+  --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --header-bg: #f5f5f5;
+  --header-border: #e0e0e0;
+}
+
+/* Contenedor principal de cada página */
+.page {
+  display: flex;
+  height: 100vh;
+  /* sin overflow aquí, lo gestiona el body */
+}
+
+/* Área por debajo del ShellBar con scroll vertical */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 3.5rem; /* espacio del ShellBar */
+  overflow-y: auto;   /* scroll vertical en contenido */
+}
+
+/* Contenido interior */
+.content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenedor de tarjetas */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Helpers de ancho para tarjetas */
+.fullWidth { flex: 1 1 100%; }
+.halfWidth { flex: 1 1 45%; }
+
+/* Estilo base de tarjeta */
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  background-color: #fff;
+  overflow: hidden;
+}
+
+/* Cabecera de tarjeta */
+.cardHeader {
+  background-color: var(--header-bg);
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--header-border);
+}
+
+/* Wrapper del gráfico con altura fija */
+.chartWrapper {
+  height: 300px;
+  padding: 1rem;
+}
+
+/* Wrapper de tabla con scroll interno vertical */
+.tableWrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Estilos de la tabla */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+}
+.table th {
+  position: sticky;
+  top: 0;
+  background: var(--header-bg);
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--header-border);
+}
+.table td {
+  padding: 0.75rem;
+}
+.table tbody tr:nth-child(odd) {
+  background: #fcfcfc;
+}
+.table tbody tr:hover {
+  background: #f1f1f1;
+}

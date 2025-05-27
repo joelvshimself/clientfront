@@ -82,10 +82,16 @@ export default function Ordenes() {
     await loadOrdenes();
   };
 
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm   = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd   = String(hoy.getDate()).padStart(2, "0");
+    const fecha_recepcion = `${yyyy}-${mm}-${dd}`;
+
   const manejarCompletarOrden = async () => {
     const ordenId = ordenesSeleccionadas[0];
     try {
-      const respuesta = await completarOrden(ordenId);
+      const respuesta = await completarOrden(ordenId, fecha_recepcion);
       alert(respuesta.message || `Orden ${ordenId} completada.`);
       await loadOrdenes(); // Recargar la lista
       setOrdenesSeleccionadas([]);

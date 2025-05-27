@@ -17,6 +17,7 @@ export const createOrden = async (ordenData) => {
     return null;
   }
 };
+
 export const deleteOrden = async (id) => {
   try {
     const response = await axios.delete(`${BASE_URL}/ordenes/${id}`);
@@ -36,9 +37,13 @@ export const updateOrden = async (id, datos) => {
     return false;
   }
 };
-export const completarOrden = async (id) => {
+
+export const completarOrden = async (id, fecha_recepcion) => {
   try {
-    const response = await axios.post(`${BASE_URL}/completarorden/${id}`);
+    const response = await axios.post(
+      `${BASE_URL}/completarorden/${id}`,
+      { fecha_recepcion }
+    );
     return response.data;
   } catch (error) {
     console.error("Error al completar orden:", error.response?.data || error.message);
