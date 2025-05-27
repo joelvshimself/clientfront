@@ -5,13 +5,11 @@ import {
   Title,
   FlexBox,
   Card,
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem,
   Input,
   Select,
   Option
 } from "@ui5/webcomponents-react";
+import Layout from "./Layout"; // Asegúrate que esta ruta sea correcta
 
 export default function SeleccionProducto() {
   const navigate = useNavigate();
@@ -38,40 +36,20 @@ export default function SeleccionProducto() {
           productoSeleccionado
         }
       });
+    } else {
+      alert("Por favor completa todos los campos.");
     }
   };
 
   return (
-    <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
-      <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
-        primaryTitle="Fs"
-        profile={{ image: "/viba1.png" }}
-        style={{
-          width: "100%",
-          background: "#B71C1C",
-          color: "white",
-          position: "fixed",
-          zIndex: 1201
-        }}
-      />
-      <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
-        <SideNavigation>
-          <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-          <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-          <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
-        </SideNavigation>
-      </div>
-
+    <Layout>
       <FlexBox
         direction="Column"
         alignItems="Center"
         style={{
           flexGrow: 1,
-          backgroundColor: "#fafafa",
-          padding: "6rem 2rem 2rem 2rem"
+          padding: "5rem 2rem",
+          backgroundColor: "#f0f7ff"
         }}
       >
         <Title level="H3" style={{ fontSize: "1.8rem", marginBottom: "2rem" }}>
@@ -91,16 +69,9 @@ export default function SeleccionProducto() {
         >
           <FlexBox direction="Column" style={{ gap: "1.2rem", alignItems: "center" }}>
             <Select
-              style={{
-                height: "60px",
-                width: "100%",
-                fontSize: "1rem",
-                borderRadius: "10px"
-              }}
+              style={{ height: "60px", width: "100%", fontSize: "1rem", borderRadius: "10px" }}
               value={producto}
-              onChange={(e) =>
-                setProducto(e.target.selectedOption.textContent)
-              }
+              onChange={(e) => setProducto(e.target.selectedOption.textContent)}
             >
               <Option selected>Arrachera</Option>
               <Option>Ribeye</Option>
@@ -111,23 +82,13 @@ export default function SeleccionProducto() {
             <FlexBox direction="Row" style={{ width: "100%", gap: "1rem" }}>
               <Input
                 placeholder="Cantidad"
-                style={{
-                  height: "60px",
-                  flex: 1,
-                  fontSize: "1rem",
-                  borderRadius: "10px"
-                }}
+                style={{ height: "60px", flex: 1, fontSize: "1rem", borderRadius: "10px" }}
                 value={cantidad}
                 onInput={(e) => setCantidad(e.target.value)}
               />
               <Input
                 placeholder="Precio"
-                style={{
-                  height: "60px",
-                  flex: 1,
-                  fontSize: "1rem",
-                  borderRadius: "10px"
-                }}
+                style={{ height: "60px", flex: 1, fontSize: "1rem", borderRadius: "10px" }}
                 value={precio}
                 onInput={(e) => setPrecio(e.target.value)}
               />
@@ -135,12 +96,7 @@ export default function SeleccionProducto() {
 
             <Input
               placeholder="Fecha de caducidad"
-              style={{
-                height: "60px",
-                width: "100%",
-                fontSize: "1rem",
-                borderRadius: "10px"
-              }}
+              style={{ height: "60px", width: "100%", fontSize: "1rem", borderRadius: "10px" }}
               value={fechaCaducidad}
               onInput={(e) => setFechaCaducidad(e.target.value)}
             />
@@ -168,6 +124,6 @@ export default function SeleccionProducto() {
           <span style={{ lineHeight: "1", fontWeight: "600" }}>Continuar</span>
         </Button>
       </FlexBox>
-    </FlexBox>
+    </Layout>
   );
 }

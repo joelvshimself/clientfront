@@ -19,6 +19,7 @@ export default function Layout({ children }) {
 
   return (
     <div style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
+      {/* ShellBar fija */}
       <ShellBar
         logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
         primaryTitle="Fs"
@@ -28,28 +29,64 @@ export default function Layout({ children }) {
           background: "#B71C1C",
           color: "white",
           position: "fixed",
+          top: 0,
+          left: 0,
           zIndex: 1201
         }}
       />
 
+      {/* Contenedor general: barra lateral + contenido */}
       <FlexBox direction="Row" style={{ height: "100%", marginTop: "3.5rem" }}>
-        <div style={{ width: 240, backgroundColor: "#fff", minHeight: "100%" }}>
+        {/* Barra lateral */}
+        <div
+          style={{
+            width: 240,
+            backgroundColor: "#fff",
+            minHeight: "calc(100vh - 3.5rem)"
+          }}
+        >
           <SideNavigation
             onSelectionChange={handleNavigationClick}
             selectedKey={location.pathname}
           >
-            <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-            <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-            <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-            <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-            <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
+            <SideNavigationItem
+              key="/home"
+              icon="home"
+              text="Dashboard"
+              data-route="/home"
+            />
+            <SideNavigationItem
+              key="/producto"
+              icon="retail-store"
+              text="Producto"
+              data-route="/producto"
+            />
+            <SideNavigationItem
+              key="/usuarios"
+              icon="employee"
+              text="Usuarios"
+              data-route="/usuarios"
+            />
+            <SideNavigationItem
+              key="/orden"
+              icon="shipping-status"
+              text="Órdenes"
+              data-route="/orden"
+            />
+            <SideNavigationItem
+              key="/venta"
+              icon="cart"
+              text="Ventas"
+              data-route="/venta"
+            />
           </SideNavigation>
         </div>
 
+        {/* Área de contenido */}
         <div
           style={{
             flexGrow: 1,
-            padding: "2rem 2rem 2rem 2rem",
+            padding: "2rem",
             backgroundColor: "#f9f9f9",
             overflowY: "auto",
             height: "calc(100vh - 3.5rem)"

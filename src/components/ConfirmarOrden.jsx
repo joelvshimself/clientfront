@@ -1,27 +1,32 @@
-// ConfirmarVenta.jsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
   Title,
   FlexBox,
-  Card,
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem
+  Card
 } from "@ui5/webcomponents-react";
+import Layout from "./Layout";
 import { createOrden } from "../services/ordenesService";
 
-export default function ConfirmarVenta() {
+export default function ConfirmarOrden() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const proveedorSeleccionado = location.state?.proveedorSeleccionado || localStorage.getItem("proveedorSeleccionado");
-  const productoSeleccionado = location.state?.productoSeleccionado || JSON.parse(localStorage.getItem("productoSeleccionado"));
+  const proveedorSeleccionado =
+    location.state?.proveedorSeleccionado ||
+    localStorage.getItem("proveedorSeleccionado");
+
+  const productoSeleccionado =
+    location.state?.productoSeleccionado ||
+    JSON.parse(localStorage.getItem("productoSeleccionado"));
 
   const productos = productoSeleccionado ? [productoSeleccionado] : [];
 
-  const costoTotal = productos.reduce((acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0), 0);
+  const costoTotal = productos.reduce(
+    (acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0),
+    0
+  );
 
   const handleConfirmar = async () => {
     const correo_solicita = localStorage.getItem("correo");
@@ -33,24 +38,21 @@ export default function ConfirmarVenta() {
     const dd = String(hoy.getDate()).padStart(2, "0");
     const fecha_emision = `${yyyy}-${mm}-${dd}`;
 
-
     const payload = {
       correo_solicita,
       correo_provee,
       fecha_emision,
-      productos: productos.map(p => ({
+      productos: productos.map((p) => ({
         producto: p.producto,
         cantidad: Number(p.cantidad),
         precio: Number(p.precio)
       }))
     };
 
-
     if (!correo_solicita || !correo_provee || !productos.length || !fecha_emision) {
       alert("Faltan datos para crear la orden.");
       return;
     }
-
 
     console.log("Payload enviado a la API:", JSON.stringify(payload, null, 2));
 
@@ -70,30 +72,14 @@ export default function ConfirmarVenta() {
   };
 
   return (
-    <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
-      <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
-        primaryTitle="Fs"
-        profile={{ image: "/viba1.png" }}
-        style={{ width: "100%", background: "#B71C1C", color: "white", position: "fixed", zIndex: 1201 }}
-      />
-      <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
-        <SideNavigation>
-          <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-          <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-          <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
-        </SideNavigation>
-      </div>
-
+    <Layout>
       <FlexBox
         direction="Column"
         alignItems="Center"
         style={{ flexGrow: 1, padding: "6rem 2rem 2rem 2rem", backgroundColor: "#f0f7ff" }}
       >
         <Title level="H3" style={{ fontSize: "2rem", marginBottom: "1.5rem" }}>
-          Confirma la venta
+          Confirma la orden
         </Title>
 
         <Card
@@ -119,6 +105,7 @@ export default function ConfirmarVenta() {
                 <th style={headerCellStyle}>Cantidad</th>
                 <th style={headerCellStyle}>Precio</th>
                 <th style={headerCellStyle}>Fecha de caducidad</th>
+                <th style={headerCellStyle}>Proveedor</th>
               </tr>
             </thead>
             <tbody>
@@ -128,6 +115,7 @@ export default function ConfirmarVenta() {
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>${item.precio}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.fechaCaducidad}</td>
+                  <td style={{ ...bodyCellStyle, textAlign: "center" }}>{proveedorSeleccionado}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,10 +149,10 @@ export default function ConfirmarVenta() {
             borderRadius: "10px"
           }}
         >
-          Confirmar venta
+          Confirmar orden
         </Button>
       </FlexBox>
-    </FlexBox>
+    </Layout>
   );
 }
 

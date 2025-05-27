@@ -1,30 +1,23 @@
-// orden.jsx
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FlexBox } from "@ui5/webcomponents-react";
 import {
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem,
+  FlexBox,
   Card,
   Title,
   Input,
   Button,
-  Dialog
+  Dialog,
+  Select,
+  Option
 } from "@ui5/webcomponents-react";
-import "@ui5/webcomponents-icons/dist/home.js";
-import "@ui5/webcomponents-icons/dist/retail-store.js";
-import "@ui5/webcomponents-icons/dist/employee.js";
-import "@ui5/webcomponents-icons/dist/shipping-status.js";
-import "@ui5/webcomponents-icons/dist/cart.js";
-import "@ui5/webcomponents-icons/dist/delete.js";
-import "@ui5/webcomponents-icons/dist/add.js";
-import "@ui5/webcomponents-icons/dist/edit.js";
-import { getOrdenes } from "../services/ordenesService";
-import { createOrden } from "../services/ordenesService";
-import { deleteOrden, updateOrden } from "../services/ordenesService";
-import { completarOrden } from "../services/ordenesService";
-import { Select, Option } from "@ui5/webcomponents-react";
+import Layout from "./Layout";
+import {
+  getOrdenes,
+  createOrden,
+  deleteOrden,
+  updateOrden,
+  completarOrden
+} from "../services/ordenesService";
 
 export default function Ordenes() {
   const navigate = useNavigate();
@@ -82,18 +75,18 @@ export default function Ordenes() {
     await loadOrdenes();
   };
 
-    const hoy = new Date();
-    const yyyy = hoy.getFullYear();
-    const mm   = String(hoy.getMonth() + 1).padStart(2, "0");
-    const dd   = String(hoy.getDate()).padStart(2, "0");
-    const fecha_recepcion = `${yyyy}-${mm}-${dd}`;
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dd = String(hoy.getDate()).padStart(2, "0");
+  const fecha_recepcion = `${yyyy}-${mm}-${dd}`;
 
   const manejarCompletarOrden = async () => {
     const ordenId = ordenesSeleccionadas[0];
     try {
       const respuesta = await completarOrden(ordenId, fecha_recepcion);
       alert(respuesta.message || `Orden ${ordenId} completada.`);
-      await loadOrdenes(); // Recargar la lista
+      await loadOrdenes();
       setOrdenesSeleccionadas([]);
     } catch (error) {
       alert(error.response?.data?.error || "Error al completar la orden.");
@@ -105,7 +98,12 @@ export default function Ordenes() {
       ...nuevaOrden,
       productos: [...(nuevaOrden.productos || []), nuevoProducto]
     });
-    setNuevoProducto({ producto: "", cantidad: "", precio: "", fecha_caducidad: "" });
+    setNuevoProducto({
+      producto: "",
+      cantidad: "",
+      precio: "",
+      fecha_caducidad: ""
+    });
   };
 
   const agregarOrden = async () => {
@@ -114,8 +112,6 @@ export default function Ordenes() {
       correo_provee: nuevaOrden.usuario_provee,
       productos: nuevaOrden.productos
     };
-
-    console.log("📦 Payload que se enviará:", datos);
 
     const response = await createOrden(datos);
 
@@ -150,36 +146,16 @@ export default function Ordenes() {
     }
   };
 
-  const handleNavigationClick = (e) => {
-    const route = e.detail.item.dataset.route;
-    if (route) navigate(route);
-  };
-
   return (
-    <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
-      <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
-        primaryTitle="Fs"
-        profile={{ image: "/viba1.png" }}
-        style={{ width: "100%", background: "#B71C1C", color: "white", position: "fixed", zIndex: 1201 }}
-      />
-      <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
-        <SideNavigation onSelectionChange={handleNavigationClick}>
-          <SideNavigationItem icon="home" text="Dashboard" data-route="/home" />
-          <SideNavigationItem icon="retail-store" text="Producto" data-route="/producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" data-route="/usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" data-route="/orden" />
-          <SideNavigationItem icon="cart" text="Ventas" data-route="/venta" />
-        </SideNavigation>
-      </div>
-
-      <FlexBox direction="Column" style={{ flexGrow: 1, padding: "2rem", marginTop: "4rem", backgroundColor: "#fafafa" }}>
+    <Layout>
+      <FlexBox direction="Column" style={{ flexGrow: 1, padding: "2rem", marginTop: "2rem", backgroundColor: "#fafafa" }}>
         <Title level="H3">Órdenes</Title>
 
         <FlexBox direction="Row" justifyContent="End" style={{ marginBottom: "1rem", gap: "0.75rem" }}>
-          <Button design="Negative" icon="delete" onClick={eliminarOrdenesSeleccionadas} disabled={ordenesSeleccionadas.length === 0}>Eliminar</Button>
+          <Button design="Negative" icon="delete" onClick={eliminarOrdenesSeleccionadas} disabled={ordenesSeleccionadas.length === 0}>
+            Eliminar
+          </Button>
 
-          {/* ✅ CAMBIO AQUÍ: solo se reemplaza este botón */}
           <Button
             design="Emphasized"
             icon="add"
@@ -197,6 +173,7 @@ export default function Ordenes() {
               setOpenEditar(true);
             }
           }}>Editar</Button>
+
           <Button
             design="Positive"
             icon="shipping-status"
@@ -212,31 +189,31 @@ export default function Ordenes() {
           padding: "1rem",
           borderRadius: "12px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-          border: "1px solid #e0e0e0"
+          border: "1px solid #e0e0e0",
+          maxWidth: "1200px",
+          width: "100%"
         }}>
-          <Title level="H5" style={{ marginTop: "1rem", marginLeft: "1rem", marginRight: "1rem", marginBottom: "1rem" }}>
-            Base de Datos de Órdenes
-          </Title>
+          <Title level="H5" style={{ marginBottom: "1rem" }}>Base de Datos de Órdenes</Title>
           <div style={{ overflowX: "auto", borderRadius: "8px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI", fontSize: "14px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI", fontSize: "15px" }}>
               <thead style={{ backgroundColor: "#f9f9f9", position: "sticky", top: 0 }}>
                 <tr>
-                  <th style={{ padding: "12px", textAlign: "left" }}></th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>ID Orden</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Fecha Emisión</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Recepción</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Recepción Estimada</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Estado</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Subtotal</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Costo Compra</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Solicitante</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Proveedor</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}></th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>ID Orden</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Fecha Emisión</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Recepción</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Recepción Estimada</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Estado</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Subtotal</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Costo Compra</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Solicitante</th>
+                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Proveedor</th>
                 </tr>
               </thead>
               <tbody>
                 {ordenes.map((orden) => (
                   <tr key={orden.id} style={{ borderBottom: "1px solid #eee", backgroundColor: "#fff" }}>
-                    <td style={{ padding: "10px" }}>
+                    <td style={{ padding: "12px" }}>
                       <input
                         type="checkbox"
                         checked={ordenesSeleccionadas.includes(orden.id)}
@@ -250,17 +227,21 @@ export default function Ordenes() {
                         }}
                       />
                     </td>
-                    <td style={{ padding: "10px" }}>{orden.id}</td>
-                    <td style={{ padding: "10px" }}>{orden.fecha_emision}</td>
-                    <td style={{ padding: "10px" }}>{orden.fecha_recepcion}</td>
-                    <td style={{ padding: "10px" }}>{orden.fecha_estimada}</td>
-                    <td style={{ padding: "10px", fontWeight: "bold", color: orden.estado === "completada" ? "#388e3c" : "#f57c00" }}>
+                    <td style={{ padding: "12px" }}>{orden.id}</td>
+                    <td style={{ padding: "12px" }}>{orden.fecha_emision}</td>
+                    <td style={{ padding: "12px" }}>{orden.fecha_recepcion}</td>
+                    <td style={{ padding: "12px" }}>{orden.fecha_estimada}</td>
+                    <td style={{
+                      padding: "12px",
+                      fontWeight: "bold",
+                      color: orden.estado === "completada" ? "#388e3c" : "#f57c00"
+                    }}>
                       {orden.estado}
                     </td>
-                    <td style={{ padding: "10px" }}>${orden.subtotal}</td>
-                    <td style={{ padding: "10px" }}>${orden.costo}</td>
-                    <td style={{ padding: "10px" }}>{orden.usuario_solicita}</td>
-                    <td style={{ padding: "10px" }}>{orden.usuario_provee}</td>
+                    <td style={{ padding: "12px" }}>${orden.subtotal}</td>
+                    <td style={{ padding: "12px" }}>${orden.costo}</td>
+                    <td style={{ padding: "12px" }}>{orden.usuario_solicita}</td>
+                    <td style={{ padding: "12px" }}>{orden.usuario_provee}</td>
                   </tr>
                 ))}
               </tbody>
@@ -268,7 +249,12 @@ export default function Ordenes() {
           </div>
         </Card>
 
-        <Dialog headerText="Editar Orden" open={openEditar} onAfterClose={() => setOpenEditar(false)} footer={<Button design="Emphasized" onClick={handleEditarGuardar}>Guardar</Button>}>
+        <Dialog
+          headerText="Editar Orden"
+          open={openEditar}
+          onAfterClose={() => setOpenEditar(false)}
+          footer={<Button design="Emphasized" onClick={handleEditarGuardar}>Guardar</Button>}
+        >
           {ordenEditar && (
             <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
               <Input placeholder="Estado" value={ordenEditar.estado} onInput={(e) => setOrdenEditar({ ...ordenEditar, estado: e.target.value })} />
@@ -282,7 +268,7 @@ export default function Ordenes() {
             </FlexBox>
           )}
         </Dialog>
-      </FlexBox>  
-    </FlexBox>
+      </FlexBox>
+    </Layout>
   );
 }

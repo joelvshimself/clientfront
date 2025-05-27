@@ -7,7 +7,7 @@ import {
   FlexBox,
   Card
 } from "@ui5/webcomponents-react";
-import Layout from "/Layout";
+import Layout from "./Layout";
 
 export default function ConfirmarVenta() {
   const navigate = useNavigate();

@@ -1,18 +1,13 @@
-// src/components/SeleccionProveedor.jsx
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem,
   FlexBox,
   Card,
   Title,
   Button
 } from "@ui5/webcomponents-react";
-import { getUsuarios } from "../services/usersService"; 
+import { getUsuarios } from "../services/usersService";
+import Layout from "./Layout";
 
 export default function SeleccionProveedor() {
   const navigate = useNavigate();
@@ -21,14 +16,13 @@ export default function SeleccionProveedor() {
 
   useEffect(() => {
     getUsuarios()
-      .then(res => {
-        console.log("Usuarios recibidos:", res);
+      .then((res) => {
         const proveedoresFiltrados = res.filter(
-          u => u.ROL && u.ROL.trim().toLowerCase() === "proveedor"
+          (u) => u.ROL && u.ROL.trim().toLowerCase() === "proveedor"
         );
         setProveedores(proveedoresFiltrados);
       })
-      .catch(err => {
+      .catch(() => {
         alert("No autorizado. Inicia sesión.");
         navigate("/login");
       });
@@ -37,40 +31,22 @@ export default function SeleccionProveedor() {
   const handleContinuar = () => {
     if (proveedorSeleccionado) {
       localStorage.setItem("proveedorSeleccionado", proveedorSeleccionado);
-      navigate("/orden/nueva/producto", { state: { proveedorSeleccionado } });
+      navigate("/orden/nueva/producto", {
+        state: { proveedorSeleccionado }
+      });
+    } else {
+      alert("Selecciona un proveedor antes de continuar.");
     }
   };
 
   return (
-    <FlexBox direction="Row" style={{ height: "100vh", width: "100vw" }}>
-      <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
-        primaryTitle="Fs"
-        style={{
-          width: "100%",
-          background: "#B71C1C",
-          color: "white",
-          position: "fixed",
-          zIndex: 1201
-        }}
-      />
-      <div style={{ width: 240, marginTop: "3.5rem", backgroundColor: "#fff" }}>
-        <SideNavigation>
-          <SideNavigationItem icon="home" text="Dashboard" />
-          <SideNavigationItem icon="retail-store" text="Producto" />
-          <SideNavigationItem icon="employee" text="Usuarios" />
-          <SideNavigationItem icon="shipping-status" text="Órdenes" />
-          <SideNavigationItem icon="cart" text="Ventas" />
-        </SideNavigation>
-      </div>
-
+    <Layout>
       <FlexBox
         direction="Column"
         alignItems="Center"
         style={{
-          flexGrow: 1,
-          backgroundColor: "#fafafa",
-          padding: "6rem 2rem 2rem 2rem"
+          padding: "4rem 2rem",
+          backgroundColor: "#fafafa"
         }}
       >
         <Title level="H3" style={{ marginBottom: "1.5rem" }}>
@@ -110,14 +86,20 @@ export default function SeleccionProveedor() {
               <tbody>
                 {proveedores.length === 0 && (
                   <tr>
-                    <td style={{ padding: 16, textAlign: "center", color: "#888" }}>
+                    <td
+                      style={{
+                        padding: 16,
+                        textAlign: "center",
+                        color: "#888"
+                      }}
+                    >
                       No hay proveedores disponibles.
                     </td>
                   </tr>
                 )}
                 {proveedores.map((p) => (
                   <tr key={p.ID_USUARIO || p.EMAIL}>
-                    <td>
+                    <td style={{ padding: "10px" }}>
                       <input
                         type="radio"
                         name="proveedor"
@@ -126,7 +108,8 @@ export default function SeleccionProveedor() {
                         onChange={() => setProveedorSeleccionado(p.EMAIL)}
                         style={{ marginRight: 8 }}
                       />
-                      {p.NOMBRE} ({p.EMAIL}) - <span style={{color: "#888"}}>{p.ROL}</span>
+                      {p.NOMBRE} ({p.EMAIL}) -{" "}
+                      <span style={{ color: "#888" }}>{p.ROL}</span>
                     </td>
                   </tr>
                 ))}
@@ -143,6 +126,6 @@ export default function SeleccionProveedor() {
           Continuar
         </Button>
       </FlexBox>
-    </FlexBox>
+    </Layout>
   );
 }
