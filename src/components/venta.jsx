@@ -22,16 +22,9 @@ export default function Venta() {
   const navigate = useNavigate();
   const [ventas, setVentas] = useState([]);
   const [ventasSeleccionadas, setVentasSeleccionadas] = useState([]);
-  const [openCrear, setOpenCrear] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
   const [ventaEditar, setVentaEditar] = useState(null);
   const [detalleVenta, setDetalleVenta] = useState(null);
-  const [nuevaVenta, setNuevaVenta] = useState({ productos: [] });
-  const [nuevoProducto, setNuevoProducto] = useState({
-    nombre: "arrachera",
-    cantidad: "",
-    costo_unitario: ""
-  });
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
@@ -128,6 +121,30 @@ export default function Venta() {
             ))}
           </ul>
         </Card>
+
+        {detalleVenta && (
+          <Dialog
+            headerText={`Detalles de Venta #${detalleVenta.id}`}
+            open
+            footer={
+              <Button design="Emphasized" onClick={() => setDetalleVenta(null)}>Cerrar</Button>
+            }
+            preventOutsideClose
+          >
+            <FlexBox direction="Column" style={{ padding: "1rem" }}>
+              {detalleVenta.productos?.map((p, idx) => (
+                <div key={idx} style={{ marginBottom: "0.75rem", fontSize: "0.95rem" }}>
+                  <strong>Producto:</strong> {p.nombre || p.producto} <br />
+                  <strong>Cantidad:</strong> {p.cantidad} <br />
+                  <strong>Precio unitario:</strong> ${p.costo_unitario || p.precio}
+                </div>
+              ))}
+              <div style={{ fontWeight: "bold", marginTop: "1rem" }}>
+                Total: ${detalleVenta.total}
+              </div>
+            </FlexBox>
+          </Dialog>
+        )}
       </FlexBox>
     </Layout>
   );

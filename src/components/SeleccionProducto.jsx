@@ -9,7 +9,7 @@ import {
   Select,
   Option
 } from "@ui5/webcomponents-react";
-import Layout from "./Layout"; // Asegúrate que esta ruta sea correcta
+import Layout from "./Layout"; 
 
 export default function SeleccionProducto() {
   const navigate = useNavigate();

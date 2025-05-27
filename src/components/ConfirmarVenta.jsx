@@ -8,20 +8,39 @@ import {
   Card
 } from "@ui5/webcomponents-react";
 import Layout from "./Layout";
+import { venderProductos } from "../services/ventaService";
 
 export default function ConfirmarVenta() {
   const navigate = useNavigate();
   const location = useLocation();
   const productos = location.state?.productos || [];
 
-  const costoTotal = productos.reduce(
-    (acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0),
-    0
-  );
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dd = String(hoy.getDate()).padStart(2, "0");
+  const fecha_emision = `${yyyy}-${mm}-${dd}`;
 
-  const handleConfirmar = () => {
-    alert("Venta confirmada correctamente.");
-    navigate("/venta");
+  const total = productos.reduce((acc, p) => acc + parseFloat(p.cantidad || 0), 0);
+
+  const handleConfirmar = async () => {
+    try {
+      const payload = {
+        fecha_emision,
+        productos: productos.map(p => ({
+          producto: p.producto.toLowerCase(),
+          cantidad: Number(p.cantidad)
+        }))
+      };
+
+      console.log("Enviando payload de venta:", payload);
+      const response = await venderProductos(payload);
+      alert(`✅ Venta creada con ID: ${response.id_venta}`);
+      navigate("/venta");
+    } catch (error) {
+      alert("Error al confirmar la venta.");
+      console.error(error);
+    }
   };
 
   return (
@@ -38,57 +57,49 @@ export default function ConfirmarVenta() {
         <Card
           style={{
             width: "100%",
-            maxWidth: "800px",
+            maxWidth: "900px",
             padding: "2rem",
             backgroundColor: "white",
             borderRadius: "16px",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"
           }}
         >
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                marginBottom: "1rem"
-              }}
-            >
-              <thead>
-                <tr style={{ backgroundColor: "#f0f0f0" }}>
-                  <th style={headerCellStyle}>Producto</th>
-                  <th style={headerCellStyle}>Cantidad</th>
-                  <th style={headerCellStyle}>Precio</th>
-                  <th style={headerCellStyle}>Fecha de caducidad</th>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              border: "2px solid #000"
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f0f0f0" }}>
+                <th style={headerCellStyle}>Producto</th>
+                <th style={headerCellStyle}>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productos.map((item, index) => (
+                <tr key={index}>
+                  <td style={bodyCellStyle}>{item.producto}</td>
+                  <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {productos.map((item, index) => (
-                  <tr key={index}>
-                    <td style={bodyCellStyle}>{item.producto}</td>
-                    <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
-                    <td style={{ ...bodyCellStyle, textAlign: "center" }}>${item.precio}</td>
-                    <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.fechaCaducidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
 
           <div
             style={{
               fontWeight: "bold",
-              fontSize: "1.2rem",
-              backgroundColor: "#fff8e1",
-              padding: "0.75rem 1.5rem",
-              border: "2px dashed orange",
-              borderRadius: "12px",
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              minHeight: "50px"
+              fontSize: "1rem",
+              marginTop: "1.5rem",
+              padding: "0.5rem 1rem",
+              backgroundColor: "#f8f8f8",
+              display: "inline-block",
+              borderRadius: "8px",
+              boxShadow: "inset 0 0 2px rgba(0,0,0,0.1)"
             }}
           >
-            Total: ${costoTotal.toFixed(2)}
+            Total productos: {total}
           </div>
         </Card>
 
@@ -121,6 +132,6 @@ const headerCellStyle = {
 
 const bodyCellStyle = {
   border: "2px solid #000",
-  padding: "10px",
+  padding: "12px",
   fontSize: "1rem"
 };

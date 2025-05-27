@@ -40,7 +40,7 @@ export default function Layout({ children }) {
         {/* Barra lateral */}
         <div
           style={{
-            width: 240,
+            width: 260,
             backgroundColor: "#fff",
             minHeight: "calc(100vh - 3.5rem)"
           }}

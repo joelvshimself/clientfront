@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Title,
   Select,
@@ -6,6 +6,7 @@ import {
   Input,
   Button,
   FlexBox,
+  Card
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
@@ -14,24 +15,21 @@ export default function SeleccionVenta() {
   const navigate = useNavigate();
   const [producto, setProducto] = useState("Arrachera");
   const [cantidad, setCantidad] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [fechaCaducidad, setFechaCaducidad] = useState("");
   const [tablaProductos, setTablaProductos] = useState([]);
 
   const handleAgregarProducto = () => {
-    if (!producto || !cantidad || !precio || !fechaCaducidad) {
+    if (!producto || !cantidad) {
       alert("Completa todos los campos.");
       return;
     }
 
-    setTablaProductos([
-      ...tablaProductos,
-      { producto, cantidad, precio, fechaCaducidad },
-    ]);
+    const nuevoProducto = {
+      producto: producto.toLowerCase(),
+      cantidad: parseInt(cantidad)
+    };
 
+    setTablaProductos([...tablaProductos, nuevoProducto]);
     setCantidad("");
-    setPrecio("");
-    setFechaCaducidad("");
   };
 
   const handleContinuar = () => {
@@ -40,7 +38,18 @@ export default function SeleccionVenta() {
       return;
     }
 
-    navigate("/venta/nueva/confirmar", { state: { productos: tablaProductos } });
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const fecha_emision = `${yyyy}-${mm}-${dd}`;
+
+    navigate("/venta/nueva/confirmar", {
+      state: {
+        productos: tablaProductos,
+        fecha_emision
+      }
+    });
   };
 
   return (
@@ -59,7 +68,7 @@ export default function SeleccionVenta() {
           style={{
             width: "80%",
             justifyContent: "space-around",
-            marginBottom: "2rem",
+            marginBottom: "2rem"
           }}
         >
           <table
@@ -68,7 +77,7 @@ export default function SeleccionVenta() {
               width: "40%",
               backgroundColor: "#F5FAFF",
               borderRadius: "12px",
-              overflow: "hidden",
+              overflow: "hidden"
             }}
           >
             <thead>
@@ -78,7 +87,7 @@ export default function SeleccionVenta() {
                     border: "1px solid #A9CCE3",
                     padding: "12px",
                     textAlign: "center",
-                    color: "#0B3C5D",
+                    color: "#0B3C5D"
                   }}
                 >
                   Producto
@@ -88,7 +97,7 @@ export default function SeleccionVenta() {
                     border: "1px solid #A9CCE3",
                     padding: "12px",
                     textAlign: "center",
-                    color: "#0B3C5D",
+                    color: "#0B3C5D"
                   }}
                 >
                   Cantidad
@@ -102,7 +111,7 @@ export default function SeleccionVenta() {
                     style={{
                       border: "1px solid #A9CCE3",
                       padding: "12px",
-                      textAlign: "center",
+                      textAlign: "center"
                     }}
                   >
                     {item.producto}
@@ -111,7 +120,7 @@ export default function SeleccionVenta() {
                     style={{
                       border: "1px solid #A9CCE3",
                       padding: "12px",
-                      textAlign: "center",
+                      textAlign: "center"
                     }}
                   >
                     {item.cantidad}
@@ -128,7 +137,7 @@ export default function SeleccionVenta() {
               backgroundColor: "white",
               padding: "2rem",
               borderRadius: "12px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
             }}
           >
             <Select
@@ -144,23 +153,10 @@ export default function SeleccionVenta() {
               <Option>Diezmillo</Option>
             </Select>
 
-            <FlexBox direction="Row" style={{ gap: "1rem", marginBottom: "1rem" }}>
-              <Input
-                placeholder="Cantidad"
-                value={cantidad}
-                onInput={(e) => setCantidad(e.target.value)}
-              />
-              <Input
-                placeholder="Precio"
-                value={precio}
-                onInput={(e) => setPrecio(e.target.value)}
-              />
-            </FlexBox>
-
             <Input
-              placeholder="Fecha de caducidad"
-              value={fechaCaducidad}
-              onInput={(e) => setFechaCaducidad(e.target.value)}
+              placeholder="Cantidad"
+              value={cantidad}
+              onInput={(e) => setCantidad(e.target.value)}
               style={{ marginBottom: "1rem" }}
             />
 
