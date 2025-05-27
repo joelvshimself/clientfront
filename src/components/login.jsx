@@ -11,7 +11,7 @@ import {
 } from "@ui5/webcomponents-react";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton } from "@mui/material";
-import { login } from "../services/authService"; // Asegúrate que esta ruta sea correcta
+import { login } from "../services/authService"; 
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,11 +24,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const result = await login(form.email, form.password);
     if (result.success) {
       setError(false);
-      // Redirigir a pantalla de 2FA con el email
+      localStorage.setItem("correo", form.email);
       navigate("/2fa", { state: { email: form.email } });
     } else {
       setError(true);

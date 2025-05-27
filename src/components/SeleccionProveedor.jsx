@@ -1,7 +1,8 @@
 // src/components/SeleccionProveedor.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   ShellBar,
   SideNavigation,
@@ -11,47 +12,33 @@ import {
   Title,
   Button
 } from "@ui5/webcomponents-react";
+import { getUsuarios } from "../services/usersService"; 
 
 export default function SeleccionProveedor() {
   const navigate = useNavigate();
   const [proveedores, setProveedores] = useState([]);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState("");
 
-  // Al montar: trae directamente de la API todos los usuarios,
-  // filtra por rol "proveedor" y genera el listado.
-useEffect(() => {
-  fetch("http://localhost:3000/api/usuarios", {
-    credentials: "include",
-    headers: { "Content-Type": "application/json" }
-  })
-    .then(res => res.json())
-    .then(users => {
-      const provs = users
-        .filter(u =>
-          typeof u.ROL === "string" &&
-          u.ROL.toLowerCase() === "proveedor"    // <-- aquí ignoramos mayúsculas/minúsculas
-        )
-        .map(u => ({
-          id: u.ID_USUARIO,
-          nombre: u.NOMBRE
-        }));
-      setProveedores(provs);
-    })
-    .catch(err => {
-      console.error("Error cargando proveedores:", err);
-      alert("No se pudieron cargar los proveedores");
-    });
-}, []);
-
+  useEffect(() => {
+    getUsuarios()
+      .then(res => {
+        console.log("Usuarios recibidos:", res);
+        const proveedoresFiltrados = res.filter(
+          u => u.ROL && u.ROL.trim().toLowerCase() === "proveedor"
+        );
+        setProveedores(proveedoresFiltrados);
+      })
+      .catch(err => {
+        alert("No autorizado. Inicia sesión.");
+        navigate("/login");
+      });
+  }, []);
 
   const handleContinuar = () => {
-    if (!proveedorSeleccionado) {
-      alert("Selecciona un proveedor para continuar.");
-      return;
+    if (proveedorSeleccionado) {
+      localStorage.setItem("proveedorSeleccionado", proveedorSeleccionado);
+      navigate("/orden/nueva/producto", { state: { proveedorSeleccionado } });
     }
-    navigate("/orden/nueva/producto", {
-      state: { proveedorSeleccionado }
-    });
   };
 
   return (
@@ -124,22 +111,22 @@ useEffect(() => {
                 {proveedores.length === 0 && (
                   <tr>
                     <td style={{ padding: 16, textAlign: "center", color: "#888" }}>
-                      Cargando proveedores…
+                      No hay proveedores disponibles.
                     </td>
                   </tr>
                 )}
-                {proveedores.map(({ id, nombre }) => (
-                  <tr key={id} style={{ borderBottom: "1px solid #ccc" }}>
-                    <td style={{ padding: "0.75rem 1rem", fontSize: "1.05rem" }}>
+                {proveedores.map((p) => (
+                  <tr key={p.ID_USUARIO || p.EMAIL}>
+                    <td>
                       <input
                         type="radio"
                         name="proveedor"
-                        value={id}
-                        checked={proveedorSeleccionado === id}
-                        onChange={() => setProveedorSeleccionado(id)}
+                        value={p.EMAIL}
+                        checked={proveedorSeleccionado === p.EMAIL}
+                        onChange={() => setProveedorSeleccionado(p.EMAIL)}
                         style={{ marginRight: 8 }}
                       />
-                      {nombre}
+                      {p.NOMBRE} ({p.EMAIL}) - <span style={{color: "#888"}}>{p.ROL}</span>
                     </td>
                   </tr>
                 ))}

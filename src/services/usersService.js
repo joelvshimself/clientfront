@@ -8,12 +8,15 @@ const getToken = () => {
 export const getUsuarios = async () => {
   const response = await fetch(`${API_URL}/usuarios`, {
     method: "GET",
-    credentials: "include", // THIS ensures cookies (with the token) are sent
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
     }
   });
-  return response.ok ? await response.json() : [];
+  if (!response.ok) {
+    throw new Error("No autorizado o error en la petición");
+  }
+  return await response.json();
 };
 
 export const createUsuario = async (usuario) => {

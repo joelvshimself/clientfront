@@ -1,5 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
   Title,
@@ -24,22 +24,21 @@ export default function SeleccionProducto() {
   const [fechaCaducidad, setFechaCaducidad] = useState("");
 
   const handleContinuar = () => {
-    if (!producto || !cantidad || !precio || !fechaCaducidad) {
-      alert("Por favor completa todos los campos.");
-      return;
-    }
-
-    navigate("/orden/nueva/confirmar", {
-      state: {
-        proveedorSeleccionado,
-        productoSeleccionado: {
-          producto,
-          cantidad,
-          precio,
-          fechaCaducidad
+    if (producto && cantidad && precio && fechaCaducidad) {
+      const productoSeleccionado = {
+        producto: producto.toLowerCase(),
+        cantidad,
+        precio,
+        fechaCaducidad
+      };
+      localStorage.setItem("productoSeleccionado", JSON.stringify(productoSeleccionado));
+      navigate("/orden/nueva/confirmar", {
+        state: {
+          proveedorSeleccionado,
+          productoSeleccionado
         }
-      }
-    });
+      });
+    }
   };
 
   return (
