@@ -74,12 +74,7 @@ export default function Layout({ children }) {
               text="Dashboard"
               data-route="/home"
             />
-            <SideNavigationItem
-              key="/producto"
-              icon="retail-store"
-              text="Producto"
-              data-route="/producto"
-            />
+          
             <SideNavigationItem
               key="/usuarios"
               icon="employee"

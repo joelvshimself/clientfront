@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // COMPONENTES
 import Login from "./components/login";
-import Producto from "./components/producto";
 import TwoFAScreen from "./components/TwoFAScreen";
 
 // PÁGINAS
@@ -28,7 +27,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/producto" element={<Producto />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/orden" element={<Ordenes />} />
         <Route path="/venta" element={<Venta />} />
