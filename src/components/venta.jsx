@@ -55,6 +55,25 @@ export default function Venta() {
     }
   };
 
+  function agruparProductos(productos) {
+    const agrupados = {};
+    productos.forEach(p => {
+      const nombre = p.nombre || p.producto;
+      if (!agrupados[nombre]) {
+        agrupados[nombre] = {
+          nombre,
+          cantidad: Number(p.cantidad) || 1,
+          precio: Number(p.costo_unitario || p.precio) || 0,
+          total: (Number(p.cantidad) || 1) * (Number(p.costo_unitario || p.precio) || 0)
+        };
+      } else {
+        agrupados[nombre].cantidad += Number(p.cantidad) || 1;
+        agrupados[nombre].total += (Number(p.cantidad) || 1) * (Number(p.costo_unitario || p.precio) || 0);
+      }
+    });
+    return Object.values(agrupados);
+  }
+
   return (
     <Layout>
       <FlexBox direction="Column" style={{ flexGrow: 1, marginTop: "2rem", padding: "2rem", backgroundColor: "#fafafa" }}>
@@ -113,7 +132,9 @@ export default function Venta() {
                         else setVentasSeleccionadas(ventasSeleccionadas.filter(id => id !== venta.id));
                       }}
                     />
-                    <span style={{ marginLeft: "1rem" }}><b>Venta {i + 1}</b></span>
+                    <span style={{ marginLeft: "1rem" }}>
+                      <b>Venta #{venta.id}</b>
+                    </span>
                   </div>
                   <Button design="Transparent" onClick={() => setDetalleVenta(venta)}>Ver Detalles</Button>
                 </FlexBox>
@@ -132,11 +153,12 @@ export default function Venta() {
             preventOutsideClose
           >
             <FlexBox direction="Column" style={{ padding: "1rem" }}>
-              {detalleVenta.productos?.map((p, idx) => (
+              {agruparProductos(detalleVenta.productos || []).map((p, idx) => (
                 <div key={idx} style={{ marginBottom: "0.75rem", fontSize: "0.95rem" }}>
-                  <strong>Producto:</strong> {p.nombre || p.producto} <br />
+                  <strong>Producto:</strong> {p.nombre} <br />
                   <strong>Cantidad:</strong> {p.cantidad} <br />
-                  <strong>Precio unitario:</strong> ${p.costo_unitario || p.precio}
+                  <strong>Precio unitario:</strong> ${p.precio} <br />
+                  <strong>Total producto:</strong> ${p.total}
                 </div>
               ))}
               <div style={{ fontWeight: "bold", marginTop: "1rem" }}>
