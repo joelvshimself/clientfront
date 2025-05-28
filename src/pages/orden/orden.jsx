@@ -185,12 +185,21 @@ export default function Ordenes() {
           borderRadius: "12px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           border: "1px solid #e0e0e0",
-          maxWidth: "1200px",
-          width: "100%"
+          width: "100%",
+          alignSelf: "stretch" // Asegura que el Card use todo el ancho del FlexBox
         }}>
-          <Title level="H5" style={{ marginBottom: "1rem" }}>Base de Datos de Órdenes</Title>
-          <div style={{ overflowX: "auto", borderRadius: "8px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI", fontSize: "15px" }}>
+          <Title level="H5" style={{ marginBottom: "1rem", padding: "0.5rem 0 0.5rem 1.5rem" }}>Base de Datos de Órdenes</Title>
+          <div style={{
+            overflowX: "auto",
+            borderRadius: "8px",
+            width: "100%" // Asegura que el div ocupe todo el ancho
+          }}>
+            <table style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontFamily: "Segoe UI",
+              fontSize: "15px"
+            }}>
               <thead style={{ backgroundColor: "#f9f9f9", position: "sticky", top: 0 }}>
                 <tr>
                   <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}></th>
