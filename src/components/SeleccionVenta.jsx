@@ -11,6 +11,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 
+const preciosBase = {
+  arrachera: 320,
+  ribeye: 450,
+  tomahawk: 250,
+  diezmillo: 180
+};
+
 export default function SeleccionVenta() {
   const navigate = useNavigate();
   const [producto, setProducto] = useState("Arrachera");
@@ -23,9 +30,12 @@ export default function SeleccionVenta() {
       return;
     }
 
+    const precio = preciosBase[producto.toLowerCase()] || 0;
+
     const nuevoProducto = {
       producto: producto.toLowerCase(),
-      cantidad: parseInt(cantidad)
+      cantidad: parseInt(cantidad),
+      precio
     };
 
     setTablaProductos([...tablaProductos, nuevoProducto]);
@@ -65,13 +75,8 @@ export default function SeleccionVenta() {
 
         <FlexBox
           direction="Row"
-          style={{
-            width: "80%",
-            justifyContent: "space-around",
-            marginBottom: "2rem"
-          }}
+          style={{ width: "80%", justifyContent: "space-around", marginBottom: "2rem" }}
         >
-          {/* Tabla de productos agregados */}
           <table
             style={{
               borderCollapse: "collapse",
@@ -79,62 +84,27 @@ export default function SeleccionVenta() {
               backgroundColor: "#F5FAFF",
               borderRadius: "12px",
               overflow: "hidden",
-              color: "#1a1a1a" // <- texto visible
+              color: "#000"
             }}
           >
             <thead>
               <tr style={{ backgroundColor: "#D9EFFF" }}>
-                <th
-                  style={{
-                    border: "1px solid #A9CCE3",
-                    padding: "12px",
-                    textAlign: "center",
-                    color: "#0B3C5D"
-                  }}
-                >
-                  Producto
-                </th>
-                <th
-                  style={{
-                    border: "1px solid #A9CCE3",
-                    padding: "12px",
-                    textAlign: "center",
-                    color: "#0B3C5D"
-                  }}
-                >
-                  Cantidad
-                </th>
+                <th style={thStyle}>Producto</th>
+                <th style={thStyle}>Cantidad</th>
+                <th style={thStyle}>Precio</th>
               </tr>
             </thead>
             <tbody>
               {tablaProductos.map((item, idx) => (
                 <tr key={idx}>
-                  <td
-                    style={{
-                      border: "1px solid #A9CCE3",
-                      padding: "12px",
-                      textAlign: "center",
-                      color: "#1a1a1a"
-                    }}
-                  >
-                    {item.producto}
-                  </td>
-                  <td
-                    style={{
-                      border: "1px solid #A9CCE3",
-                      padding: "12px",
-                      textAlign: "center",
-                      color: "#1a1a1a"
-                    }}
-                  >
-                    {item.cantidad}
-                  </td>
+                  <td style={tdStyle}>{item.producto}</td>
+                  <td style={tdStyle}>{item.cantidad}</td>
+                  <td style={tdStyle}>${item.precio}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {/* Formulario de selección */}
           <FlexBox
             direction="Column"
             style={{
@@ -148,9 +118,7 @@ export default function SeleccionVenta() {
             <Select
               style={{ height: "48px", marginBottom: "1rem" }}
               value={producto}
-              onChange={(e) =>
-                setProducto(e.target.selectedOption.textContent)
-              }
+              onChange={(e) => setProducto(e.target.selectedOption.textContent)}
             >
               <Option selected>Arrachera</Option>
               <Option>Ribeye</Option>
@@ -182,3 +150,17 @@ export default function SeleccionVenta() {
     </Layout>
   );
 }
+
+const thStyle = {
+  border: "1px solid #A9CCE3",
+  padding: "12px",
+  textAlign: "center",
+  color: "#0B3C5D"
+};
+
+const tdStyle = {
+  border: "1px solid #A9CCE3",
+  padding: "12px",
+  textAlign: "center",
+  color: "#000"
+};
