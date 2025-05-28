@@ -13,33 +13,37 @@ import { venderProductos } from "../services/ventaService";
 export default function ConfirmarVenta() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const productos = location.state?.productos || [];
+  const fecha_emision = location.state?.fecha_emision;
 
-  const hoy = new Date();
-  const yyyy = hoy.getFullYear();
-  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
-  const dd = String(hoy.getDate()).padStart(2, "0");
-  const fecha_emision = `${yyyy}-${mm}-${dd}`;
-
-  const total = productos.reduce((acc, p) => acc + parseFloat(p.cantidad || 0), 0);
+  const costoTotal = productos.reduce(
+    (acc, p) => acc + (parseFloat(p.precio || 0) * parseInt(p.cantidad || 0)),
+    0
+  );
 
   const handleConfirmar = async () => {
-    try {
-      const payload = {
-        fecha_emision,
-        productos: productos.map(p => ({
-          producto: p.producto.toLowerCase(),
-          cantidad: Number(p.cantidad)
-        }))
-      };
+    const payload = {
+      fecha_emision,
+      productos: productos.map(p => ({
+        producto: p.producto,
+        cantidad: parseInt(p.cantidad)
+      }))
+    };
 
-      console.log("Enviando payload de venta:", payload);
+    if (!fecha_emision || !productos.length) {
+      alert("Faltan datos para crear la venta.");
+      return;
+    }
+
+    console.log("🟡 Enviando payload de venta: ", payload);
+
+    try {
       const response = await venderProductos(payload);
-      alert(`✅ Venta creada con ID: ${response.id_venta}`);
+      alert(`✅ Venta creada con éxito. ID: ${response.id_venta}`);
       navigate("/venta");
     } catch (error) {
-      alert("Error al confirmar la venta.");
-      console.error(error);
+      alert("❌ Error al crear venta");
     }
   };
 
@@ -48,7 +52,7 @@ export default function ConfirmarVenta() {
       <FlexBox
         direction="Column"
         alignItems="Center"
-        style={{ flexGrow: 1, padding: "6rem 2rem 2rem 2rem", backgroundColor: "#f0f7ff" }}
+        style={{ flexGrow: 1, padding: "6rem 2rem", backgroundColor: "#f0f7ff" }}
       >
         <Title level="H3" style={{ fontSize: "2rem", marginBottom: "1.5rem" }}>
           Confirma la venta
@@ -57,11 +61,11 @@ export default function ConfirmarVenta() {
         <Card
           style={{
             width: "100%",
-            maxWidth: "900px",
+            maxWidth: "800px",
             padding: "2rem",
-            backgroundColor: "white",
+            backgroundColor: "#ffffff",
             borderRadius: "16px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"
+            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)"
           }}
         >
           <table
@@ -90,16 +94,17 @@ export default function ConfirmarVenta() {
           <div
             style={{
               fontWeight: "bold",
-              fontSize: "1rem",
+              fontSize: "1.2rem",
               marginTop: "1.5rem",
-              padding: "0.5rem 1rem",
-              backgroundColor: "#f8f8f8",
-              display: "inline-block",
-              borderRadius: "8px",
-              boxShadow: "inset 0 0 2px rgba(0,0,0,0.1)"
+              padding: "0.75rem 1rem",
+              backgroundColor: "#fff8e1",
+              borderRadius: "12px",
+              border: "2px dashed orange",
+              display: "flex",
+              justifyContent: "flex-end"
             }}
           >
-            Total productos: {total}
+            Total: ${costoTotal.toFixed(2)}
           </div>
         </Card>
 
@@ -132,6 +137,6 @@ const headerCellStyle = {
 
 const bodyCellStyle = {
   border: "2px solid #000",
-  padding: "12px",
+  padding: "10px",
   fontSize: "1rem"
 };

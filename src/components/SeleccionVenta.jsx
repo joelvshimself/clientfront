@@ -71,13 +71,15 @@ export default function SeleccionVenta() {
             marginBottom: "2rem"
           }}
         >
+          {/* Tabla de productos agregados */}
           <table
             style={{
               borderCollapse: "collapse",
               width: "40%",
               backgroundColor: "#F5FAFF",
               borderRadius: "12px",
-              overflow: "hidden"
+              overflow: "hidden",
+              color: "#1a1a1a" // <- texto visible
             }}
           >
             <thead>
@@ -111,7 +113,8 @@ export default function SeleccionVenta() {
                     style={{
                       border: "1px solid #A9CCE3",
                       padding: "12px",
-                      textAlign: "center"
+                      textAlign: "center",
+                      color: "#1a1a1a"
                     }}
                   >
                     {item.producto}
@@ -120,7 +123,8 @@ export default function SeleccionVenta() {
                     style={{
                       border: "1px solid #A9CCE3",
                       padding: "12px",
-                      textAlign: "center"
+                      textAlign: "center",
+                      color: "#1a1a1a"
                     }}
                   >
                     {item.cantidad}
@@ -130,6 +134,7 @@ export default function SeleccionVenta() {
             </tbody>
           </table>
 
+          {/* Formulario de selección */}
           <FlexBox
             direction="Column"
             style={{
