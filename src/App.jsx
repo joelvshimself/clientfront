@@ -8,6 +8,7 @@ import TwoFAScreen from "./components/TwoFAScreen";
 // PÁGINAS
 import Home from "./pages/home";
 import Usuarios from "./pages/usuarios";
+import PerfilUsuario from "./pages/PerfilUsuario";
 
 // ORDEN
 import Ordenes from "./pages/orden/orden";
@@ -36,6 +37,7 @@ function App() {
         <Route path="/venta/nueva" element={<SeleccionVenta />} />
         <Route path="/venta/nueva/confirmar" element={<ConfirmarVenta />} />
         <Route path="/2fa" element={<TwoFAScreen />} />
+        <Route path="/profile" element={<PerfilUsuario />} />
       </Routes>
     </Router>
   );
