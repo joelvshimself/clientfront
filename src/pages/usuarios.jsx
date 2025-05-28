@@ -19,7 +19,7 @@ import {
   updateUsuario,
   deleteUsuario
 } from "../services/usersService";
-import Layout from "./Layout";
+import Layout from "../components/Layout";
 
 
 

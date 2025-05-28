@@ -6,7 +6,7 @@ import {
   FlexBox,
   Card
 } from "@ui5/webcomponents-react";
-import Layout from "../Layout";
+import Layout from "../../components/Layout";
 import { createOrden } from "../../services/ordenesService";
 
 export default function ConfirmarOrden() {

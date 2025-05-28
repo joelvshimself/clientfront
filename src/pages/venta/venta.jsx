@@ -10,7 +10,7 @@ import {
   Option
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
-import Layout from "../Layout";
+import Layout from "../../components/Layout";
 import {
   getVentas,
   venderProductos,

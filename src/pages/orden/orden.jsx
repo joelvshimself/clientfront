@@ -10,7 +10,7 @@ import {
   Select,
   Option
 } from "@ui5/webcomponents-react";
-import Layout from "../Layout";
+import Layout from "../../components/Layout";
 import { getOrdenes, createOrden, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
 
 

@@ -7,7 +7,7 @@ import {
   FlexBox,
   Card
 } from "@ui5/webcomponents-react";
-import Layout from "../Layout";
+import Layout from "../../components/Layout";
 import { venderProductos } from "../../services/ventaService";
 
 export default function ConfirmarVenta() {

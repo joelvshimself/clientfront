@@ -17,10 +17,10 @@ import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
 import { Toaster } from "react-hot-toast";
 
 import "./home.css";
-import { agregarNotificacion, mensajesNotificaciones } from "./Notificaciones";
+import { agregarNotificacion, mensajesNotificaciones } from "../components/Notificaciones";
 import { getOrdenes } from "../services/ordenesService";
 import { getInventario, getInventarioVendido } from "../services/inventarioService";
-import Layout from "./Layout";
+import Layout from "../components/Layout";
 
 
 import "@ui5/webcomponents-icons/dist/home.js";
