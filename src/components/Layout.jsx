@@ -1,10 +1,13 @@
 import {
   ShellBar,
+  ShellBarItem,
   SideNavigation,
   SideNavigationItem,
   FlexBox
 } from "@ui5/webcomponents-react";
+import logIcon from "@ui5/webcomponents-icons/dist/log.js";
 import { useNavigate, useLocation } from "react-router-dom";
+import { logout } from "../services/authService";
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -17,12 +20,22 @@ export default function Layout({ children }) {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error al hacer logout:", error);
+    }
+    localStorage.clear();
+    navigate("/login");
+  };
+
   return (
     <div style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
-      {/* ShellBar fija */}
+      {/* ShellBar fija con botón de logout visible */}
       <ShellBar
-        logo={<img src="/viba1.png" alt="ViBa" style={{ height: "40px" }} />}
-        primaryTitle="Fs"
+        logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
+        primaryTitle="Bienvenido a ViBa"
         profile={{ image: "/viba1.png" }}
         style={{
           width: "100%",
@@ -33,7 +46,13 @@ export default function Layout({ children }) {
           left: 0,
           zIndex: 1201
         }}
-      />
+      >
+        <ShellBarItem
+          icon={logIcon}
+          text="Salir"
+          onClick={handleLogout}
+        />
+      </ShellBar>
 
       {/* Contenedor general: barra lateral + contenido */}
       <FlexBox direction="Row" style={{ height: "100%", marginTop: "3.5rem" }}>

@@ -9,7 +9,7 @@ import {
   Card
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
-import Layout from "./Layout";
+import Layout from "../Layout";
 
 const preciosBase = {
   arrachera: 320,

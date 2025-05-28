@@ -6,8 +6,8 @@ import {
   Title,
   Button
 } from "@ui5/webcomponents-react";
-import { getUsuarios } from "../services/usersService";
-import Layout from "./Layout";
+import { getUsuarios } from "../../services/usersService";
+import Layout from "../Layout";
 
 export default function SeleccionProveedor() {
   const navigate = useNavigate();

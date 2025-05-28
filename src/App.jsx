@@ -4,14 +4,14 @@ import Login from "./components/login";
 import Home from "./components/home";
 import Producto from "./components/producto";
 import Usuarios from "./components/usuarios";
-import Ordenes from "./components/orden";
-import Venta from "./components/venta";
+import Ordenes from "./components/orden/orden";
+import Venta from "./components/venta/venta";
 import TwoFAScreen from "./components/TwoFAScreen";
-import SeleccionProveedor from "./components/SeleccionProveedor";
-import SeleccionProducto from "./components/SeleccionProducto";
-import ConfirmarOrden from "./components/ConfirmarOrden";
-import SeleccionVenta from "./components/SeleccionVenta";
-import ConfirmarVenta from "./components/ConfirmarVenta";
+import SeleccionProveedor from "./components/orden/SeleccionProveedor";
+import SeleccionProducto from "./components/orden/SeleccionProducto";
+import ConfirmarOrden from "./components/orden/ConfirmarOrden";
+import SeleccionVenta from "./components/venta/SeleccionVenta";
+import ConfirmarVenta from "./components/venta/ConfirmarVenta";
 
 function App() {
   return (

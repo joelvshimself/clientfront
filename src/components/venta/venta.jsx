@@ -10,13 +10,13 @@ import {
   Option
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
-import Layout from "./Layout";
+import Layout from "../Layout";
 import {
   getVentas,
   venderProductos,
   eliminarVenta,
   editarVenta
-} from "../services/ventaService";
+} from "../../services/ventaService";
 
 export default function Venta() {
   const navigate = useNavigate();

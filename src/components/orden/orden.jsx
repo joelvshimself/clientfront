@@ -10,14 +10,9 @@ import {
   Select,
   Option
 } from "@ui5/webcomponents-react";
-import Layout from "./Layout";
-import {
-  getOrdenes,
-  createOrden,
-  deleteOrden,
-  updateOrden,
-  completarOrden
-} from "../services/ordenesService";
+import Layout from "../Layout";
+import { getOrdenes, createOrden, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
+
 
 export default function Ordenes() {
   const navigate = useNavigate();

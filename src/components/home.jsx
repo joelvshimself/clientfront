@@ -22,6 +22,7 @@ import { getOrdenes } from "../services/ordenesService";
 import { getInventario, getInventarioVendido } from "../services/inventarioService";
 import Layout from "./Layout";
 
+
 import "@ui5/webcomponents-icons/dist/home.js";
 import "@ui5/webcomponents-icons/dist/retail-store.js";
 import "@ui5/webcomponents-icons/dist/navigation-right-arrow.js";

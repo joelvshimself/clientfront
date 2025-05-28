@@ -6,8 +6,8 @@ import {
   FlexBox,
   Card
 } from "@ui5/webcomponents-react";
-import Layout from "./Layout";
-import { createOrden } from "../services/ordenesService";
+import Layout from "../Layout";
+import { createOrden } from "../../services/ordenesService";
 
 export default function ConfirmarOrden() {
   const navigate = useNavigate();
