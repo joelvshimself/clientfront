@@ -1,17 +1,25 @@
 // App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+// COMPONENTES
 import Login from "./components/login";
-import Home from "./components/home";
 import Producto from "./components/producto";
-import Usuarios from "./components/usuarios";
-import Ordenes from "./components/orden";
-import Venta from "./components/venta";
 import TwoFAScreen from "./components/TwoFAScreen";
-import SeleccionProveedor from "./components/SeleccionProveedor";
-import SeleccionProducto from "./components/SeleccionProducto";
-import ConfirmarOrden from "./components/ConfirmarOrden";
-import SeleccionVenta from "./components/SeleccionVenta";
-import ConfirmarVenta from "./components/ConfirmarVenta";
+
+// PÁGINAS
+import Home from "./pages/home";
+import Usuarios from "./pages/usuarios";
+
+// ORDEN
+import Ordenes from "./pages/orden/orden";
+import SeleccionProveedor from "./pages/orden/SeleccionProveedor";
+import SeleccionProducto from "./pages/orden/SeleccionProducto";
+import ConfirmarOrden from "./pages/orden/ConfirmarOrden";
+
+// VENTA
+import Venta from "./pages/venta/venta";
+import SeleccionVenta from "./pages/venta/SeleccionVenta";
+import ConfirmarVenta from "./pages/venta/ConfirmarVenta";
 
 function App() {
   return (
