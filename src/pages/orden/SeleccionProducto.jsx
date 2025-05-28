@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Button,
   Title,
-  FlexBox,
-  Card,
-  Input,
   Select,
-  Option
+  Option,
+  Input,
+  Button,
+  FlexBox,
+  Card
 } from "@ui5/webcomponents-react";
-import Layout from "../../components/Layout"; 
+import Layout from "../../components/Layout";
+
+const productosBase = ["Arrachera", "Ribeye", "Tomahawk", "Diezmillo"];
 
 export default function SeleccionProducto() {
   const navigate = useNavigate();
@@ -20,25 +22,39 @@ export default function SeleccionProducto() {
   const [cantidad, setCantidad] = useState("");
   const [precio, setPrecio] = useState("");
   const [fechaCaducidad, setFechaCaducidad] = useState("");
+  const [tablaProductos, setTablaProductos] = useState([]);
+
+  const handleAgregarProducto = () => {
+    if (!producto || !cantidad || !precio || !fechaCaducidad) {
+      alert("Completa todos los campos.");
+      return;
+    }
+
+    const nuevoProducto = {
+      producto: producto.toLowerCase(),
+      cantidad: parseInt(cantidad),
+      precio: parseFloat(precio),
+      fechaCaducidad
+    };
+
+    setTablaProductos([...tablaProductos, nuevoProducto]);
+    setCantidad("");
+    setPrecio("");
+    setFechaCaducidad("");
+  };
 
   const handleContinuar = () => {
-    if (producto && cantidad && precio && fechaCaducidad) {
-      const productoSeleccionado = {
-        producto: producto.toLowerCase(),
-        cantidad,
-        precio,
-        fechaCaducidad
-      };
-      localStorage.setItem("productoSeleccionado", JSON.stringify(productoSeleccionado));
-      navigate("/orden/nueva/confirmar", {
-        state: {
-          proveedorSeleccionado,
-          productoSeleccionado
-        }
-      });
-    } else {
-      alert("Por favor completa todos los campos.");
+    if (tablaProductos.length === 0) {
+      alert("Agrega al menos un producto");
+      return;
     }
+    localStorage.setItem("productoSeleccionado", JSON.stringify(tablaProductos));
+    navigate("/orden/nueva/confirmar", {
+      state: {
+        proveedorSeleccionado,
+        productoSeleccionado: tablaProductos
+      }
+    });
   };
 
   return (
@@ -46,84 +62,118 @@ export default function SeleccionProducto() {
       <FlexBox
         direction="Column"
         alignItems="Center"
-        style={{
-          flexGrow: 1,
-          padding: "5rem 2rem",
-          backgroundColor: "#f0f7ff"
-        }}
+        style={{ flexGrow: 1, padding: "5rem 2rem", backgroundColor: "#f0f7ff" }}
       >
         <Title level="H3" style={{ fontSize: "1.8rem", marginBottom: "2rem" }}>
-          Selecciona un producto
+          Selecciona los productos
         </Title>
 
-        <Card
-          style={{
-            width: "100%",
-            maxWidth: "420px",
-            padding: "2rem",
-            backgroundColor: "#f7faff",
-            border: "1px solid #dde3ea",
-            borderRadius: "16px",
-            boxShadow: "0px 2px 8px rgba(0,0,0,0.1)"
-          }}
+        <FlexBox
+          direction="Row"
+          style={{ width: "80%", justifyContent: "space-around", marginBottom: "2rem" }}
         >
-          <FlexBox direction="Column" style={{ gap: "1.2rem", alignItems: "center" }}>
+          <table
+            style={{
+              borderCollapse: "collapse",
+              width: "45%",
+              backgroundColor: "#F5FAFF",
+              borderRadius: "12px",
+              overflow: "hidden",
+              color: "#000"
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#D9EFFF" }}>
+                <th style={thStyle}>Producto</th>
+                <th style={thStyle}>Cantidad</th>
+                <th style={thStyle}>Precio</th>
+                <th style={thStyle}>Fecha de caducidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tablaProductos.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={tdStyle}>{item.producto}</td>
+                  <td style={tdStyle}>{item.cantidad}</td>
+                  <td style={tdStyle}>${item.precio}</td>
+                  <td style={tdStyle}>{item.fechaCaducidad}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <FlexBox
+            direction="Column"
+            style={{
+              width: "45%",
+              backgroundColor: "white",
+              padding: "2rem",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+            }}
+          >
             <Select
-              style={{ height: "60px", width: "100%", fontSize: "1rem", borderRadius: "10px" }}
+              style={{ height: "48px", marginBottom: "1rem" }}
               value={producto}
               onChange={(e) => setProducto(e.target.selectedOption.textContent)}
             >
-              <Option selected>Arrachera</Option>
-              <Option>Ribeye</Option>
-              <Option>Tomahawk</Option>
-              <Option>Diezmillo</Option>
+              {productosBase.map((prod) => (
+                <Option key={prod} selected={prod === producto}>{prod}</Option>
+              ))}
             </Select>
 
-            <FlexBox direction="Row" style={{ width: "100%", gap: "1rem" }}>
-              <Input
-                placeholder="Cantidad"
-                style={{ height: "60px", flex: 1, fontSize: "1rem", borderRadius: "10px" }}
-                value={cantidad}
-                onInput={(e) => setCantidad(e.target.value)}
-              />
-              <Input
-                placeholder="Precio"
-                style={{ height: "60px", flex: 1, fontSize: "1rem", borderRadius: "10px" }}
-                value={precio}
-                onInput={(e) => setPrecio(e.target.value)}
-              />
-            </FlexBox>
+            <Input
+              placeholder="Cantidad"
+              value={cantidad}
+              type="number"
+              onInput={(e) => setCantidad(e.target.value)}
+              style={{ marginBottom: "1rem" }}
+            />
+
+            <Input
+              placeholder="Precio"
+              value={precio}
+              type="number"
+              onInput={(e) => setPrecio(e.target.value)}
+              style={{ marginBottom: "1rem" }}
+            />
 
             <Input
               placeholder="Fecha de caducidad"
-              style={{ height: "60px", width: "100%", fontSize: "1rem", borderRadius: "10px" }}
               value={fechaCaducidad}
+              type="date"
               onInput={(e) => setFechaCaducidad(e.target.value)}
+              style={{ marginBottom: "1rem" }}
             />
+
+            <Button design="Emphasized" onClick={handleAgregarProducto}>
+              Agregar producto
+            </Button>
           </FlexBox>
-        </Card>
+        </FlexBox>
 
         <Button
-          onClick={handleContinuar}
           design="Emphasized"
-          style={{
-            marginTop: "2rem",
-            minWidth: "160px",
-            height: "50px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            borderRadius: "10px",
-            color: "#fff",
-            backgroundColor: "#0070f3",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "0 1rem"
-          }}
+          style={{ marginTop: "1rem", padding: "0.75rem 2rem" }}
+          onClick={handleContinuar}
         >
-          <span style={{ lineHeight: "1", fontWeight: "600" }}>Continuar</span>
+          Continuar
         </Button>
       </FlexBox>
     </Layout>
   );
 }
+
+const thStyle = {
+  border: "1px solid #A9CCE3",
+  padding: "12px",
+  textAlign: "center",
+  color: "#0B3C5D"
+};
+
+const tdStyle = {
+  border: "1px solid #A9CCE3",
+  padding: "12px",
+  textAlign: "center",
+  color: "#000"
+};

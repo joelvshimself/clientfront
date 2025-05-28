@@ -21,7 +21,12 @@ export default function ConfirmarOrden() {
     location.state?.productoSeleccionado ||
     JSON.parse(localStorage.getItem("productoSeleccionado"));
 
-  const productos = productoSeleccionado ? [productoSeleccionado] : [];
+  // Permitir arreglo de productos
+  const productos = Array.isArray(productoSeleccionado)
+    ? productoSeleccionado
+    : productoSeleccionado
+    ? [productoSeleccionado]
+    : [];
 
   const costoTotal = productos.reduce(
     (acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0),
@@ -45,7 +50,8 @@ export default function ConfirmarOrden() {
       productos: productos.map((p) => ({
         producto: p.producto,
         cantidad: Number(p.cantidad),
-        precio: Number(p.precio)
+        precio: Number(p.precio),
+        fechaCaducidad: p.fechaCaducidad
       }))
     };
 
