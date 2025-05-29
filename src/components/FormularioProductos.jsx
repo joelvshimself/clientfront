@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   FlexBox,
   Select,
@@ -56,6 +57,9 @@ export default function FormularioProductos({
     setFechaCaducidad("");
   };
 
+  const thStyle = { padding: "10px", background: "#D9EFFF", fontWeight: 600 };
+  const tdStyle = { padding: "10px", background: "#F5FAFF" };
+
   return (
     <>
       <FlexBox
@@ -83,7 +87,7 @@ export default function FormularioProductos({
           </thead>
           <tbody>
             {productos.map((item, idx) => (
-              <tr key={idx}>
+              <tr key={item.producto + "-" + item.cantidad + "-" + (item.fechaCaducidad || idx)}>
                 <td style={tdStyle}>{item.producto}</td>
                 <td style={tdStyle}>{item.cantidad}</td>
                 <td style={tdStyle}>${item.precio}</td>
@@ -98,21 +102,21 @@ export default function FormularioProductos({
           style={{
             width: "50%",
             padding: "2rem",
-            backgroundColor: "#fff",
-            borderRadius: "12px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem"
           }}
         >
-          <FlexBox direction="Column" style={{ gap: "1rem" }}>
+          <FlexBox direction="Column" gap="1rem">
             <Select
-              style={{ width: "100%", height: "48px" }}
               value={producto}
-              onChange={(e) =>
-                setProducto(e.target.selectedOption.textContent)
-              }
+              onChange={(e) => setProducto(e.target.value)}
+              style={{ marginBottom: "1rem" }}
             >
-              {opciones.map((opt) => (
-                <Option key={opt}>{opt}</Option>
+              {opciones.map((op) => (
+                <Option key={op} value={op}>
+                  {op}
+                </Option>
               ))}
             </Select>
             <Input
@@ -131,9 +135,7 @@ export default function FormularioProductos({
             ) : (
               <Title level="H6">
                 Precio unitario: $
-                {(
-                  preciosBase[producto.toLowerCase()] || 0
-                ).toFixed(2)}
+                {(preciosBase[producto.toLowerCase()] || 0).toFixed(2)}
               </Title>
             )}
             {conFecha && (
@@ -160,15 +162,20 @@ export default function FormularioProductos({
   );
 }
 
-const thStyle = {
-  border: "1px solid #A9CCE3",
-  padding: "12px",
-  textAlign: "center",
-  color: "#0B3C5D"
-};
-const tdStyle = {
-  border: "1px solid #A9CCE3",
-  padding: "12px",
-  textAlign: "center",
-  color: "#000"
+// --- PropTypes para validación de props ---
+FormularioProductos.propTypes = {
+  productos: PropTypes.arrayOf(
+    PropTypes.shape({
+      producto: PropTypes.string.isRequired,
+      cantidad: PropTypes.number.isRequired,
+      precio: PropTypes.number,
+      fechaCaducidad: PropTypes.string
+    })
+  ).isRequired,
+  opciones: PropTypes.arrayOf(PropTypes.string).isRequired,
+  preciosBase: PropTypes.object,
+  conPrecioManual: PropTypes.bool,
+  conFecha: PropTypes.bool,
+  onAgregar: PropTypes.func.isRequired,
+  onContinuar: PropTypes.func.isRequired
 };

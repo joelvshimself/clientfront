@@ -183,6 +183,12 @@ function OrdenSelect({ value, onChange, resetOthers }) {
   );
 }
 
+OrdenSelect.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  resetOthers: PropTypes.func.isRequired,
+};
+
 // --- COMPONENTE PRINCIPAL ---
 
 export default function Usuarios() {
