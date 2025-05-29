@@ -60,8 +60,8 @@ function clearAllSortsExceptFactory(setters, setter) {
 
 // Refactor: función de comparación para cada campo
 function compareByField(a, b, field, type = "string", order = "asc") {
-  let valA = a?.[field]; // Usar optional chaining aquí
-  let valB = b?.[field]; // Usar optional chaining aquí
+  let valA = a?.[field]; 
+  let valB = b?.[field]; 
   if (type === "date") {
     valA = new Date(valA);
     valB = new Date(valB);
@@ -392,14 +392,51 @@ export default function Ordenes() {
         >
           {ordenEditar && (
             <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-              <Input placeholder="Estado" value={ordenEditar.estado} onInput={(e) => setOrdenEditar({ ...ordenEditar, estado: e.target.value })} />
-              <Input placeholder="Fecha Emisión" value={ordenEditar.fecha_emision} onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_emision: e.target.value })} />
-              <Input placeholder="Recepción" value={ordenEditar.fecha_recepcion} onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_recepcion: e.target.value })} />
-              <Input placeholder="Recepción Estimada" value={ordenEditar.fecha_estimada} onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_estimada: e.target.value })} />
-              <Input placeholder="Subtotal" value={ordenEditar.subtotal} onInput={(e) => setOrdenEditar({ ...ordenEditar, subtotal: e.target.value })} />
-              <Input placeholder="Costo Compra" value={ordenEditar.costo} onInput={(e) => setOrdenEditar({ ...ordenEditar, costo: e.target.value })} />
-              <Input placeholder="ID Usuario Solicita" value={ordenEditar.usuario_solicita} onInput={(e) => setOrdenEditar({ ...ordenEditar, usuario_solicita: e.target.value })} />
-              <Input placeholder="ID Usuario Provee" value={ordenEditar.usuario_provee} onInput={(e) => setOrdenEditar({ ...ordenEditar, usuario_provee: e.target.value })} />
+              <Input
+                placeholder="ID Orden"
+                value={ordenEditar.id}
+                disabled
+              />
+              <Input
+                placeholder="Fecha Emisión"
+                value={ordenEditar.fecha_emision}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_emision: e.target.value })}
+              />
+              <Input
+                placeholder="Estado"
+                value={ordenEditar.estado}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, estado: e.target.value })}
+              />
+              <Input
+                placeholder="Recepción"
+                value={ordenEditar.fecha_recepcion}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_recepcion: e.target.value })}
+              />
+              <Input
+                placeholder="Recepción Estimada"
+                value={ordenEditar.fecha_estimada}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, fecha_estimada: e.target.value })}
+              />
+              <Input
+                placeholder="Subtotal"
+                value={ordenEditar.subtotal}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, subtotal: e.target.value })}
+              />
+              <Input
+                placeholder="Costo Compra"
+                value={ordenEditar.costo}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, costo: e.target.value })}
+              />
+              <Input
+                placeholder="Solicitante"
+                value={ordenEditar.usuario_solicita}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, usuario_solicita: e.target.value })}
+              />
+              <Input
+                placeholder="Proveedor"
+                value={ordenEditar.usuario_provee}
+                onInput={(e) => setOrdenEditar({ ...ordenEditar, usuario_provee: e.target.value })}
+              />
             </FlexBox>
           )}
         </Dialog>
