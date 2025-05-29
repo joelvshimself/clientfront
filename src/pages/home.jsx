@@ -7,7 +7,8 @@ import {
   FlexBox,
   Button,
   Popover,
-  Card
+  Card,
+  Icon
 } from "@ui5/webcomponents-react";
 import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
 import { Toaster } from "react-hot-toast";
@@ -46,6 +47,35 @@ function getChartConfig({ title, yAxisTitle = "Valor", dataLabel = true, xAxisTi
     dataLabel: { visible: dataLabel }
   };
 }
+
+// Sparkline config para KPIs
+const sparkConfig = {
+  legend: { visible: false },
+  xAxis: {
+    visible: false,
+    title: { visible: false },
+    label: { visible: false },
+    grid: { visible: false },
+    line: { visible: false },    // oculta la línea del eje X
+    tick: { visible: false }     // oculta las marcas del eje X
+  },
+  yAxis: {
+    visible: false,
+    title: { visible: false },
+    label: { visible: false },
+    grid: { visible: false },
+    line: { visible: false },    // oculta la línea del eje Y
+    tick: { visible: false }     // oculta las marcas del eje Y
+  },
+  tooltip: { visible: false },
+  dataLabel: { visible: false },
+  grid: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  }
+};
 
 const drawerWidth = 240;
 
@@ -191,68 +221,145 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
+  // KPIs para Costos Compra últimos 36 meses
+  const totalCost = costChartData.reduce((acc, d) => acc + d.totalCost, 0);
+  const avgCost = costChartData.length ? Math.round(totalCost / costChartData.length) : 0;
+  const maxMonth = costChartData.reduce((max, d) => d.totalCost > max.totalCost ? d : max, { totalCost: 0 });
+  const minMonth = costChartData.reduce((min, d) => d.totalCost < min.totalCost ? d : min, { totalCost: Infinity });
+
+  // Comparativa con el año anterior
+  const last12 = costChartData.slice(-12);
+  const prev12 = costChartData.slice(-24, -12);
+  const last12Sum = last12.reduce((acc, d) => acc + d.totalCost, 0);
+  const prev12Sum = prev12.reduce((acc, d) => acc + d.totalCost, 0);
+  const diff = last12Sum - prev12Sum;
+  const trend = diff > 0 ? "↑" : diff < 0 ? "↓" : "-";
+  const trendColor = diff > 0 ? "#d32f2f" : diff < 0 ? "#388e3c" : "#888";
+
+  // Estilos reutilizables para KPI y secciones
+  const kpiCardStyle = {
+    minWidth: 140,
+    padding: "1rem 1.2rem",      // un poco más de espacio
+    background: "#fff",
+    borderRadius: 8,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 8,                      // más separación entre icono/texto
+    boxShadow: "0 1px 4px rgba(0,0,0,0.04)"
+  };
+  const valueStyle = { fontSize: 22, fontWeight: 700, color: "#1976d2" };
+  const sectionCard = {
+    borderLeft: "4px solid var(--sapGroup_2)",
+    padding: "1rem",
+    marginBottom: "1.5rem",
+    background: "#fff",
+    borderRadius: 10
+  };
+
+  // KPIs para Órdenes últimos 6 meses
+  const totalOrders = ordenesChartData.reduce((acc, d) => acc + d.total, 0);
+  const maxOrderMonth = ordenesChartData.reduce((max, d) => d.total > max.total ? d : max, { total: 0 });
+  const minOrderMonth = ordenesChartData.reduce((min, d) => d.total < min.total ? d : min, { total: Infinity });
+  const prev6 = ordenesChartData.slice(0, ordenesChartData.length - 6);
+  const prevTotal = prev6.reduce((acc, d) => acc + d.total, 0);
+  const growth = prevTotal ? Math.round(((totalOrders - prevTotal) / prevTotal) * 100) : 0;
+
+  // Componente reutilizable para KPI pequeño
+  function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
+    return (
+      <Card style={{
+        background: "transparent",
+        boxShadow: "none",
+        border: "none",
+        padding: 0
+      }}>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+          padding: "1rem",
+          background: "transparent",
+          borderRadius: 8
+        }}>
+          <Icon name={icon} style={iconStyle} />
+          <Text>{label}</Text>
+          <Text style={valueStyle}>{value}</Text>
+          {extra}
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Layout>
-      <Title style={{ fontSize: "2.5rem" }}>¡Bienvenido a Logiviba!</Title>
+      <Title style={{ fontSize: "2.5rem" }}>
+        <Icon name="home" style={{ verticalAlign: "middle", marginRight: 8 }} />
+        ¡Bienvenido a Logiviba!
+      </Title>
       <Text style={{ fontSize: "1.1rem", color: "#666", marginBottom: "2rem" }}>
         Tu sistema de gestión logística inteligente
       </Text>
 
-      {/* Stock por producto */}
-      <Title level="H4" style={{ marginBottom: 8 }}>Stock por producto</Title>
-      <Card style={{ marginBottom: "1.5rem" }}>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th style={{ textAlign: "right" }}>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventario.map(item => (
-              <tr key={item.PRODUCTO}>
-                <td>{item.PRODUCTO}</td>
-                <td style={{ textAlign: "right" }}>{item.CANTIDAD}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-
-      {/* Ordenes últimos 6 meses y Ordenes Recientes alineados */}
+      {/* Stock y Órdenes Recientes en 25% / 75% */}
       <FlexBox direction="Row" style={{ gap: "1.5rem", marginBottom: "1.5rem" }}>
-        {/* Gráfica de órdenes */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Title level="H4" style={{ marginBottom: 8 }}>Órdenes últimos 6 meses</Title>
-          <Card style={{ height: 420, display: "flex", flexDirection: "column" }}>
-            {ordenesChartData.length === 0 ? (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span>Cargando...</span>
-              </div>
-            ) : (
-              <LineChart
-                dataset={ordenesChartData}
-                dimensions={[{ accessor: "mes", label: "Mes" }]}
-                measures={[
-                  { accessor: "total", label: "Total Órdenes", color: "#1976d2" },
-                  { accessor: "mediaMovil", label: "Media Móvil (3m)", color: "#d32f2f" }
-                ]}
-                width="100%"
-                height="350px"
-                config={getChartConfig({ title: "Órdenes últimos 6 meses", yAxisTitle: "Órdenes", xAxisTitle: "Mes" })}
-              />
-            )}
-          </Card>
-        </div>
+        {/* Stock por producto */}
+        <Card style={{ background: "transparent", boxShadow: "none", border: "none", padding: 0 }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: 8,
+            padding: "1rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)"
+          }}>
+            <Title level="H4" style={{ marginBottom: "0.75rem" }}>
+              <Icon name="retail-store" style={{ marginRight: 6 }} />
+              Stock por producto
+            </Title>
+            <div style={{ overflowX: "auto" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th style={{ textAlign: "right" }}>Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inventario.length === 0
+                    ? (
+                      <tr>
+                        <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
+                          No hay productos en inventario para mostrar
+                        </td>
+                      </tr>
+                    )
+                    : inventario.map(item => (
+                        <tr key={item.PRODUCTO}>
+                          <td>{item.PRODUCTO}</td>
+                          <td style={{ textAlign: "right" }}>{item.CANTIDAD}</td>
+                        </tr>
+                      ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
 
-        {/* Tabla de ordenes recientes */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Title level="H4" style={{ marginBottom: 8 }}>Órdenes Recientes</Title>
-          <Card style={{ height: 420, display: "flex", flexDirection: "column" }}>
-            <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* Órdenes Recientes */}
+        <Card style={{ background: "transparent", boxShadow: "none", border: "none", padding: 0 }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: 8,
+            padding: "1rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)"
+          }}>
+            <Title level="H4" style={{ marginBottom: "0.75rem" }}>
+              <Icon name="shipping-status" style={{ marginRight: 6 }} />
+              Órdenes Recientes
+            </Title>
+            <div style={{ maxHeight: 300, overflowY: "auto" }}>
               {ordenesData.length === 0 ? (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                  <span>Cargando...</span>
+                  <span>No hay órdenes recientes para mostrar</span>
                 </div>
               ) : (
                 <table className="table">
@@ -277,20 +384,203 @@ export default function Home() {
                 </table>
               )}
             </div>
+          </div>
+        </Card>
+      </FlexBox>
+
+      {/* Órdenes últimos 6 meses: gráfica grande + 3 KPIs pequeños */}
+      <FlexBox
+        direction="Row"
+        style={{
+          gap: "1.5rem",
+          marginBottom: "1.5rem",
+          alignItems: "center" // centrar verticalmente gráfico y KPI
+        }}
+      >
+        {/* 1) Gráfica completa de órdenes */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Title level="H4" style={{ marginBottom: 8 }}>
+            <Icon name="shipping-status" style={{ verticalAlign: "middle", marginRight: 6 }} />
+            Órdenes últimos 6 meses
+          </Title>
+          <Card style={{ height: 420, display: "flex", flexDirection: "column" }}>
+            {ordenesChartData.every(d => d.total === 0) ? (
+              <div style={{
+                flex: 1, display: "flex",
+                alignItems: "center", justifyContent: "center"
+              }}>
+                <span>No se registraron órdenes en este periodo</span>
+              </div>
+            ) : (
+              <LineChart
+                dataset={ordenesChartData}
+                dimensions={[{ accessor: "mes", label: "Mes" }]}
+                measures={[
+                  { accessor: "total", label: "Total Órdenes", color: "#1976d2" },
+                  { accessor: "mediaMovil", label: "Media Móvil (3m)", color: "#d32f2f" }
+                ]}
+                width="100%"
+                height="350px"
+                config={getChartConfig({
+                  title: "",
+                  yAxisTitle: "Órdenes",
+                  xAxisTitle: "Mes",
+                  dataLabel: false
+                })}
+              />
+            )}
           </Card>
         </div>
+
+        {/* 2) Tres KPIs pequeños */}
+        <FlexBox
+          direction="Column"
+          style={{
+            gap: "1rem",
+            width: 160,
+            marginTop: "2rem"
+          }}
+        >
+          <SmallKPI
+            icon="navigation-right-arrow"
+            iconStyle={{ color: "#388e3c" }}
+            label="Mes pico"
+            value={maxOrderMonth.mes}
+            valueStyle={valueStyle}
+            extra={
+              <div style={{
+                background: "#e8f5e9",
+                padding: "4px 8px",
+                borderRadius: 4,
+                color: "#388e3c",
+                fontWeight: 600
+              }}>
+                {maxOrderMonth.total}
+              </div>
+            }
+          />
+          <SmallKPI
+            icon="navigation-right-arrow"
+            iconStyle={{ color: "#d32f2f", transform: "rotate(180deg)" }}
+            label="Mes valle"
+            value={minOrderMonth.mes}
+            valueStyle={valueStyle}
+            extra={
+              <div style={{
+                background: "#ffebee",
+                padding: "4px 8px",
+                borderRadius: 4,
+                color: "#d32f2f",
+                fontWeight: 600
+              }}>
+                {minOrderMonth.total !== Infinity ? minOrderMonth.total : 0}
+              </div>
+            }
+          />
+          <SmallKPI
+            icon="shipping-status"
+            iconStyle={{ color: "#ffa000" }}
+            label="Crecimiento"
+            value={`${growth}%`}
+            valueStyle={valueStyle}
+          />
+        </FlexBox>
       </FlexBox>
 
       {/* Costos Compra últimos 36 meses */}
       <Title level="H4" style={{ marginBottom: 8 }}>Costos Compra últimos 36 meses</Title>
-      <Card>
+      <Card style={{
+        marginBottom: "1rem",
+        background: "transparent",    
+        padding: 0,                   
+        boxShadow: "none",            
+        border: "none",               
+        borderRadius: 0               
+      }}>
+        {/* KPIs */}
+        <div style={{
+          display: "flex",
+          gap: "2rem",
+          marginBottom: "1.2rem",
+          flexWrap: "wrap",
+          justifyContent: "flex-start"
+        }}>
+          <div style={{
+            minWidth: 140,
+            padding: "0.8rem 1rem",   
+            background: "#fff",        
+            borderRadius: 8            
+          }}>
+            <Text style={{ fontWeight: 600, fontSize: 16, color: "#222" }}>Total 36 meses</Text>
+            <div style={{ fontSize: 20, fontWeight: 500, color: "#388e3c" }}>${totalCost.toLocaleString()}</div>
+          </div>
+          <div style={{
+            minWidth: 140,
+            padding: "0.8rem 1rem",
+            background: "#fff",
+            borderRadius: 8
+          }}>
+            <Text style={{ fontWeight: 600, fontSize: 16, color: "#222" }}>Promedio mensual</Text>
+            <div style={{ fontSize: 20, fontWeight: 500, color: "#222" }}>${avgCost.toLocaleString()}</div>
+          </div>
+          <div style={{
+            minWidth: 140,
+            padding: "0.8rem 1rem",
+            background: "#fff",
+            borderRadius: 8
+          }}>
+            <Text style={{ fontWeight: 600, fontSize: 16, color: "#222" }}>Mes más caro</Text>
+            <div style={{ fontSize: 20, fontWeight: 500 }}>
+              {maxMonth.mes}: <span style={{ color: "#d32f2f" }}>${maxMonth.totalCost.toLocaleString()}</span>
+            </div>
+          </div>
+          <div style={{
+            minWidth: 140,
+            padding: "0.8rem 1rem",
+            background: "#fff",
+            borderRadius: 8
+          }}>
+            <Text style={{ fontWeight: 600, fontSize: 16, color: "#222" }}>Mes más barato</Text>
+            <div style={{ fontSize: 20, fontWeight: 500 }}>
+              {minMonth.mes}: <span style={{ color: "#1976d2" }}>${minMonth.totalCost.toLocaleString()}</span>
+            </div>
+          </div>
+          <div style={{
+            minWidth: 140,
+            padding: "0.8rem 1rem",
+            background: "#fff",
+            borderRadius: 8
+          }}>
+            <Text style={{ fontWeight: 600, fontSize: 16, color: "#222" }}>Vs. año anterior</Text>
+            <div style={{ fontSize: 20, fontWeight: 500, color: trendColor }}>
+              {trend} ${Math.abs(diff).toLocaleString()}
+            </div>
+          </div>
+        </div>
+        {/* Gráfico con tooltips personalizados */}
         <LineChart
           dataset={costChartData}
           dimensions={[{ accessor: "mes", label: "Mes" }]}
-          measures={[{ accessor: "totalCost", label: "Costo Compra (MXN)", color: "#388e3c" }]}
+          measures={[
+            {
+              accessor: "totalCost",
+              label: "Costo Compra (MXN)",
+              color: "#388e3c",
+              formatter: (v) => `$${v.toLocaleString()}`
+            }
+          ]}
           width="100%"
           height="300px"
-          config={getChartConfig({ title: "Costos Compra últimos 36 meses", yAxisTitle: "MXN", dataLabel: false, xAxisTitle: "Mes" })}
+          config={{
+            ...getChartConfig({ title: "Costos Compra últimos 36 meses", yAxisTitle: "MXN", dataLabel: false, xAxisTitle: "Mes" }),
+            tooltip: {
+              visible: true,
+              formatter: (params) => {
+                const { data } = params;
+                return `<b>${data.mes}</b><br/>Costo: <b>$${data.totalCost.toLocaleString()}</b>`;
+              }
+            }
+          }}
         />
       </Card>
 
@@ -299,7 +589,7 @@ export default function Home() {
       <Card style={{ marginBottom: "1.5rem" }}>
         {productosVendidos.length === 0 ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
-            <span>Cargando...</span>
+            <span>No hay productos vendidos para mostrar</span>
           </div>
         ) : (
           <PieChart
@@ -323,7 +613,7 @@ export default function Home() {
       <Card style={{ marginBottom: "1.5rem" }}>
         {forecastData.length === 0 ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
-            <span>Cargando...</span>
+            <span>No hay datos de predicción para mostrar</span>
           </div>
         ) : (
           <LineChart
