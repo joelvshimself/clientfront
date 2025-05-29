@@ -124,9 +124,8 @@ export default function Usuarios() {
     if (selected) navigate(selected);
   };
 
-  const handleInputChange = (e) => {
-    setNuevoUsuario({ ...nuevoUsuario, [e.target.name]: e.target.value });
-  };
+  // Cambia handleInputChange para usar el mismo formato que UsuarioForm espera
+  const handleInputChange = (nuevo) => setNuevoUsuario(nuevo);
 
   {/* Box Crear Usuarios */ }
   <Dialog
@@ -201,6 +200,35 @@ export default function Usuarios() {
       </FlexBox>
     )}
   </Dialog>
+
+  // Componente reutilizable para el formulario de usuario
+  function UsuarioForm({ usuario, onChange }) {
+    return (
+      <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
+        <Input
+          placeholder="Nombre"
+          name="nombre"
+          value={usuario.nombre}
+          onInput={(e) => onChange({ ...usuario, nombre: e.target.value })}
+        />
+        <Input
+          placeholder="Correo"
+          name="correo"
+          value={usuario.correo}
+          onInput={(e) => onChange({ ...usuario, correo: e.target.value })}
+        />
+        <Select
+          name="rol"
+          value={usuario.rol}
+          onChange={(e) => onChange({ ...usuario, rol: e.target.value })}
+        >
+          <Option value="Owner">Owner</Option>
+          <Option value="Proveedor">Proveedor</Option>
+          <Option value="Detallista">Detallista</Option>
+        </Select>
+      </FlexBox>
+    );
+  }
 
   return (
     <Layout>
@@ -438,25 +466,7 @@ export default function Usuarios() {
           }}>Guardar</Button>
         }
       >
-        <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-          <Input
-            placeholder="Nombre"
-            name="nombre"
-            value={nuevoUsuario.nombre}
-            onInput={handleInputChange}
-          />
-          <Input
-            placeholder="Correo"
-            name="correo"
-            value={nuevoUsuario.correo}
-            onInput={handleInputChange}
-          />
-          <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
-            <Option value="Owner">Owner</Option>
-            <Option value="Proveedor">Proveedor</Option>
-            <Option value="Detallista">Detallista</Option>
-          </Select>
-        </FlexBox>
+        <UsuarioForm usuario={nuevoUsuario} onChange={handleInputChange} />
       </Dialog>
 
       {/* MODAL: Editar Usuario */}
@@ -471,26 +481,7 @@ export default function Usuarios() {
         }
       >
         {usuarioEditar && (
-          <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-            <Input
-              placeholder="Nombre"
-              value={usuarioEditar.nombre}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
-            />
-            <Input
-              placeholder="Correo"
-              value={usuarioEditar.correo}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-            />
-            <Select
-              value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-              onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
-            >
-              <Option value="Owner">Owner</Option>
-              <Option value="Proveedor">Proveedor</Option>
-              <Option value="Detallista">Detallista</Option>
-            </Select>
-          </FlexBox>
+          <UsuarioForm usuario={usuarioEditar} onChange={setUsuarioEditar} />
         )}
       </Dialog>
     </Layout>
