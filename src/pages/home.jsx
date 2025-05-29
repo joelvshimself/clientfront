@@ -20,6 +20,7 @@ import "./home.css";
 import { agregarNotificacion, mensajesNotificaciones } from "../components/Notificaciones";
 import { getOrdenes } from "../services/ordenesService";
 import { getInventario, getInventarioVendido } from "../services/inventarioService";
+import { getForecast } from "../services/forecastService";
 import Layout from "../components/Layout";
 
 
@@ -155,6 +156,24 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
+  // Estado para el forecast
+  const [forecastData, setForecastData] = useState([]);
+  useEffect(() => {
+    getForecast()
+      .then(data => {
+        // Ordenar por fecha ascendente
+        const sorted = [...data].sort((a, b) => new Date(a.TIME) - new Date(b.TIME));
+        setForecastData(
+          sorted.slice(0, 6).map(d => ({
+            fecha: new Date(d.TIME).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }),
+            prediccion: Number(d.FORECAST),
+            max: Number(d.PREDICTION_INTERVAL_MAX),
+            min: Number(d.PREDICTION_INTERVAL_MIN)
+          }))
+        );
+      })
+      .catch(console.error);
+  }, []);
 
   const handleNavigationClick = e => {
     const route = e.detail.item.dataset.route;
@@ -311,6 +330,44 @@ export default function Home() {
             config={{
               title: { visible: true, text: "Productos más vendidos" },
               legend: { visible: true, position: "right", textStyle: { fontSize: 14 } },
+              tooltip: { visible: true },
+              dataLabel: { visible: true }
+            }}
+          />
+        )}
+      </Card>
+
+      {/* Predicción próximos 6 días */}
+      <Title level="H4" style={{ marginBottom: 8 }}>Predicción próximos 6 días</Title>
+      <Card style={{ marginBottom: "1.5rem" }}>
+        {forecastData.length === 0 ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
+            <span>Cargando...</span>
+          </div>
+        ) : (
+          <LineChart
+            dataset={forecastData}
+            dimensions={[{ accessor: "fecha", label: "Día" }]}
+            measures={[
+              { accessor: "prediccion", label: "Predicción", color: "#ffa000" },
+              { accessor: "max", label: "Máximo", color: "#388e3c" },
+              { accessor: "min", label: "Mínimo", color: "#d32f2f" }
+            ]}
+            width="100%"
+            height="300px"
+            config={{
+              title: { visible: true, text: "Predicción próximos 6 días" },
+              legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
+              xAxis: {
+                title: { visible: true, text: "Día" },
+                label: { rotation: 0, fontSize: 12 }
+              },
+              yAxis: {
+                title: { visible: true, text: "Valor" },
+                min: 0,
+                label: { fontSize: 12 },
+                grid: { visible: true }
+              },
               tooltip: { visible: true },
               dataLabel: { visible: true }
             }}
