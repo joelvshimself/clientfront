@@ -60,8 +60,8 @@ function clearAllSortsExceptFactory(setters, setter) {
 
 // Refactor: función de comparación para cada campo
 function compareByField(a, b, field, type = "string", order = "asc") {
-  let valA = a?.[field];
-  let valB = b?.[field];
+  let valA = a?.[field]; // Usar optional chaining aquí
+  let valB = b?.[field]; // Usar optional chaining aquí
   if (type === "date") {
     valA = new Date(valA);
     valB = new Date(valB);

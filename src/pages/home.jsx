@@ -1,7 +1,6 @@
 // src/components/Home.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Title,
   Text,
@@ -51,7 +50,6 @@ function getChartConfig({ title, yAxisTitle = "Valor", dataLabel = true, xAxisTi
 const drawerWidth = 240;
 
 export default function Home() {
-  const navigate = useNavigate();
   const notiButtonRef = useRef(null);
   const [openNotificaciones, setOpenNotificaciones] = useState(false);
   const [notificaciones, setNotificaciones] = useState([]);
