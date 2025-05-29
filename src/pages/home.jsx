@@ -12,6 +12,7 @@ import {
 } from "@ui5/webcomponents-react";
 import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
 import { Toaster } from "react-hot-toast";
+import PropTypes from "prop-types";
 
 import "./home.css";
 import { agregarNotificacion, mensajesNotificaciones } from "../components/Notificaciones";
@@ -236,35 +237,6 @@ export default function Home() {
   const trend = diff > 0 ? "↑" : diff < 0 ? "↓" : "-";
   const trendColor = diff > 0 ? "#d32f2f" : diff < 0 ? "#388e3c" : "#888";
 
-  // Estilos reutilizables para KPI y secciones
-  const kpiCardStyle = {
-    minWidth: 140,
-    padding: "1rem 1.2rem",      // un poco más de espacio
-    background: "#fff",
-    borderRadius: 8,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 8,                      // más separación entre icono/texto
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)"
-  };
-  const valueStyle = { fontSize: 22, fontWeight: 700, color: "#1976d2" };
-  const sectionCard = {
-    borderLeft: "4px solid var(--sapGroup_2)",
-    padding: "1rem",
-    marginBottom: "1.5rem",
-    background: "#fff",
-    borderRadius: 10
-  };
-
-  // KPIs para Órdenes últimos 6 meses
-  const totalOrders = ordenesChartData.reduce((acc, d) => acc + d.total, 0);
-  const maxOrderMonth = ordenesChartData.reduce((max, d) => d.total > max.total ? d : max, { total: 0 });
-  const minOrderMonth = ordenesChartData.reduce((min, d) => d.total < min.total ? d : min, { total: Infinity });
-  const prev6 = ordenesChartData.slice(0, ordenesChartData.length - 6);
-  const prevTotal = prev6.reduce((acc, d) => acc + d.total, 0);
-  const growth = prevTotal ? Math.round(((totalOrders - prevTotal) / prevTotal) * 100) : 0;
-
   // Componente reutilizable para KPI pequeño
   function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
     return (
@@ -290,6 +262,15 @@ export default function Home() {
       </Card>
     );
   }
+
+  SmallKPI.propTypes = {
+    icon: PropTypes.string.isRequired,
+    iconStyle: PropTypes.object,
+    label: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    valueStyle: PropTypes.object,
+    extra: PropTypes.node
+  };
 
   return (
     <Layout>
