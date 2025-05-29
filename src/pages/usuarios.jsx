@@ -157,6 +157,32 @@ function getColorFondo(rol) {
   return "#f5f5f5";
 }
 
+function OrdenSelect({ value, onChange, resetOthers }) {
+  return (
+    <select
+      value={value || ""}
+      onChange={e => {
+        onChange(e.target.value);
+        resetOthers();
+      }}
+      style={{
+        border: "1px solid #ccc",
+        background: "white",
+        fontSize: "0.9rem",
+        cursor: "pointer",
+        color: "#000",
+        fontWeight: "bold",
+        borderRadius: "4px",
+        marginLeft: "8px"
+      }}
+    >
+      <option value="">⇅</option>
+      <option value="asc">↑ A-Z</option>
+      <option value="desc">↓ Z-A</option>
+    </select>
+  );
+}
+
 // --- COMPONENTE PRINCIPAL ---
 
 export default function Usuarios() {
@@ -290,80 +316,41 @@ export default function Usuarios() {
                 <th style={{ padding: "12px" }}></th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Nombre<select
-                      value={ordenNombre || ""}
-                      onChange={(e) => {
-                        setOrdenNombre(e.target.value);
+                    Nombre
+                    <OrdenSelect
+                      value={ordenNombre}
+                      onChange={setOrdenNombre}
+                      resetOthers={() => {
                         setOrdenCorreo(null);
                         setOrdenTipo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                        marginLeft: "8px"
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Correo<select
-                      value={ordenCorreo || ""}
-                      onChange={(e) => {
-                        setOrdenCorreo(e.target.value);
+                    Correo
+                    <OrdenSelect
+                      value={ordenCorreo}
+                      onChange={setOrdenCorreo}
+                      resetOthers={() => {
                         setOrdenNombre(null);
                         setOrdenTipo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                        marginLeft: "8px"
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Tipo<select
-                      value={ordenTipo || ""}
-                      onChange={(e) => {
-                        setOrdenTipo(e.target.value);
+                    Tipo
+                    <OrdenSelect
+                      value={ordenTipo}
+                      onChange={setOrdenTipo}
+                      resetOthers={() => {
                         setOrdenNombre(null);
                         setOrdenCorreo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                        marginLeft: "8px"
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
               </tr>
