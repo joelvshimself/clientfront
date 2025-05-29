@@ -58,71 +58,95 @@ function clearAllSortsExceptFactory(setters, setter) {
   };
 }
 
+// Refactor: función de comparación para cada campo
+function compareByField(a, b, field, type = "string", order = "asc") {
+  let valA = a?.[field];
+  let valB = b?.[field];
+  if (type === "date") {
+    valA = new Date(valA);
+    valB = new Date(valB);
+    return order === "asc" ? valA - valB : valB - valA;
+  }
+  if (type === "number") {
+    valA = Number(valA) || 0;
+    valB = Number(valB) || 0;
+    return order === "asc" ? valA - valB : valB - valA;
+  }
+  // string
+  valA = (valA ?? "").toString();
+  valB = (valB ?? "").toString();
+  return order === "asc"
+    ? valA.localeCompare(valB)
+    : valB.localeCompare(valA);
+}
+
 // Lógica de ordenamiento separada para reducir complejidad
 function ordenarOrdenes(ordenes, sorts) {
-  return [...ordenes].sort((a, b) => {
-    const {
-      ordenIdSort,
-      ordenFechaSort,
-      ordenEstadoSort,
-      recepcionSort,
-      recepcionEstimadaSort,
-      subtotalSort,
-      costoSort,
-      solicitanteSort,
-      proveedorSort
-    } = sorts;
+  const sortFields = [
+    { key: "ordenIdSort", field: "id", type: "number" },
+    { key: "ordenFechaSort", field: "fecha_emision", type: "date" },
+    { key: "ordenEstadoSort", field: "estado", type: "string" },
+    { key: "recepcionSort", field: "fecha_recepcion", type: "date" },
+    { key: "recepcionEstimadaSort", field: "fecha_estimada", type: "date" },
+    { key: "subtotalSort", field: "subtotal", type: "number" },
+    { key: "costoSort", field: "costo", type: "number" },
+    { key: "solicitanteSort", field: "usuario_solicita", type: "string" },
+    { key: "proveedorSort", field: "usuario_provee", type: "string" }
+  ];
 
-    if (ordenIdSort) {
-      return ordenIdSort === "asc" ? a.id - b.id : b.id - a.id;
-    }
-    if (ordenFechaSort) {
-      const fa = new Date(a.fecha_emision);
-      const fb = new Date(b.fecha_emision);
-      return ordenFechaSort === "asc" ? fa - fb : fb - fa;
-    }
-    if (ordenEstadoSort) {
-      return ordenEstadoSort === "asc"
-        ? a.estado.localeCompare(b.estado)
-        : b.estado.localeCompare(a.estado);
-    }
-    if (recepcionSort) {
-      const ra = new Date(a.fecha_recepcion);
-      const rb = new Date(b.fecha_recepcion);
-      return recepcionSort === "asc" ? ra - rb : rb - ra;
-    }
-    if (recepcionEstimadaSort) {
-      const ea = new Date(a.fecha_estimada);
-      const eb = new Date(b.fecha_estimada);
-      return recepcionEstimadaSort === "asc" ? ea - eb : eb - ea;
-    }
-    if (subtotalSort) {
-      return subtotalSort === "asc"
-        ? a.subtotal - b.subtotal
-        : b.subtotal - a.subtotal;
-    }
-    if (costoSort) {
-      return costoSort === "asc"
-        ? a.costo - b.costo
-        : b.costo - a.costo;
-    }
-    if (solicitanteSort) {
-      const aSolicita = (a.usuario_solicita ?? "").toString();
-      const bSolicita = (b.usuario_solicita ?? "").toString();
-      return solicitanteSort === "asc"
-        ? aSolicita.localeCompare(bSolicita)
-        : bSolicita.localeCompare(aSolicita);
-    }
-    if (proveedorSort) {
-      const aProvee = (a.usuario_provee ?? "").toString();
-      const bProvee = (b.usuario_provee ?? "").toString();
-      return proveedorSort === "asc"
-        ? aProvee.localeCompare(bProvee)
-        : bProvee.localeCompare(aProvee);
-    }
-    return 0;
-  });
+  const activeSort = sortFields.find(f => sorts[f.key]);
+  if (!activeSort) return [...ordenes];
+
+  const order = sorts[activeSort.key];
+  return [...ordenes].sort((a, b) =>
+    compareByField(a, b, activeSort.field, activeSort.type, order)
+  );
 }
+
+// Componente para la fila de la tabla
+function OrdenRow({ orden, ordenesSeleccionadas, setOrdenesSeleccionadas }) {
+  const handleCheckbox = (e) => {
+    const checked = e.target.checked;
+    setOrdenesSeleccionadas(prev =>
+      checked
+        ? [...prev, orden.id]
+        : prev.filter(id => id !== orden.id)
+    );
+  };
+
+  return (
+    <tr key={orden.id} style={{ borderBottom: "1px solid #eee", backgroundColor: "#fff" }}>
+      <td style={{ padding: "12px" }}>
+        <input
+          type="checkbox"
+          checked={ordenesSeleccionadas.includes(orden.id)}
+          onChange={handleCheckbox}
+        />
+      </td>
+      <td style={{ padding: "12px" }}>{orden.id}</td>
+      <td style={{ padding: "12px" }}>{orden.fecha_emision}</td>
+      <td style={{
+        padding: "12px",
+        fontWeight: "bold",
+        color: orden.estado === "completada" ? "#388e3c" : "#f57c00"
+      }}>
+        {orden.estado}
+      </td>
+      <td style={{ padding: "12px" }}>{orden.fecha_recepcion}</td>
+      <td style={{ padding: "12px" }}>{orden.fecha_estimada}</td>
+      <td style={{ padding: "12px" }}>${orden.subtotal}</td>
+      <td style={{ padding: "12px" }}>${orden.costo}</td>
+      <td style={{ padding: "12px" }}>{orden.usuario_solicita}</td>
+      <td style={{ padding: "12px" }}>{orden.usuario_provee}</td>
+    </tr>
+  );
+}
+
+OrdenRow.propTypes = {
+  orden: PropTypes.object.isRequired,
+  ordenesSeleccionadas: PropTypes.array.isRequired,
+  setOrdenesSeleccionadas: PropTypes.func.isRequired
+};
 
 export default function Ordenes() {
   const navigate = useNavigate();
@@ -154,25 +178,6 @@ export default function Ordenes() {
     setSolicitanteSort,
     setProveedorSort
   ];
-
-  const [nuevaOrden, setNuevaOrden] = useState({
-    estado: "",
-    fecha_emision: "",
-    fecha_recepcion: "",
-    fecha_estimada: "",
-    subtotal: "",
-    costo: "",
-    usuario_solicita: "",
-    usuario_provee: "",
-    productos: []
-  });
-
-  const [nuevoProducto, setNuevoProducto] = useState({
-    producto: "arrachera",
-    cantidad: "",
-    precio: "",
-    fecha_caducidad: ""
-  });
 
   const loadOrdenes = async () => {
     const data = await getOrdenes();
@@ -367,37 +372,12 @@ export default function Ordenes() {
               </thead>
               <tbody>
                 {ordenesFiltradasYOrdenadas.map((orden) => (
-                  <tr key={orden.id} style={{ borderBottom: "1px solid #eee", backgroundColor: "#fff" }}>
-                    <td style={{ padding: "12px" }}>
-                      <input
-                        type="checkbox"
-                        checked={ordenesSeleccionadas.includes(orden.id)}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setOrdenesSeleccionadas(prev =>
-                            checked
-                              ? [...prev, orden.id]
-                              : prev.filter(id => id !== orden.id)
-                          );
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: "12px" }}>{orden.id}</td>
-                    <td style={{ padding: "12px" }}>{orden.fecha_emision}</td>
-                    <td style={{
-                      padding: "12px",
-                      fontWeight: "bold",
-                      color: orden.estado === "completada" ? "#388e3c" : "#f57c00"
-                    }}>
-                      {orden.estado}
-                    </td>
-                    <td style={{ padding: "12px" }}>{orden.fecha_recepcion}</td>
-                    <td style={{ padding: "12px" }}>{orden.fecha_estimada}</td>
-                    <td style={{ padding: "12px" }}>${orden.subtotal}</td>
-                    <td style={{ padding: "12px" }}>${orden.costo}</td>
-                    <td style={{ padding: "12px" }}>{orden.usuario_solicita}</td>
-                    <td style={{ padding: "12px" }}>{orden.usuario_provee}</td>
-                  </tr>
+                  <OrdenRow
+                    key={orden.id}
+                    orden={orden}
+                    ordenesSeleccionadas={ordenesSeleccionadas}
+                    setOrdenesSeleccionadas={setOrdenesSeleccionadas}
+                  />
                 ))}
               </tbody>
             </table>
