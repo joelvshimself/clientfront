@@ -65,7 +65,7 @@ export default function ConfirmarOrden() {
 
     try {
       const response = await createOrden(payload);
-      if (response && response.id_orden) {
+      if (response?.id_orden) {
         localStorage.removeItem("proveedorSeleccionado");
         localStorage.removeItem("productoSeleccionado");
         alert(`Orden creada exitosamente con ID: ${response.id_orden}`);
