@@ -5,17 +5,13 @@ import {
   Title,
   Input,
   Button,
-  Dialog,
-  Select,
-  Option
+  Dialog
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import {
   getVentas,
-  venderProductos,
-  eliminarVenta,
-  editarVenta
+  eliminarVenta
 } from "../../services/ventaService";
 
 export default function Venta() {

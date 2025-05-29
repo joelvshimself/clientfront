@@ -73,6 +73,7 @@ export default function ConfirmarOrden() {
         alert("Error al crear orden");
       }
     } catch (error) {
+      console.error(error);
       alert("Error al crear orden");
     }
   };
@@ -115,8 +116,8 @@ export default function ConfirmarOrden() {
               </tr>
             </thead>
             <tbody>
-              {productos.map((item, index) => (
-                <tr key={index}>
+              {productos.map((item) => (
+                <tr key={item.producto + "-" + item.fechaCaducidad}>
                   <td style={bodyCellStyle}>{item.producto}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>${item.precio}</td>
