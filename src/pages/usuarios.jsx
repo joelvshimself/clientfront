@@ -12,7 +12,6 @@ import {
 import "@ui5/webcomponents-icons/dist/delete.js";
 import "@ui5/webcomponents-icons/dist/add.js";
 import "@ui5/webcomponents-icons/dist/edit.js";
-import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
   getUsuarios,
@@ -102,10 +101,17 @@ UsuarioModal.propTypes = {
   titulo: PropTypes.string.isRequired
 };
 
+// --- FUNCIONES AUXILIARES ---
+function getColorFondo(rol) {
+  if (rol?.toLowerCase() === "owner") return "#e0d4fc";
+  if (rol?.toLowerCase() === "proveedor") return "#d0fce0";
+  if (rol?.toLowerCase() === "detallista") return "#ffe0b2";
+  return "#f5f5f5";
+}
+
 // --- COMPONENTE PRINCIPAL ---
 
 export default function Usuarios() {
-  const navigate = useNavigate();
   const [openCrear, setOpenCrear] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
@@ -236,8 +242,7 @@ export default function Usuarios() {
                 <th style={{ padding: "12px" }}></th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Nombre
-                    <select
+                    Nombre<select
                       value={ordenNombre || ""}
                       onChange={(e) => {
                         setOrdenNombre(e.target.value);
@@ -252,6 +257,7 @@ export default function Usuarios() {
                         color: "#000",
                         fontWeight: "bold",
                         borderRadius: "4px",
+                        marginLeft: "8px"
                       }}
                     >
                       <option value="">⇅</option>
@@ -262,8 +268,7 @@ export default function Usuarios() {
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Correo
-                    <select
+                    Correo<select
                       value={ordenCorreo || ""}
                       onChange={(e) => {
                         setOrdenCorreo(e.target.value);
@@ -278,6 +283,7 @@ export default function Usuarios() {
                         color: "#000",
                         fontWeight: "bold",
                         borderRadius: "4px",
+                        marginLeft: "8px"
                       }}
                     >
                       <option value="">⇅</option>
@@ -288,8 +294,7 @@ export default function Usuarios() {
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    Tipo
-                    <select
+                    Tipo<select
                       value={ordenTipo || ""}
                       onChange={(e) => {
                         setOrdenTipo(e.target.value);
@@ -304,6 +309,7 @@ export default function Usuarios() {
                         color: "#000",
                         fontWeight: "bold",
                         borderRadius: "4px",
+                        marginLeft: "8px"
                       }}
                     >
                       <option value="">⇅</option>
@@ -337,48 +343,42 @@ export default function Usuarios() {
                   }
                   return 0;
                 })
-                .map((usuario, index) => {
-                  let colorFondo = "#f5f5f5";
-                  if (usuario.rol?.toLowerCase() === "owner") colorFondo = "#e0d4fc";
-                  else if (usuario.rol?.toLowerCase() === "proveedor") colorFondo = "#d0fce0";
-                  else if (usuario.rol?.toLowerCase() === "detallista") colorFondo = "#ffe0b2";
-                  return (
-                    <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>
-                      <td style={{ padding: "12px" }}>
-                        <input
-                          type="checkbox"
-                          checked={usuariosSeleccionados.includes(usuario.id)}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setUsuariosSeleccionados((prevSeleccionados) => {
-                              if (checked && !prevSeleccionados.includes(usuario.id)) {
-                                return [...prevSeleccionados, usuario.id];
-                              } else {
-                                return prevSeleccionados.filter((id) => id !== usuario.id);
-                              }
-                            });
-                          }}
-                        />
-                      </td>
-                      <td style={{ padding: "12px" }}>{usuario.nombre}</td>
-                      <td style={{ padding: "12px" }}>{usuario.correo}</td>
-                      <td style={{ padding: "12px" }}>
-                        <span
-                          style={{
-                            backgroundColor: colorFondo,
-                            color: "#000",
-                            padding: "4px 10px",
-                            borderRadius: "12px",
-                            fontSize: "0.8rem",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {usuario.rol}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                .map((usuario, index) => (
+                  <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "12px" }}>
+                      <input
+                        type="checkbox"
+                        checked={usuariosSeleccionados.includes(usuario.id)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setUsuariosSeleccionados((prevSeleccionados) => {
+                            if (checked && !prevSeleccionados.includes(usuario.id)) {
+                              return [...prevSeleccionados, usuario.id];
+                            } else {
+                              return prevSeleccionados.filter((id) => id !== usuario.id);
+                            }
+                          });
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: "12px" }}>{usuario.nombre}</td>
+                    <td style={{ padding: "12px" }}>{usuario.correo}</td>
+                    <td style={{ padding: "12px" }}>
+                      <span
+                        style={{
+                          backgroundColor: getColorFondo(usuario.rol),
+                          color: "#000",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "0.8rem",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {usuario.rol}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

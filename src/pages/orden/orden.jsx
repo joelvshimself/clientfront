@@ -6,16 +6,126 @@ import {
   Title,
   Input,
   Button,
-  Dialog,
-  Select,
-  Option
+  Dialog
 } from "@ui5/webcomponents-react";
 import Layout from "../../components/Layout";
-import { getOrdenes, createOrden, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
+import { getOrdenes, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
+import PropTypes from "prop-types";
+
+// Componente auxiliar para encabezados de tabla con ordenamiento
+function SortableTh({ label, value, setValue, clearAllSorts }) {
+  return (
+    <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {label}
+        <select
+          value={value || ""}
+          onChange={e => {
+            clearAllSorts();
+            setValue(e.target.value);
+          }}
+          style={{
+            border: "1px solid #ccc",
+            background: "white",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            color: "#000",
+            fontWeight: "bold",
+            borderRadius: "4px",
+          }}
+        >
+          <option value="">⇅</option>
+          <option value="asc">↑ A-Z</option>
+          <option value="desc">↓ Z-A</option>
+        </select>
+      </div>
+    </th>
+  );
+}
+
+SortableTh.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  setValue: PropTypes.func.isRequired,
+  clearAllSorts: PropTypes.func.isRequired
+};
+
+// Limpia todos los estados de ordenamiento excepto el que se va a activar
+function clearAllSortsExceptFactory(setters, setter) {
+  return () => {
+    setters.forEach(s => s(null));
+    setter && setter();
+  };
+}
+
+// Lógica de ordenamiento separada para reducir complejidad
+function ordenarOrdenes(ordenes, sorts) {
+  return [...ordenes].sort((a, b) => {
+    const {
+      ordenIdSort,
+      ordenFechaSort,
+      ordenEstadoSort,
+      recepcionSort,
+      recepcionEstimadaSort,
+      subtotalSort,
+      costoSort,
+      solicitanteSort,
+      proveedorSort
+    } = sorts;
+
+    if (ordenIdSort) {
+      return ordenIdSort === "asc" ? a.id - b.id : b.id - a.id;
+    }
+    if (ordenFechaSort) {
+      const fa = new Date(a.fecha_emision);
+      const fb = new Date(b.fecha_emision);
+      return ordenFechaSort === "asc" ? fa - fb : fb - fa;
+    }
+    if (ordenEstadoSort) {
+      return ordenEstadoSort === "asc"
+        ? a.estado.localeCompare(b.estado)
+        : b.estado.localeCompare(a.estado);
+    }
+    if (recepcionSort) {
+      const ra = new Date(a.fecha_recepcion);
+      const rb = new Date(b.fecha_recepcion);
+      return recepcionSort === "asc" ? ra - rb : rb - ra;
+    }
+    if (recepcionEstimadaSort) {
+      const ea = new Date(a.fecha_estimada);
+      const eb = new Date(b.fecha_estimada);
+      return recepcionEstimadaSort === "asc" ? ea - eb : eb - ea;
+    }
+    if (subtotalSort) {
+      return subtotalSort === "asc"
+        ? a.subtotal - b.subtotal
+        : b.subtotal - a.subtotal;
+    }
+    if (costoSort) {
+      return costoSort === "asc"
+        ? a.costo - b.costo
+        : b.costo - a.costo;
+    }
+    if (solicitanteSort) {
+      const aSolicita = (a.usuario_solicita ?? "").toString();
+      const bSolicita = (b.usuario_solicita ?? "").toString();
+      return solicitanteSort === "asc"
+        ? aSolicita.localeCompare(bSolicita)
+        : bSolicita.localeCompare(aSolicita);
+    }
+    if (proveedorSort) {
+      const aProvee = (a.usuario_provee ?? "").toString();
+      const bProvee = (b.usuario_provee ?? "").toString();
+      return proveedorSort === "asc"
+        ? aProvee.localeCompare(bProvee)
+        : bProvee.localeCompare(aProvee);
+    }
+    return 0;
+  });
+}
 
 export default function Ordenes() {
   const navigate = useNavigate();
-  const [openCrear, setOpenCrear] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
   const [ordenEditar, setOrdenEditar] = useState(null);
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState([]);
@@ -26,13 +136,24 @@ export default function Ordenes() {
   const [ordenIdSort, setOrdenIdSort] = useState(null);
   const [ordenFechaSort, setOrdenFechaSort] = useState(null);
   const [ordenEstadoSort, setOrdenEstadoSort] = useState(null);
-  // Nuevos estados de ordenamiento
   const [recepcionSort, setRecepcionSort] = useState(null);
   const [recepcionEstimadaSort, setRecepcionEstimadaSort] = useState(null);
   const [subtotalSort, setSubtotalSort] = useState(null);
   const [costoSort, setCostoSort] = useState(null);
   const [solicitanteSort, setSolicitanteSort] = useState(null);
   const [proveedorSort, setProveedorSort] = useState(null);
+
+  const setters = [
+    setOrdenIdSort,
+    setOrdenFechaSort,
+    setOrdenEstadoSort,
+    setRecepcionSort,
+    setRecepcionEstimadaSort,
+    setSubtotalSort,
+    setCostoSort,
+    setSolicitanteSort,
+    setProveedorSort
+  ];
 
   const [nuevaOrden, setNuevaOrden] = useState({
     estado: "",
@@ -92,52 +213,11 @@ export default function Ordenes() {
     const ordenId = ordenesSeleccionadas[0];
     try {
       const respuesta = await completarOrden(ordenId, fecha_recepcion);
-      alert(respuesta.message || `Orden ${ordenId} completada.`);
+      alert(respuesta?.message || `Orden ${ordenId} completada.`);
       await loadOrdenes();
       setOrdenesSeleccionadas([]);
     } catch (error) {
-      alert(error.response?.data?.error || "Error al completar la orden.");
-    }
-  };
-
-  const agregarProducto = () => {
-    setNuevaOrden({
-      ...nuevaOrden,
-      productos: [...(nuevaOrden.productos || []), nuevoProducto]
-    });
-    setNuevoProducto({
-      producto: "",
-      cantidad: "",
-      precio: "",
-      fecha_caducidad: ""
-    });
-  };
-
-  const agregarOrden = async () => {
-    const datos = {
-      correo_solicita: nuevaOrden.usuario_solicita,
-      correo_provee: nuevaOrden.usuario_provee,
-      productos: nuevaOrden.productos
-    };
-
-    const response = await createOrden(datos);
-
-    if (response && response.id_orden) {
-      alert(`Orden creada exitosamente con ID: ${response.id_orden}`);
-      await loadOrdenes();
-      setNuevaOrden({
-        estado: "",
-        fecha_emision: "",
-        fecha_recepcion: "",
-        fecha_estimada: "",
-        subtotal: "",
-        costo: "",
-        usuario_solicita: "",
-        usuario_provee: "",
-        productos: []
-      });
-    } else {
-      alert("Error al crear orden");
+      alert(error?.response?.data?.error || "Error al completar la orden.");
     }
   };
 
@@ -154,103 +234,20 @@ export default function Ordenes() {
   };
 
   // Filtrado y ordenamiento aplicados antes de renderizar
-  const ordenesFiltradasYOrdenadas = [...ordenes]
-    .filter((o) => o.estado.toLowerCase().includes(busqueda.toLowerCase()))
-    .sort((a, b) => {
-      if (ordenIdSort) {
-        return ordenIdSort === "asc" ? a.id - b.id : b.id - a.id;
-      }
-      if (ordenFechaSort) {
-        const fa = new Date(a.fecha_emision);
-        const fb = new Date(b.fecha_emision);
-        return ordenFechaSort === "asc" ? fa - fb : fb - fa;
-      }
-      if (ordenEstadoSort) {
-        return ordenEstadoSort === "asc"
-          ? a.estado.localeCompare(b.estado)
-          : b.estado.localeCompare(a.estado);
-      }
-      if (recepcionSort) {
-        const ra = new Date(a.fecha_recepcion);
-        const rb = new Date(b.fecha_recepcion);
-        return recepcionSort === "asc" ? ra - rb : rb - ra;
-      }
-      if (recepcionEstimadaSort) {
-        const ea = new Date(a.fecha_estimada);
-        const eb = new Date(b.fecha_estimada);
-        return recepcionEstimadaSort === "asc" ? ea - eb : eb - ea;
-      }
-      if (subtotalSort) {
-        return subtotalSort === "asc"
-          ? a.subtotal - b.subtotal
-          : b.subtotal - a.subtotal;
-      }
-      if (costoSort) {
-        return costoSort === "asc"
-          ? a.costo - b.costo
-          : b.costo - a.costo;
-      }
-      if (solicitanteSort) {
-        const aSolicita = (a.usuario_solicita ?? "").toString();
-        const bSolicita = (b.usuario_solicita ?? "").toString();
-        return solicitanteSort === "asc"
-          ? aSolicita.localeCompare(bSolicita)
-          : bSolicita.localeCompare(aSolicita);
-      }
-      if (proveedorSort) {
-        const aProvee = (a.usuario_provee ?? "").toString();
-        const bProvee = (b.usuario_provee ?? "").toString();
-        return proveedorSort === "asc"
-          ? aProvee.localeCompare(bProvee)
-          : bProvee.localeCompare(aProvee);
-      }
-      return 0;
-    });
-
-  // Componente auxiliar para encabezados de tabla con ordenamiento
-  function SortableTh({ label, value, setValue, clearAllSorts }) {
-    return (
-      <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {label}
-          <select
-            value={value || ""}
-            onChange={e => {
-              clearAllSorts();
-              setValue(e.target.value);
-            }}
-            style={{
-              border: "1px solid #ccc",
-              background: "white",
-              fontSize: "0.9rem",
-              cursor: "pointer",
-              color: "#000",
-              fontWeight: "bold",
-              borderRadius: "4px",
-            }}
-          >
-            <option value="">⇅</option>
-            <option value="asc">↑ A-Z</option>
-            <option value="desc">↓ Z-A</option>
-          </select>
-        </div>
-      </th>
-    );
-  }
-
-  // Limpia todos los estados de ordenamiento excepto el que se va a activar
-  const clearAllSortsExcept = (setter) => () => {
-    setOrdenIdSort(null);
-    setOrdenFechaSort(null);
-    setOrdenEstadoSort(null);
-    setRecepcionSort(null);
-    setRecepcionEstimadaSort(null);
-    setSubtotalSort(null);
-    setCostoSort(null);
-    setSolicitanteSort(null);
-    setProveedorSort(null);
-    setter && setter();
-  };
+  const ordenesFiltradasYOrdenadas = ordenarOrdenes(
+    ordenes.filter((o) => o.estado?.toLowerCase().includes(busqueda.toLowerCase())),
+    {
+      ordenIdSort,
+      ordenFechaSort,
+      ordenEstadoSort,
+      recepcionSort,
+      recepcionEstimadaSort,
+      subtotalSort,
+      costoSort,
+      solicitanteSort,
+      proveedorSort
+    }
+  );
 
   return (
     <Layout>
@@ -316,55 +313,55 @@ export default function Ordenes() {
                     label="ID Orden"
                     value={ordenIdSort}
                     setValue={setOrdenIdSort}
-                    clearAllSorts={clearAllSortsExcept(() => setOrdenIdSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setOrdenIdSort)}
                   />
                   <SortableTh
                     label="Fecha Emisión"
                     value={ordenFechaSort}
                     setValue={setOrdenFechaSort}
-                    clearAllSorts={clearAllSortsExcept(() => setOrdenFechaSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setOrdenFechaSort)}
                   />
                   <SortableTh
                     label="Estado"
                     value={ordenEstadoSort}
                     setValue={setOrdenEstadoSort}
-                    clearAllSorts={clearAllSortsExcept(() => setOrdenEstadoSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setOrdenEstadoSort)}
                   />
                   <SortableTh
                     label="Recepción"
                     value={recepcionSort}
                     setValue={setRecepcionSort}
-                    clearAllSorts={clearAllSortsExcept(() => setRecepcionSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setRecepcionSort)}
                   />
                   <SortableTh
                     label="Recepción Estimada"
                     value={recepcionEstimadaSort}
                     setValue={setRecepcionEstimadaSort}
-                    clearAllSorts={clearAllSortsExcept(() => setRecepcionEstimadaSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setRecepcionEstimadaSort)}
                   />
                   <SortableTh
                     label="Subtotal"
                     value={subtotalSort}
                     setValue={setSubtotalSort}
-                    clearAllSorts={clearAllSortsExcept(() => setSubtotalSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setSubtotalSort)}
                   />
                   <SortableTh
                     label="Costo Compra"
                     value={costoSort}
                     setValue={setCostoSort}
-                    clearAllSorts={clearAllSortsExcept(() => setCostoSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setCostoSort)}
                   />
                   <SortableTh
                     label="Solicitante"
                     value={solicitanteSort}
                     setValue={setSolicitanteSort}
-                    clearAllSorts={clearAllSortsExcept(() => setSolicitanteSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setSolicitanteSort)}
                   />
                   <SortableTh
                     label="Proveedor"
                     value={proveedorSort}
                     setValue={setProveedorSort}
-                    clearAllSorts={clearAllSortsExcept(() => setProveedorSort)}
+                    clearAllSorts={clearAllSortsExceptFactory(setters, () => setProveedorSort)}
                   />
                 </tr>
               </thead>
