@@ -1,10 +1,9 @@
-name: Build
+name: Build SonarQube Quality Gate
 
 on:
   push:
     branches:
       - main
-
 
 jobs:
   build:
@@ -19,7 +18,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
+          
       # Check the Quality Gate status.
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
@@ -44,4 +43,3 @@ jobs:
       - name: Warn if Quality Gate status is WARN
         if: steps.sonarqube-quality-gate-check.outputs.quality-gate-status == 'WARN'
         run: echo "Quality Gate status is WARN"
-
