@@ -90,7 +90,6 @@ export default function PerfilUsuario() {
         alignItems="Center"
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)",
           padding: "4rem 0"
         }}
       >
@@ -173,7 +172,7 @@ export default function PerfilUsuario() {
                         }}
                       />
                     ) : (
-                      <Text style={{ fontSize: "1.15rem", color: "#3a3a6a", fontWeight: 500 }}>
+                      <Text style={{ fontSize: "1rem", color: "#3a3a6a", fontWeight: 500 }}>
                         {usuario.NOMBRE || usuario.nombre}
                       </Text>
                     )}
@@ -196,14 +195,14 @@ export default function PerfilUsuario() {
                         }}
                       />
                     ) : (
-                      <Text style={{ letterSpacing: "0.2em", color: "#3a3a6a" }}>********</Text>
+                      <Text style={{ letterSpacing: "0.2em", color: "#3a3a6a", fontSize: "1rem" }}>********</Text>
                     )}
                   </div>
 
                   <div style={{ padding: "0.5rem 0.8rem" }}>
                     <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Correo:</Text>
                     <br />
-                    <Text style={{ color: "#3a3a6a" }}>
+                    <Text style={{ color: "#3a3a6a", fontSize: "1rem" }}>
                       {usuario.EMAIL || usuario.email || usuario.correo}
                     </Text>
                   </div>
@@ -211,7 +210,7 @@ export default function PerfilUsuario() {
                   <div style={{ padding: "0.5rem 0.8rem" }}>
                     <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Rol:</Text>
                     <br />
-                    <Text style={{ color: "#3a3a6a" }}>{usuario.ROL || usuario.rol}</Text>
+                    <Text style={{ color: "#3a3a6a", fontSize: "1rem" }}>{usuario.ROL || usuario.rol}</Text>
                   </div>
                 </FlexBox>
 
@@ -236,7 +235,7 @@ export default function PerfilUsuario() {
                     <Button design="Emphasized" onClick={handleSave} style={{
                       width: "48%",
                       borderRadius: "0.7rem",
-                      background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+                      background: "#6a82fb", // ← Color sólido en vez de gradiente
                       color: "#fff",
                       fontWeight: 600
                     }}>
