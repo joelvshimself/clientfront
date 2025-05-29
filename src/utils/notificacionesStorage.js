@@ -5,8 +5,11 @@ const STORAGE_KEY = "notificaciones";
 // Obtener notificaciones guardadas
 export const obtenerNotificaciones = () => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) return [];
+    return JSON.parse(data);
   } catch (e) {
+    console.error("Error al obtener notificaciones del localStorage:", e);
     return [];
   }
 };

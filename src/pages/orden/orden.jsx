@@ -183,15 +183,15 @@ export default function Ordenes() {
     const data = await getOrdenes();
     setOrdenes(
       data.map((o) => ({
-        id: o.ID_ORDEN,
-        fecha_emision: o.FECHA_EMISION,
-        fecha_recepcion: o.FECHA_RECEPCION,
-        fecha_estimada: o.FECHA_RECEPCION_ESTIMADA,
-        estado: o.ESTADO,
-        subtotal: o.SUBTOTAL,
-        costo: o.COSTO_COMPRA,
-        usuario_solicita: o.ID_USUARIO_SOLICITA,
-        usuario_provee: o.ID_USUARIO_PROVEE
+        id: o?.ID_ORDEN,
+        fecha_emision: o?.FECHA_EMISION,
+        fecha_recepcion: o?.FECHA_RECEPCION,
+        fecha_estimada: o?.FECHA_RECEPCION_ESTIMADA,
+        estado: o?.ESTADO,
+        subtotal: o?.SUBTOTAL,
+        costo: o?.COSTO_COMPRA,
+        usuario_solicita: o?.ID_USUARIO_SOLICITA,
+        usuario_provee: o?.ID_USUARIO_PROVEE
       }))
     );
   };

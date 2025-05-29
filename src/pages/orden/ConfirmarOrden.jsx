@@ -22,14 +22,15 @@ export default function ConfirmarOrden() {
     JSON.parse(localStorage.getItem("productoSeleccionado"));
 
   // Permitir arreglo de productos
-  const productos = Array.isArray(productoSeleccionado)
-    ? productoSeleccionado
-    : productoSeleccionado
-    ? [productoSeleccionado]
-    : [];
+  let productos = [];
+  if (Array.isArray(productoSeleccionado)) {
+    productos = productoSeleccionado;
+  } else if (productoSeleccionado) {
+    productos = [productoSeleccionado];
+  }
 
   const costoTotal = productos.reduce(
-    (acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0),
+    (acc, p) => acc + parseFloat(p?.precio || 0) * parseInt(p?.cantidad || 0),
     0
   );
 
