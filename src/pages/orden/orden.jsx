@@ -54,7 +54,7 @@ SortableTh.propTypes = {
 function clearAllSortsExceptFactory(setters, setter) {
   return () => {
     setters.forEach(s => s(null));
-    setter && setter();
+    setter?.();
   };
 }
 
