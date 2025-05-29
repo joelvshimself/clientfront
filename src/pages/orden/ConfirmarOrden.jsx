@@ -19,7 +19,7 @@ export default function ConfirmarOrden() {
 
   const productoSeleccionado =
     location.state?.productoSeleccionado ||
-    JSON.parse(localStorage.getItem("productoSeleccionado"));
+    JSON.parse(localStorage.getItem("productoSeleccionado") ?? "null");
 
   // Permitir arreglo de productos
   let productos = [];
