@@ -73,13 +73,13 @@ export default function Usuarios() {
     const nuevo = {
       nombre: nuevoUsuario.nombre,
       email: nuevoUsuario.correo,
-      password: "123456",
+      password: nuevoUsuario.password, // Ahora toma la contraseña del input
       rol: nuevoUsuario.rol
     };
     const ok = await createUsuario(nuevo);
     if (ok) {
       await loadUsuarios();
-      setNuevoUsuario({ nombre: "", correo: "", rol: "Owner" }); // Reinicia con valor predeterminado
+      setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "Owner" }); // Reinicia con valor predeterminado
     }
   };
 
@@ -97,7 +97,7 @@ export default function Usuarios() {
     const actualizado = {
       nombre: usuarioEditar.nombre,
       email: usuarioEditar.correo,
-      password: "", // No cambia si no se especifica
+      password: usuarioEditar.password || "", // Permite cambiar la contraseña si se ingresa
       rol: usuarioEditar.rol
     };
 
@@ -116,6 +116,7 @@ export default function Usuarios() {
   const [nuevoUsuario, setNuevoUsuario] = useState({
     nombre: "",
     correo: "",
+    password: "", // Nuevo campo para la contraseña
     rol: "Owner" // Valor predeterminado
   });
 
@@ -152,13 +153,14 @@ export default function Usuarios() {
         value={nuevoUsuario.correo}
         onInput={handleInputChange}
       />
-      <Select
-        name="rol"
-        value={nuevoUsuario.rol}
-        onChange={(e) =>
-          setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })
-        }
-      >
+      <Input
+        placeholder="Contraseña"
+        name="password"
+        type="password"
+        value={nuevoUsuario.password}
+        onInput={handleInputChange}
+      />
+      <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
         <Option value="Owner">Owner</Option>
         <Option value="Proveedor">Proveedor</Option>
         <Option value="Detallista">Detallista</Option>
@@ -187,11 +189,15 @@ export default function Usuarios() {
           value={usuarioEditar.correo}
           onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
         />
+        <Input
+          placeholder="Contraseña (dejar vacío para no cambiar)"
+          type="password"
+          value={usuarioEditar.password || ""}
+          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, password: e.target.value })}
+        />
         <Select
           value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-          onChange={(e) =>
-            setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })
-          }
+          onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
         >
           <Option value="Owner">Owner</Option>
           <Option value="Proveedor">Proveedor</Option>
@@ -466,7 +472,32 @@ export default function Usuarios() {
           }}>Guardar</Button>
         }
       >
-        <UsuarioForm usuario={nuevoUsuario} onChange={handleInputChange} />
+        <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
+          <Input
+            placeholder="Nombre"
+            name="nombre"
+            value={nuevoUsuario.nombre}
+            onInput={handleInputChange}
+          />
+          <Input
+            placeholder="Correo"
+            name="correo"
+            value={nuevoUsuario.correo}
+            onInput={handleInputChange}
+          />
+          <Input
+            placeholder="Contraseña"
+            name="password"
+            type="password"
+            value={nuevoUsuario.password}
+            onInput={handleInputChange}
+          />
+          <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
+            <Option value="Owner">Owner</Option>
+            <Option value="Proveedor">Proveedor</Option>
+            <Option value="Detallista">Detallista</Option>
+          </Select>
+        </FlexBox>
       </Dialog>
 
       {/* MODAL: Editar Usuario */}
@@ -481,7 +512,32 @@ export default function Usuarios() {
         }
       >
         {usuarioEditar && (
-          <UsuarioForm usuario={usuarioEditar} onChange={setUsuarioEditar} />
+          <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
+            <Input
+              placeholder="Nombre"
+              value={usuarioEditar.nombre}
+              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
+            />
+            <Input
+              placeholder="Correo"
+              value={usuarioEditar.correo}
+              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
+            />
+            <Input
+              placeholder="Contraseña (dejar vacío para no cambiar)"
+              type="password"
+              value={usuarioEditar.password || ""}
+              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, password: e.target.value })}
+            />
+            <Select
+              value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
+              onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
+            >
+              <Option value="Owner">Owner</Option>
+              <Option value="Proveedor">Proveedor</Option>
+              <Option value="Detallista">Detallista</Option>
+            </Select>
+          </FlexBox>
         )}
       </Dialog>
     </Layout>
