@@ -73,8 +73,8 @@ function compareByField(a, b, field, type = "string", order = "asc") {
     return order === "asc" ? valA - valB : valB - valA;
   }
   // string
-  valA = (valA ?? "").toString();
-  valB = (valB ?? "").toString();
+  valA = valA?.toString() ?? "";
+  valB = valB?.toString() ?? "";
   return order === "asc"
     ? valA.localeCompare(valB)
     : valB.localeCompare(valA);
