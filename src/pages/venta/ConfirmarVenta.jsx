@@ -43,6 +43,7 @@ export default function ConfirmarVenta() {
       alert(`✅ Venta creada con éxito. ID: ${response.id_venta}`);
       navigate("/venta");
     } catch (error) {
+      console.error("Error al crear venta:", error);
       alert("❌ Error al crear venta");
     }
   };
@@ -82,8 +83,8 @@ export default function ConfirmarVenta() {
               </tr>
             </thead>
             <tbody>
-              {productos.map((item, index) => (
-                <tr key={index}>
+              {productos.map((item) => (
+                <tr key={item.producto}>
                   <td style={bodyCellStyle}>{item.producto}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
                 </tr>

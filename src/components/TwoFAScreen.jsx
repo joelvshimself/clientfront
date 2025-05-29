@@ -8,7 +8,6 @@ export default function TwoFAScreen() {
   const [token, setToken] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
 
   useEffect(() => {
     const check2FA = async () => {
