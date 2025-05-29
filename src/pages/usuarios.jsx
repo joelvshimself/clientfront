@@ -128,87 +128,8 @@ export default function Usuarios() {
   // Cambia handleInputChange para usar el mismo formato que UsuarioForm espera
   const handleInputChange = (nuevo) => setNuevoUsuario(nuevo);
 
-  {/* Box Crear Usuarios */ }
-  <Dialog
-    headerText="Agregar Usuario"
-    open={openCrear}
-    onAfterClose={() => setOpenCrear(false)}
-    footer={
-      <Button design="Emphasized" onClick={() => {
-        agregarUsuario();
-        setOpenCrear(false);
-      }}>Guardar</Button>
-    }
-  >
-    <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-      <Input
-        placeholder="Nombre"
-        name="nombre"
-        value={nuevoUsuario.nombre}
-        onInput={handleInputChange}
-      />
-      <Input
-        placeholder="Correo"
-        name="correo"
-        value={nuevoUsuario.correo}
-        onInput={handleInputChange}
-      />
-      <Input
-        placeholder="Contraseña"
-        name="password"
-        type="password"
-        value={nuevoUsuario.password}
-        onInput={handleInputChange}
-      />
-      <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
-        <Option value="Owner">Owner</Option>
-        <Option value="Proveedor">Proveedor</Option>
-        <Option value="Detallista">Detallista</Option>
-      </Select>
-    </FlexBox>
-  </Dialog>
-
-  {/* Box editar usuarios */ }
-  <Dialog
-    headerText="Editar Usuario"
-    open={openEditar}
-    onAfterClose={() => setOpenEditar(false)}
-    footer={
-      <Button design="Emphasized" onClick={handleEditarGuardar}>Guardar</Button>
-    }
-  >
-    {usuarioEditar && (
-      <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-        <Input
-          placeholder="Nombre"
-          value={usuarioEditar.nombre}
-          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
-        />
-        <Input
-          placeholder="Correo"
-          value={usuarioEditar.correo}
-          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-        />
-        <Input
-          placeholder="Contraseña (dejar vacío para no cambiar)"
-          type="password"
-          value={usuarioEditar.password || ""}
-          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, password: e.target.value })}
-        />
-        <Select
-          value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-          onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
-        >
-          <Option value="Owner">Owner</Option>
-          <Option value="Proveedor">Proveedor</Option>
-          <Option value="Detallista">Detallista</Option>
-        </Select>
-      </FlexBox>
-    )}
-  </Dialog>
-
   // Componente reutilizable para el formulario de usuario
-  function UsuarioForm({ usuario, onChange }) {
+  function UsuarioForm({ usuario, onChange, incluirPassword = false }) {
     return (
       <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
         <Input
@@ -223,6 +144,15 @@ export default function Usuarios() {
           value={usuario.correo}
           onInput={(e) => onChange({ ...usuario, correo: e.target.value })}
         />
+        {incluirPassword && (
+          <Input
+            placeholder={usuario.password !== undefined ? "Contraseña (dejar vacío para no cambiar)" : "Contraseña"}
+            name="password"
+            type="password"
+            value={usuario.password || ""}
+            onInput={(e) => onChange({ ...usuario, password: e.target.value })}
+          />
+        )}
         <Select
           name="rol"
           value={usuario.rol}
@@ -472,32 +402,7 @@ export default function Usuarios() {
           }}>Guardar</Button>
         }
       >
-        <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-          <Input
-            placeholder="Nombre"
-            name="nombre"
-            value={nuevoUsuario.nombre}
-            onInput={handleInputChange}
-          />
-          <Input
-            placeholder="Correo"
-            name="correo"
-            value={nuevoUsuario.correo}
-            onInput={handleInputChange}
-          />
-          <Input
-            placeholder="Contraseña"
-            name="password"
-            type="password"
-            value={nuevoUsuario.password}
-            onInput={handleInputChange}
-          />
-          <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
-            <Option value="Owner">Owner</Option>
-            <Option value="Proveedor">Proveedor</Option>
-            <Option value="Detallista">Detallista</Option>
-          </Select>
-        </FlexBox>
+        <UsuarioForm usuario={nuevoUsuario} onChange={setNuevoUsuario} incluirPassword={true} />
       </Dialog>
 
       {/* MODAL: Editar Usuario */}
@@ -512,32 +417,7 @@ export default function Usuarios() {
         }
       >
         {usuarioEditar && (
-          <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-            <Input
-              placeholder="Nombre"
-              value={usuarioEditar.nombre}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
-            />
-            <Input
-              placeholder="Correo"
-              value={usuarioEditar.correo}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-            />
-            <Input
-              placeholder="Contraseña (dejar vacío para no cambiar)"
-              type="password"
-              value={usuarioEditar.password || ""}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, password: e.target.value })}
-            />
-            <Select
-              value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-              onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
-            >
-              <Option value="Owner">Owner</Option>
-              <Option value="Proveedor">Proveedor</Option>
-              <Option value="Detallista">Detallista</Option>
-            </Select>
-          </FlexBox>
+          <UsuarioForm usuario={usuarioEditar} onChange={setUsuarioEditar} incluirPassword={true} />
         )}
       </Dialog>
     </Layout>
