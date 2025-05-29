@@ -101,6 +101,54 @@ UsuarioModal.propTypes = {
   titulo: PropTypes.string.isRequired
 };
 
+function UsuarioRow({ usuario, usuariosSeleccionados, setUsuariosSeleccionados, index }) {
+  const handleCheckbox = (e) => {
+    const checked = e.target.checked;
+    setUsuariosSeleccionados((prevSeleccionados) => {
+      if (checked && !prevSeleccionados.includes(usuario.id)) {
+        return [...prevSeleccionados, usuario.id];
+      } else {
+        return prevSeleccionados.filter((id) => id !== usuario.id);
+      }
+    });
+  };
+
+  return (
+    <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>
+      <td style={{ padding: "12px" }}>
+        <input
+          type="checkbox"
+          checked={usuariosSeleccionados.includes(usuario.id)}
+          onChange={handleCheckbox}
+        />
+      </td>
+      <td style={{ padding: "12px" }}>{usuario.nombre}</td>
+      <td style={{ padding: "12px" }}>{usuario.correo}</td>
+      <td style={{ padding: "12px" }}>
+        <span
+          style={{
+            backgroundColor: getColorFondo(usuario.rol),
+            color: "#000",
+            padding: "4px 10px",
+            borderRadius: "12px",
+            fontSize: "0.8rem",
+            fontWeight: 500,
+          }}
+        >
+          {usuario.rol}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+UsuarioRow.propTypes = {
+  usuario: PropTypes.object.isRequired,
+  usuariosSeleccionados: PropTypes.array.isRequired,
+  setUsuariosSeleccionados: PropTypes.func.isRequired,
+  index: PropTypes.number.isRequired,
+};
+
 // --- FUNCIONES AUXILIARES ---
 function getColorFondo(rol) {
   if (rol?.toLowerCase() === "owner") return "#e0d4fc";
@@ -344,40 +392,13 @@ export default function Usuarios() {
                   return 0;
                 })
                 .map((usuario, index) => (
-                  <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "12px" }}>
-                      <input
-                        type="checkbox"
-                        checked={usuariosSeleccionados.includes(usuario.id)}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setUsuariosSeleccionados((prevSeleccionados) => {
-                            if (checked && !prevSeleccionados.includes(usuario.id)) {
-                              return [...prevSeleccionados, usuario.id];
-                            } else {
-                              return prevSeleccionados.filter((id) => id !== usuario.id);
-                            }
-                          });
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: "12px" }}>{usuario.nombre}</td>
-                    <td style={{ padding: "12px" }}>{usuario.correo}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span
-                        style={{
-                          backgroundColor: getColorFondo(usuario.rol),
-                          color: "#000",
-                          padding: "4px 10px",
-                          borderRadius: "12px",
-                          fontSize: "0.8rem",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {usuario.rol}
-                      </span>
-                    </td>
-                  </tr>
+                  <UsuarioRow
+                    key={usuario.id ?? `temp-${index}`}
+                    usuario={usuario}
+                    usuariosSeleccionados={usuariosSeleccionados}
+                    setUsuariosSeleccionados={setUsuariosSeleccionados}
+                    index={index}
+                  />
                 ))}
             </tbody>
           </table>
