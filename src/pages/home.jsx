@@ -3,9 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ShellBar,
-  SideNavigation,
-  SideNavigationItem,
   Title,
   Text,
   FlexBox,
@@ -23,7 +20,6 @@ import { getInventario, getInventarioVendido } from "../services/inventarioServi
 import { getForecast } from "../services/forecastService";
 import Layout from "../components/Layout";
 
-
 import "@ui5/webcomponents-icons/dist/home.js";
 import "@ui5/webcomponents-icons/dist/retail-store.js";
 import "@ui5/webcomponents-icons/dist/navigation-right-arrow.js";
@@ -31,6 +27,26 @@ import "@ui5/webcomponents-icons/dist/employee.js";
 import "@ui5/webcomponents-icons/dist/shipping-status.js";
 import "@ui5/webcomponents-icons/dist/cart.js";
 import "@ui5/webcomponents-icons/dist/bell.js";
+
+// Utilidad para configuración de gráficos
+function getChartConfig({ title, yAxisTitle = "Valor", dataLabel = true, xAxisTitle = "Día", legendPosition = "top" }) {
+  return {
+    title: { visible: true, text: title },
+    legend: { visible: true, position: legendPosition, textStyle: { fontSize: 14 } },
+    xAxis: {
+      title: { visible: true, text: xAxisTitle },
+      label: { rotation: 0, fontSize: 12 }
+    },
+    yAxis: {
+      title: { visible: true, text: yAxisTitle },
+      min: 0,
+      label: { fontSize: 12 },
+      grid: { visible: true }
+    },
+    tooltip: { visible: true },
+    dataLabel: { visible: dataLabel }
+  };
+}
 
 const drawerWidth = 240;
 
@@ -48,7 +64,6 @@ export default function Home() {
 
   // 6 meses
   const [ordenesChartData, setOrdenesChartData] = useState([]);
-  // Ordenar
   function parseMes(mesStr) {
     if (!mesStr) return new Date(0, 0, 1);
     const [mes, año] = mesStr.split(" ");
@@ -128,6 +143,7 @@ export default function Home() {
       .then(raw =>
         setOrdenesData(
           raw.map(o => ({
+            id: o.ID_ORDEN, // Usar un id único si está disponible
             fecha: o.FECHA_EMISION,
             estado: o.ESTADO,
             solicitante: o.ID_USUARIO_SOLICITA,
@@ -149,7 +165,8 @@ export default function Home() {
           .slice(0, 8)
           .map(item => ({
             producto: item.PRODUCTO,
-            vendido: item.CANTIDAD
+            vendido: item.CANTIDAD,
+            id: item.PRODUCTO // Usar producto como id único
           }));
         setProductosVendidos(top);
       })
@@ -168,17 +185,13 @@ export default function Home() {
             fecha: new Date(d.TIME).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }),
             prediccion: Number(d.FORECAST),
             max: Number(d.PREDICTION_INTERVAL_MAX),
-            min: Number(d.PREDICTION_INTERVAL_MIN)
+            min: Number(d.PREDICTION_INTERVAL_MIN),
+            id: d.TIME // Usar TIME como id único
           }))
         );
       })
       .catch(console.error);
   }, []);
-
-  const handleNavigationClick = e => {
-    const route = e.detail.item.dataset.route;
-    if (route) navigate(route);
-  };
 
   return (
     <Layout>
@@ -198,8 +211,8 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
-            {inventario.map((item, idx) => (
-              <tr key={idx}>
+            {inventario.map(item => (
+              <tr key={item.PRODUCTO}>
                 <td>{item.PRODUCTO}</td>
                 <td style={{ textAlign: "right" }}>{item.CANTIDAD}</td>
               </tr>
@@ -228,22 +241,7 @@ export default function Home() {
                 ]}
                 width="100%"
                 height="350px"
-                config={{
-                  title: { visible: true, text: "Órdenes últimos 6 meses" },
-                  legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
-                  xAxis: {
-                    title: { visible: true, text: "Mes" },
-                    label: { rotation: 0, fontSize: 12 }
-                  },
-                  yAxis: {
-                    title: { visible: true, text: "Órdenes" },
-                    min: 0,
-                    label: { fontSize: 12 },
-                    grid: { visible: true }
-                  },
-                  tooltip: { visible: true },
-                  dataLabel: { visible: true }
-                }}
+                config={getChartConfig({ title: "Órdenes últimos 6 meses", yAxisTitle: "Órdenes", xAxisTitle: "Mes" })}
               />
             )}
           </Card>
@@ -269,8 +267,8 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {ordenesData.slice(0, 5).map((o, i) => (
-                      <tr key={i}>
+                    {ordenesData.slice(0, 5).map(o => (
+                      <tr key={o.id || o.fecha}>
                         <td>{new Date(o.fecha).toLocaleDateString()}</td>
                         <td>{o.estado}</td>
                         <td>{o.solicitante}</td>
@@ -294,22 +292,7 @@ export default function Home() {
           measures={[{ accessor: "totalCost", label: "Costo Compra (MXN)", color: "#388e3c" }]}
           width="100%"
           height="300px"
-          config={{
-            title: { visible: true, text: "Costos Compra últimos 36 meses" },
-            legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
-            xAxis: {
-              title: { visible: true, text: "Mes" },
-              label: { rotation: 0, fontSize: 12 }
-            },
-            yAxis: {
-              title: { visible: true, text: "MXN" },
-              min: 0,
-              label: { fontSize: 12 },
-              grid: { visible: true }
-            },
-            tooltip: { visible: true },
-            dataLabel: { visible: false }
-          }}
+          config={getChartConfig({ title: "Costos Compra últimos 36 meses", yAxisTitle: "MXN", dataLabel: false, xAxisTitle: "Mes" })}
         />
       </Card>
 
@@ -355,22 +338,7 @@ export default function Home() {
             ]}
             width="100%"
             height="300px"
-            config={{
-              title: { visible: true, text: "Predicción próximos 6 días" },
-              legend: { visible: true, position: "top", textStyle: { fontSize: 14 } },
-              xAxis: {
-                title: { visible: true, text: "Día" },
-                label: { rotation: 0, fontSize: 12 }
-              },
-              yAxis: {
-                title: { visible: true, text: "Valor" },
-                min: 0,
-                label: { fontSize: 12 },
-                grid: { visible: true }
-              },
-              tooltip: { visible: true },
-              dataLabel: { visible: true }
-            }}
+            config={getChartConfig({ title: "Predicción próximos 6 días" })}
           />
         )}
       </Card>
