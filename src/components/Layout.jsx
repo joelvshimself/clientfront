@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import {
   ShellBar,
   ShellBarItem,
@@ -8,7 +9,7 @@ import {
   Avatar
 } from "@ui5/webcomponents-react";
 import logIcon from "@ui5/webcomponents-icons/dist/log.js";
-import "@ui5/webcomponents-icons/dist/employee.js";  // Icono para el avatar
+import "@ui5/webcomponents-icons/dist/employee.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../services/authService";
 
@@ -32,7 +33,7 @@ export default function Layout({ children }) {
   };
 
   const handleProfileClick = () => {
-    navigate("/profile"); // Ajusta la ruta a tu pantalla de perfil
+    navigate("/profile");
   };
 
   return (
@@ -60,7 +61,6 @@ export default function Layout({ children }) {
       </ShellBar>
 
       <FlexBox direction="Row" style={{ height: "100%", marginTop: "3.5rem" }}>
-        {/* Barra lateral */}
         <div
           style={{
             width: 260,
@@ -99,7 +99,6 @@ export default function Layout({ children }) {
           </SideNavigation>
         </div>
 
-        {/* Área de contenido */}
         <div
           style={{
             flexGrow: 1,
@@ -115,3 +114,8 @@ export default function Layout({ children }) {
     </div>
   );
 }
+
+// ✅ Validación de props
+Layout.propTypes = {
+  children: PropTypes.node.isRequired
+};
