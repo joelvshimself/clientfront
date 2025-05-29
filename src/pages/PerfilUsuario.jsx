@@ -12,6 +12,16 @@ import Layout from "../components/Layout";
 import { getUsuarios, updateUsuario } from "../services/usersService";
 import { useNavigate } from "react-router-dom";
 
+function getInitials(nombre) {
+  if (!nombre) return "?";
+  return nombre
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export default function PerfilUsuario() {
   const [usuario, setUsuario] = useState(null);
   const [newName, setNewName] = useState("");
@@ -78,85 +88,166 @@ export default function PerfilUsuario() {
       <FlexBox
         direction="Column"
         alignItems="Center"
-        style={{ padding: "4rem" }}
+        style={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)",
+          padding: "4rem 0"
+        }}
       >
-        <Title level="H1" style={{ marginBottom: "1rem" }}>
-          Perfil de Usuario
-        </Title>
-        {!usuario ? (
-          <Text>Cargando información...</Text>
-        ) : (
-          <Card style={{ minWidth: "30rem", maxWidth: "35rem" }}>
-            <FlexBox
-              direction="Column"
-              style={{ gap: "1.5rem", padding: "2rem" }}
+        <Card
+          style={{
+            minWidth: "28rem",
+            maxWidth: "32rem",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
+            borderRadius: "2rem",
+            padding: "3rem 2.5rem",
+            background: "rgba(255,255,255,0.98)",
+            border: "1px solid #d1d9e6",
+            position: "relative"
+          }}
+        >
+          <FlexBox
+            direction="Column"
+            alignItems="Center"
+            style={{ gap: "2.5rem" }}
+          >
+            {/* Avatar */}
+            <div
+              style={{
+                width: 90,
+                height: 90,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 16px 0 rgba(108, 92, 231, 0.18)",
+                marginBottom: "0.5rem",
+                fontSize: "2.5rem",
+                color: "#fff",
+                fontWeight: "bold",
+                letterSpacing: "1px",
+                border: "4px solid #fff"
+              }}
             >
-              <CheckBox
-                text="Editar perfil"
-                checked={editing}
-                onChange={(e) => setEditing(e.target.checked)}
-              />
+              {getInitials(usuario?.NOMBRE || usuario?.nombre)}
+            </div>
+            <Title level="H2" style={{ marginBottom: "0.5rem", color: "#3a3a6a", fontWeight: 700 }}>
+              Perfil de Usuario
+            </Title>
+            {!usuario ? (
+              <Text>Cargando información...</Text>
+            ) : (
+              <>
+                <CheckBox
+                  text="Editar perfil"
+                  checked={editing}
+                  onChange={(e) => setEditing(e.target.checked)}
+                  style={{
+                    alignSelf: "flex-end",
+                    marginBottom: "-1.5rem",
+                    marginTop: "-1.5rem"
+                  }}
+                />
 
-              <div>
-                <Text style={{ fontWeight: "bold" }}>Nombre:</Text>
-                <br />
-                {editing ? (
-                  <Input
-                    value={newName}
-                    onInput={(e) => setNewName(e.target.value)}
-                    style={{ width: "100%" }}
-                  />
-                ) : (
-                  <Text>{usuario.NOMBRE || usuario.nombre}</Text>
-                )}
-              </div>
-
-              <div>
-                <Text style={{ fontWeight: "bold" }}>Contraseña:</Text>
-                <br />
-                {editing ? (
-                  <Input
-                    type="Password"
-                    placeholder="Ingrese nueva contraseña"
-                    value={newPassword}
-                    onInput={(e) => setNewPassword(e.target.value)}
-                    style={{ width: "100%" }}
-                  />
-                ) : (
-                  <Text>********</Text>
-                )}
-              </div>
-
-              <div>
-                <Text style={{ fontWeight: "bold" }}>Correo:</Text>
-                <br />
-                <Text>
-                  {usuario.EMAIL || usuario.email || usuario.correo}
-                </Text>
-              </div>
-
-              <div>
-                <Text style={{ fontWeight: "bold" }}>Rol:</Text>
-                <br />
-                <Text>{usuario.ROL || usuario.rol}</Text>
-              </div>
-
-              {editing && (
                 <FlexBox
-                  justifyContent="SpaceBetween"
-                  style={{ width: "100%", marginTop: "1rem" }}
+                  direction="Column"
+                  style={{
+                    gap: "1.8rem",
+                    width: "100%",
+                    marginTop: "1rem"
+                  }}
                 >
-                  <Button design="Transparent" onClick={handleCancel}>
-                    Cancelar
-                  </Button>
-                  <Button design="Emphasized" onClick={handleSave}>
-                    Guardar
-                  </Button>
+                  <div style={{ padding: "0.5rem 0.8rem" }}>
+                    <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Nombre:</Text>
+                    <br />
+                    {editing ? (
+                      <Input
+                        value={newName}
+                        onInput={(e) => setNewName(e.target.value)}
+                        style={{
+                          width: "100%",
+                          marginTop: "0.3rem",
+                          background: "#f7fafc",
+                          borderRadius: "0.5rem"
+                        }}
+                      />
+                    ) : (
+                      <Text style={{ fontSize: "1.15rem", color: "#3a3a6a", fontWeight: 500 }}>
+                        {usuario.NOMBRE || usuario.nombre}
+                      </Text>
+                    )}
+                  </div>
+
+                  <div style={{ padding: "0.5rem 0.8rem" }}>
+                    <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Contraseña:</Text>
+                    <br />
+                    {editing ? (
+                      <Input
+                        type="Password"
+                        placeholder="Ingrese nueva contraseña"
+                        value={newPassword}
+                        onInput={(e) => setNewPassword(e.target.value)}
+                        style={{
+                          width: "100%",
+                          marginTop: "0.3rem",
+                          background: "#f7fafc",
+                          borderRadius: "0.5rem"
+                        }}
+                      />
+                    ) : (
+                      <Text style={{ letterSpacing: "0.2em", color: "#3a3a6a" }}>********</Text>
+                    )}
+                  </div>
+
+                  <div style={{ padding: "0.5rem 0.8rem" }}>
+                    <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Correo:</Text>
+                    <br />
+                    <Text style={{ color: "#3a3a6a" }}>
+                      {usuario.EMAIL || usuario.email || usuario.correo}
+                    </Text>
+                  </div>
+
+                  <div style={{ padding: "0.5rem 0.8rem" }}>
+                    <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Rol:</Text>
+                    <br />
+                    <Text style={{ color: "#3a3a6a" }}>{usuario.ROL || usuario.rol}</Text>
+                  </div>
                 </FlexBox>
-              )}
-            </FlexBox>
-          </Card>
-        )}
+
+                {editing && (
+                  <FlexBox
+                    justifyContent="SpaceBetween"
+                    style={{
+                      width: "100%",
+                      marginTop: "2.5rem",
+                      gap: "1.5rem"
+                    }}
+                  >
+                    <Button design="Transparent" onClick={handleCancel} style={{
+                      width: "48%",
+                      borderRadius: "0.7rem",
+                      border: "1px solid #fc5c7d",
+                      color: "#fc5c7d",
+                      fontWeight: 600
+                    }}>
+                      Cancelar
+                    </Button>
+                    <Button design="Emphasized" onClick={handleSave} style={{
+                      width: "48%",
+                      borderRadius: "0.7rem",
+                      background: "linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%)",
+                      color: "#fff",
+                      fontWeight: 600
+                    }}>
+                      Guardar
+                    </Button>
+                  </FlexBox>
+                )}
+              </>
+            )}
+          </FlexBox>
+        </Card>
       </FlexBox>
     </Layout>
   );
