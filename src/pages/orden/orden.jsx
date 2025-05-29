@@ -191,14 +191,18 @@ export default function Ordenes() {
           : b.costo - a.costo;
       }
       if (solicitanteSort) {
+        const aSolicita = (a.usuario_solicita ?? "").toString();
+        const bSolicita = (b.usuario_solicita ?? "").toString();
         return solicitanteSort === "asc"
-          ? a.usuario_solicita.localeCompare(b.usuario_solicita)
-          : b.usuario_solicita.localeCompare(a.usuario_solicita);
+          ? aSolicita.localeCompare(bSolicita)
+          : bSolicita.localeCompare(aSolicita);
       }
       if (proveedorSort) {
+        const aProvee = (a.usuario_provee ?? "").toString();
+        const bProvee = (b.usuario_provee ?? "").toString();
         return proveedorSort === "asc"
-          ? a.usuario_provee.localeCompare(b.usuario_provee)
-          : b.usuario_provee.localeCompare(a.usuario_provee);
+          ? aProvee.localeCompare(bProvee)
+          : bProvee.localeCompare(aProvee);
       }
       return 0;
     });
