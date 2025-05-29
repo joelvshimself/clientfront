@@ -13,7 +13,6 @@ import {
 import Layout from "../../components/Layout";
 import { getOrdenes, createOrden, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
 
-
 export default function Ordenes() {
   const navigate = useNavigate();
   const [openCrear, setOpenCrear] = useState(false);
@@ -21,6 +20,19 @@ export default function Ordenes() {
   const [ordenEditar, setOrdenEditar] = useState(null);
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+
+  // Filtros y ordenamiento
+  const [busqueda, setBusqueda] = useState("");
+  const [ordenIdSort, setOrdenIdSort] = useState(null);
+  const [ordenFechaSort, setOrdenFechaSort] = useState(null);
+  const [ordenEstadoSort, setOrdenEstadoSort] = useState(null);
+  // Nuevos estados de ordenamiento
+  const [recepcionSort, setRecepcionSort] = useState(null);
+  const [recepcionEstimadaSort, setRecepcionEstimadaSort] = useState(null);
+  const [subtotalSort, setSubtotalSort] = useState(null);
+  const [costoSort, setCostoSort] = useState(null);
+  const [solicitanteSort, setSolicitanteSort] = useState(null);
+  const [proveedorSort, setProveedorSort] = useState(null);
 
   const [nuevaOrden, setNuevaOrden] = useState({
     estado: "",
@@ -141,42 +153,148 @@ export default function Ordenes() {
     }
   };
 
+  // Filtrado y ordenamiento aplicados antes de renderizar
+  const ordenesFiltradasYOrdenadas = [...ordenes]
+    .filter((o) => o.estado.toLowerCase().includes(busqueda.toLowerCase()))
+    .sort((a, b) => {
+      if (ordenIdSort) {
+        return ordenIdSort === "asc" ? a.id - b.id : b.id - a.id;
+      }
+      if (ordenFechaSort) {
+        const fa = new Date(a.fecha_emision);
+        const fb = new Date(b.fecha_emision);
+        return ordenFechaSort === "asc" ? fa - fb : fb - fa;
+      }
+      if (ordenEstadoSort) {
+        return ordenEstadoSort === "asc"
+          ? a.estado.localeCompare(b.estado)
+          : b.estado.localeCompare(a.estado);
+      }
+      if (recepcionSort) {
+        const ra = new Date(a.fecha_recepcion);
+        const rb = new Date(b.fecha_recepcion);
+        return recepcionSort === "asc" ? ra - rb : rb - ra;
+      }
+      if (recepcionEstimadaSort) {
+        const ea = new Date(a.fecha_estimada);
+        const eb = new Date(b.fecha_estimada);
+        return recepcionEstimadaSort === "asc" ? ea - eb : eb - ea;
+      }
+      if (subtotalSort) {
+        return subtotalSort === "asc"
+          ? a.subtotal - b.subtotal
+          : b.subtotal - a.subtotal;
+      }
+      if (costoSort) {
+        return costoSort === "asc"
+          ? a.costo - b.costo
+          : b.costo - a.costo;
+      }
+      if (solicitanteSort) {
+        const aSolicita = (a.usuario_solicita ?? "").toString();
+        const bSolicita = (b.usuario_solicita ?? "").toString();
+        return solicitanteSort === "asc"
+          ? aSolicita.localeCompare(bSolicita)
+          : bSolicita.localeCompare(aSolicita);
+      }
+      if (proveedorSort) {
+        const aProvee = (a.usuario_provee ?? "").toString();
+        const bProvee = (b.usuario_provee ?? "").toString();
+        return proveedorSort === "asc"
+          ? aProvee.localeCompare(bProvee)
+          : bProvee.localeCompare(aProvee);
+      }
+      return 0;
+    });
+
+  // Componente auxiliar para encabezados de tabla con ordenamiento
+  function SortableTh({ label, value, setValue, clearAllSorts }) {
+    return (
+      <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {label}
+          <select
+            value={value || ""}
+            onChange={e => {
+              clearAllSorts();
+              setValue(e.target.value);
+            }}
+            style={{
+              border: "1px solid #ccc",
+              background: "white",
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              color: "#000",
+              fontWeight: "bold",
+              borderRadius: "4px",
+            }}
+          >
+            <option value="">⇅</option>
+            <option value="asc">↑ A-Z</option>
+            <option value="desc">↓ Z-A</option>
+          </select>
+        </div>
+      </th>
+    );
+  }
+
+  // Limpia todos los estados de ordenamiento excepto el que se va a activar
+  const clearAllSortsExcept = (setter) => () => {
+    setOrdenIdSort(null);
+    setOrdenFechaSort(null);
+    setOrdenEstadoSort(null);
+    setRecepcionSort(null);
+    setRecepcionEstimadaSort(null);
+    setSubtotalSort(null);
+    setCostoSort(null);
+    setSolicitanteSort(null);
+    setProveedorSort(null);
+    setter && setter();
+  };
+
   return (
     <Layout>
       <FlexBox direction="Column" style={{ flexGrow: 1, padding: "2rem", marginTop: "2rem", backgroundColor: "#fafafa" }}>
         <Title level="H3">Órdenes</Title>
 
-        <FlexBox direction="Row" justifyContent="End" style={{ marginBottom: "1rem", gap: "0.75rem" }}>
-          <Button design="Negative" icon="delete" onClick={eliminarOrdenesSeleccionadas} disabled={ordenesSeleccionadas.length === 0}>
-            Eliminar
-          </Button>
-
-          <Button
-            design="Emphasized"
-            icon="add"
-            onClick={() => {
-              navigate("/orden/nueva/proveedor");
-            }}
-          >
-            Crear
-          </Button>
-
-          <Button design="Attention" icon="edit" disabled={ordenesSeleccionadas.length !== 1} onClick={() => {
-            const ordenToEdit = ordenes.find(o => o.id === ordenesSeleccionadas[0]);
-            if (ordenToEdit) {
-              setOrdenEditar(ordenToEdit);
-              setOpenEditar(true);
-            }
-          }}>Editar</Button>
-
-          <Button
-            design="Positive"
-            icon="shipping-status"
-            disabled={ordenesSeleccionadas.length !== 1}
-            onClick={manejarCompletarOrden}
-          >
-            Completar
-          </Button>
+        {/* Barra de filtros y acciones */}
+        <FlexBox direction="Row" justifyContent="SpaceBetween" style={{ marginBottom: "1rem", width: "100%" }}>
+          <Input
+            placeholder="Buscar por Estado"
+            style={{ width: "300px" }}
+            icon="search"
+            value={busqueda}
+            onInput={(e) => setBusqueda(e.target.value)}
+          />
+          <FlexBox direction="Row" justifyContent="End" style={{ gap: "0.75rem" }}>
+            <Button design="Negative" icon="delete" onClick={eliminarOrdenesSeleccionadas} disabled={ordenesSeleccionadas.length === 0}>
+              Eliminar
+            </Button>
+            <Button
+              design="Emphasized"
+              icon="add"
+              onClick={() => {
+                navigate("/orden/nueva/proveedor");
+              }}
+            >
+              Crear
+            </Button>
+            <Button design="Attention" icon="edit" disabled={ordenesSeleccionadas.length !== 1} onClick={() => {
+              const ordenToEdit = ordenes.find(o => o.id === ordenesSeleccionadas[0]);
+              if (ordenToEdit) {
+                setOrdenEditar(ordenToEdit);
+                setOpenEditar(true);
+              }
+            }}>Editar</Button>
+            <Button
+              design="Positive"
+              icon="shipping-status"
+              disabled={ordenesSeleccionadas.length !== 1}
+              onClick={manejarCompletarOrden}
+            >
+              Completar
+            </Button>
+          </FlexBox>
         </FlexBox>
 
         <Card style={{
@@ -186,36 +304,72 @@ export default function Ordenes() {
           boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           border: "1px solid #e0e0e0",
           width: "100%",
-          alignSelf: "stretch" // Asegura que el Card use todo el ancho del FlexBox
+          alignSelf: "stretch"
         }}>
           <Title level="H5" style={{ marginBottom: "1rem", padding: "0.5rem 0 0.5rem 1.5rem" }}>Base de Datos de Órdenes</Title>
-          <div style={{
-            overflowX: "auto",
-            borderRadius: "8px",
-            width: "100%" // Asegura que el div ocupe todo el ancho
-          }}>
-            <table style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontFamily: "Segoe UI",
-              fontSize: "15px"
-            }}>
+          <div style={{ overflowX: "auto", borderRadius: "8px", width: "100%" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI", fontSize: "15px" }}>
               <thead style={{ backgroundColor: "#f9f9f9", position: "sticky", top: 0 }}>
                 <tr>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}></th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>ID Orden</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Fecha Emisión</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Recepción</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Recepción Estimada</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Estado</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Subtotal</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Costo Compra</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Solicitante</th>
-                  <th style={{ padding: "12px", fontWeight: "600", textAlign: "left" }}>Proveedor</th>
+                  <th style={{ padding: "12px" }}></th>
+                  <SortableTh
+                    label="ID Orden"
+                    value={ordenIdSort}
+                    setValue={setOrdenIdSort}
+                    clearAllSorts={clearAllSortsExcept(() => setOrdenIdSort)}
+                  />
+                  <SortableTh
+                    label="Fecha Emisión"
+                    value={ordenFechaSort}
+                    setValue={setOrdenFechaSort}
+                    clearAllSorts={clearAllSortsExcept(() => setOrdenFechaSort)}
+                  />
+                  <SortableTh
+                    label="Estado"
+                    value={ordenEstadoSort}
+                    setValue={setOrdenEstadoSort}
+                    clearAllSorts={clearAllSortsExcept(() => setOrdenEstadoSort)}
+                  />
+                  <SortableTh
+                    label="Recepción"
+                    value={recepcionSort}
+                    setValue={setRecepcionSort}
+                    clearAllSorts={clearAllSortsExcept(() => setRecepcionSort)}
+                  />
+                  <SortableTh
+                    label="Recepción Estimada"
+                    value={recepcionEstimadaSort}
+                    setValue={setRecepcionEstimadaSort}
+                    clearAllSorts={clearAllSortsExcept(() => setRecepcionEstimadaSort)}
+                  />
+                  <SortableTh
+                    label="Subtotal"
+                    value={subtotalSort}
+                    setValue={setSubtotalSort}
+                    clearAllSorts={clearAllSortsExcept(() => setSubtotalSort)}
+                  />
+                  <SortableTh
+                    label="Costo Compra"
+                    value={costoSort}
+                    setValue={setCostoSort}
+                    clearAllSorts={clearAllSortsExcept(() => setCostoSort)}
+                  />
+                  <SortableTh
+                    label="Solicitante"
+                    value={solicitanteSort}
+                    setValue={setSolicitanteSort}
+                    clearAllSorts={clearAllSortsExcept(() => setSolicitanteSort)}
+                  />
+                  <SortableTh
+                    label="Proveedor"
+                    value={proveedorSort}
+                    setValue={setProveedorSort}
+                    clearAllSorts={clearAllSortsExcept(() => setProveedorSort)}
+                  />
                 </tr>
               </thead>
               <tbody>
-                {ordenes.map((orden) => (
+                {ordenesFiltradasYOrdenadas.map((orden) => (
                   <tr key={orden.id} style={{ borderBottom: "1px solid #eee", backgroundColor: "#fff" }}>
                     <td style={{ padding: "12px" }}>
                       <input
@@ -233,8 +387,6 @@ export default function Ordenes() {
                     </td>
                     <td style={{ padding: "12px" }}>{orden.id}</td>
                     <td style={{ padding: "12px" }}>{orden.fecha_emision}</td>
-                    <td style={{ padding: "12px" }}>{orden.fecha_recepcion}</td>
-                    <td style={{ padding: "12px" }}>{orden.fecha_estimada}</td>
                     <td style={{
                       padding: "12px",
                       fontWeight: "bold",
@@ -242,6 +394,8 @@ export default function Ordenes() {
                     }}>
                       {orden.estado}
                     </td>
+                    <td style={{ padding: "12px" }}>{orden.fecha_recepcion}</td>
+                    <td style={{ padding: "12px" }}>{orden.fecha_estimada}</td>
                     <td style={{ padding: "12px" }}>${orden.subtotal}</td>
                     <td style={{ padding: "12px" }}>${orden.costo}</td>
                     <td style={{ padding: "12px" }}>{orden.usuario_solicita}</td>
