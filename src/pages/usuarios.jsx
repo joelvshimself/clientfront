@@ -166,6 +166,24 @@ export default function Usuarios() {
     );
   }
 
+  // Componente reutilizable para el modal de usuario
+  function UsuarioModal({ open, onClose, onSave, usuario, setUsuario, titulo }) {
+    return (
+      <Dialog
+        headerText={titulo}
+        open={open}
+        onAfterClose={onClose}
+        footer={
+          <Button design="Emphasized" onClick={onSave}>
+            Guardar
+          </Button>
+        }
+      >
+        <UsuarioForm usuario={usuario} onChange={setUsuario} incluirPassword={true} />
+      </Dialog>
+    );
+  }
+
   return (
     <Layout>
       <Title level="H3" style={{ marginBottom: "1rem" }}>Usuarios</Title>
@@ -391,35 +409,29 @@ export default function Usuarios() {
 
 
       {/* MODAL: Crear Usuario */}
-      <Dialog
-        headerText="Agregar Usuario"
+      <UsuarioModal
         open={openCrear}
-        onAfterClose={() => setOpenCrear(false)}
-        footer={
-          <Button design="Emphasized" onClick={() => {
-            agregarUsuario();
-            setOpenCrear(false);
-          }}>Guardar</Button>
-        }
-      >
-        <UsuarioForm usuario={nuevoUsuario} onChange={setNuevoUsuario} incluirPassword={true} />
-      </Dialog>
+        onClose={() => setOpenCrear(false)}
+        onSave={() => {
+          agregarUsuario();
+          setOpenCrear(false);
+        }}
+        usuario={nuevoUsuario}
+        setUsuario={setNuevoUsuario}
+        titulo="Agregar Usuario"
+      />
 
       {/* MODAL: Editar Usuario */}
-      <Dialog
-        headerText="Editar Usuario"
-        open={openEditar}
-        onAfterClose={() => setOpenEditar(false)}
-        footer={
-          <Button design="Emphasized" onClick={handleEditarGuardar}>
-            Guardar
-          </Button>
-        }
-      >
-        {usuarioEditar && (
-          <UsuarioForm usuario={usuarioEditar} onChange={setUsuarioEditar} incluirPassword={true} />
-        )}
-      </Dialog>
+      {usuarioEditar && (
+        <UsuarioModal
+          open={openEditar}
+          onClose={() => setOpenEditar(false)}
+          onSave={handleEditarGuardar}
+          usuario={usuarioEditar}
+          setUsuario={setUsuarioEditar}
+          titulo="Editar Usuario"
+        />
+      )}
     </Layout>
   );
 }
