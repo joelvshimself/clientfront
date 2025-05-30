@@ -80,6 +80,29 @@ const sparkConfig = {
 
 const drawerWidth = 240;
 
+// Componente reutilizable para KPI pequeño
+export function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
+  return (
+    <Card style={{ background: "transparent", boxShadow: "none", border: "none", padding: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "1rem", background: "transparent", borderRadius: 8 }}>
+        <Icon name={icon} style={iconStyle} />
+        <Text>{label}</Text>
+        <Text style={valueStyle}>{value}</Text>
+        {extra}
+      </div>
+    </Card>
+  );
+}
+
+SmallKPI.propTypes = {
+  icon: PropTypes.string.isRequired,
+  iconStyle: PropTypes.object,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  valueStyle: PropTypes.object,
+  extra: PropTypes.node
+};
+
 export default function Home() {
   const notiButtonRef = useRef(null);
   const [openNotificaciones, setOpenNotificaciones] = useState(false);
@@ -91,15 +114,12 @@ export default function Home() {
     getInventario().then(setInventario).catch(console.error);
   }, []);
 
-  // 6 meses
+  // Órdenes últimos 6 meses
   const [ordenesChartData, setOrdenesChartData] = useState([]);
   function parseMes(mesStr) {
     if (!mesStr) return new Date(0, 0, 1);
     const [mes, año] = mesStr.split(" ");
-    const meses = [
-      "ene", "feb", "mar", "abr", "may", "jun",
-      "jul", "ago", "sep", "oct", "nov", "dic"
-    ];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
     const mesLimpio = mes.replace(".", "").toLowerCase();
     const mesIdx = meses.indexOf(mesLimpio);
     return new Date(Number(año), mesIdx === -1 ? 0 : mesIdx, 1);
@@ -108,48 +128,36 @@ export default function Home() {
     getOrdenes()
       .then(raw => {
         const ahora = new Date();
-        const meses = Array.from({ length: 6 }).map((_, i) => {
-          const d = new Date(ahora.getFullYear(), ahora.getMonth() - 5 + i, 1);
-          return d.toLocaleString("es-MX", { year: "numeric", month: "short" });
-        });
+        const meses = Array.from({ length: 6 }).map((_, i) => new Date(ahora.getFullYear(), ahora.getMonth() - 5 + i, 1)
+          .toLocaleString("es-MX", { year: "numeric", month: "short" })
+        );
         const conteo = raw.reduce((acc, o) => {
           const d = new Date(o.FECHA_EMISION);
           const key = d.toLocaleString("es-MX", { year: "numeric", month: "short" });
           acc[key] = (acc[key] || 0) + 1;
           return acc;
         }, {});
-
-        // Arreglo ordenado y completo de meses
-        const arr = meses.map(mes => ({
-          mes,
-          total: conteo[mes] || 0
-        }));
-
+        const arr = meses.map(mes => ({ mes, total: conteo[mes] || 0 }));
         const extended = arr.map((d, i, a) => ({
           mes: d.mes,
           total: d.total,
-          mediaMovil:
-            i >= 2
-              ? Math.round((a[i].total + a[i - 1].total + a[i - 2].total) / 3)
-              : null
+          mediaMovil: i >= 2 ? Math.round((a[i].total + a[i - 1].total + a[i - 2].total) / 3) : null
         }));
-
         setOrdenesChartData(extended);
       })
       .catch(console.error);
   }, []);
 
-  // Costo compra últimos 36 meses
+  // Costos Compra últimos 36 meses
   const [costChartData, setCostChartData] = useState([]);
   useEffect(() => {
     getOrdenes()
       .then(raw => {
         const ahora = new Date();
         const start = new Date(ahora.getFullYear(), ahora.getMonth() - 35, 1);
-        const months = Array.from({ length: 36 }).map((_, i) => {
-          const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
-          return d.toLocaleString("es-MX", { year: "numeric", month: "short" });
-        });
+        const months = Array.from({ length: 36 }).map((_, i) => new Date(start.getFullYear(), start.getMonth() + i, 1)
+          .toLocaleString("es-MX", { year: "numeric", month: "short" })
+        );
         const costos = raw.reduce((acc, o) => {
           const d = new Date(o.FECHA_EMISION);
           if (d >= start) {
@@ -165,59 +173,47 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
-  // Ordenes recientes
+  // Órdenes recientes
   const [ordenesData, setOrdenesData] = useState([]);
   useEffect(() => {
     getOrdenes()
       .then(raw =>
-        setOrdenesData(
-          raw.map(o => ({
-            id: o.ID_ORDEN, // Usar un id único si está disponible
-            fecha: o.FECHA_EMISION,
-            estado: o.ESTADO,
-            solicitante: o.ID_USUARIO_SOLICITA,
-            proveedor: o.ID_USUARIO_PROVEE
-          }))
-        )
+        setOrdenesData(raw.map(o => ({
+          id: o.ID_ORDEN,
+          fecha: o.FECHA_EMISION,
+          estado: o.ESTADO,
+          solicitante: o.ID_USUARIO_SOLICITA,
+          proveedor: o.ID_USUARIO_PROVEE
+        })) )
       )
       .catch(console.error);
   }, []);
 
-  // Productos más vendidos (gráfica de pastel)
+  // Productos más vendidos
   const [productosVendidos, setProductosVendidos] = useState([]);
   useEffect(() => {
     getInventarioVendido()
       .then(data => {
-        // data = [{ PRODUCTO, CANTIDAD }, …]
-        const top = data
-          .sort((a, b) => b.CANTIDAD - a.CANTIDAD)
-          .slice(0, 8)
-          .map(item => ({
-            producto: item.PRODUCTO,
-            vendido: item.CANTIDAD,
-            id: item.PRODUCTO // Usar producto como id único
-          }));
+        const top = data.sort((a, b) => b.CANTIDAD - a.CANTIDAD).slice(0, 8)
+          .map(item => ({ producto: item.PRODUCTO, vendido: item.CANTIDAD, id: item.PRODUCTO }));
         setProductosVendidos(top);
       })
       .catch(console.error);
   }, []);
 
-  // Estado para el forecast
+  // Forecast próximos 6 días
   const [forecastData, setForecastData] = useState([]);
   useEffect(() => {
     getForecast()
       .then(data => {
-        // Ordenar por fecha ascendente
         const sorted = [...data].sort((a, b) => new Date(a.TIME) - new Date(b.TIME));
-        setForecastData(
-          sorted.slice(0, 6).map(d => ({
-            fecha: new Date(d.TIME).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }),
-            prediccion: Number(d.FORECAST),
-            max: Number(d.PREDICTION_INTERVAL_MAX),
-            min: Number(d.PREDICTION_INTERVAL_MIN),
-            id: d.TIME // Usar TIME como id único
-          }))
-        );
+        setForecastData(sorted.slice(0, 6).map(d => ({
+          fecha: new Date(d.TIME).toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }),
+          prediccion: Number(d.FORECAST),
+          max: Number(d.PREDICTION_INTERVAL_MAX),
+          min: Number(d.PREDICTION_INTERVAL_MIN),
+          id: d.TIME
+        })));
       })
       .catch(console.error);
   }, []);
@@ -234,43 +230,30 @@ export default function Home() {
   const last12Sum = last12.reduce((acc, d) => acc + d.totalCost, 0);
   const prev12Sum = prev12.reduce((acc, d) => acc + d.totalCost, 0);
   const diff = last12Sum - prev12Sum;
-  const trend = diff > 0 ? "↑" : diff < 0 ? "↓" : "-";
-  const trendColor = diff > 0 ? "#d32f2f" : diff < 0 ? "#388e3c" : "#888";
 
-  // Componente reutilizable para KPI pequeño
-  function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
-    return (
-      <Card style={{
-        background: "transparent",
-        boxShadow: "none",
-        border: "none",
-        padding: 0
-      }}>
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5rem",
-          padding: "1rem",
-          background: "transparent",
-          borderRadius: 8
-        }}>
-          <Icon name={icon} style={iconStyle} />
-          <Text>{label}</Text>
-          <Text style={valueStyle}>{value}</Text>
-          {extra}
-        </div>
-      </Card>
-    );
+  let trend;
+  let trendColor;
+  if (diff > 0) {
+    trend = "↑";
+    trendColor = "#d32f2f";
+  } else if (diff < 0) {
+    trend = "↓";
+    trendColor = "#388e3c";
+  } else {
+    trend = "-";
+    trendColor = "#888";
   }
 
-  SmallKPI.propTypes = {
-    icon: PropTypes.string.isRequired,
-    iconStyle: PropTypes.object,
-    label: PropTypes.string.isRequired,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    valueStyle: PropTypes.object,
-    extra: PropTypes.node
-  };
+  // KPIs para Órdenes últimos 6 meses
+  const maxOrderMonth = ordenesChartData.reduce((max, d) => (d.total > (max.total ?? -Infinity) ? d : max), { mes: "", total: -Infinity });
+  const minOrderMonth = ordenesChartData.reduce((min, d) => (d.total !== null && d.total < (min.total ?? Infinity) ? d : min), { mes: "", total: Infinity });
+
+  const growth = ordenesChartData.length > 1 && ordenesChartData[0].total > 0
+    ? Math.round(((ordenesChartData[ordenesChartData.length - 1].total - ordenesChartData[0].total) / ordenesChartData[0].total) * 100)
+    : 0;
+
+  // Estilo para los valores de los KPIs pequeños
+  const valueStyle = { fontSize: 22, fontWeight: 700, color: "#222", marginBottom: 0 };
 
   return (
     <Layout>
