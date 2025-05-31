@@ -1,6 +1,6 @@
 name: CI → Tests + Coverage + SonarQube + Deploy to CF
 
-# Se dispara en cada push o pull request a la rama staging_julian
+# Se dispara en push o pull request a la rama staging_julian
 on:
   push:
     branches: [ staging_julian ]
@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      # 1) Obtener el código completo (sin shallow clone)
+      # 1) Clonar repositorio (con historial completo)
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
@@ -25,13 +25,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       # 3) Instalar dependencias
       - name: Install dependencies
         run: npm install
 
-      # 4) Ejecutar ESLint (opcional, si ya tienes script "lint")
+      # 4) Ejecutar ESLint (si acaso)
       - name: Run ESLint
         run: npm run lint
         continue-on-error: true
@@ -39,21 +39,20 @@ jobs:
       # 5) Ejecutar Vitest con cobertura
       - name: Run Vitest (Tests + Coverage)
         run: |
-          # Asegúrate de tener instalado @vitest/coverage-istanbul
+          # Asegúrate de que @vitest/coverage-istanbul esté instalado
           npm install --save-dev @vitest/coverage-istanbul
 
           # Ejecutar Vitest y generar coverage/lcov.info
           npx vitest run --coverage
+        # NOTA: genera coverage/lcov.info
 
-        # -> Esto generará coverage/lcov.info
-
-      # 6) Llamar al SonarQube Scanner
+      # 6) SonarQube Scan
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}
-        # El action detectará tu sonar-project.properties y el coverage/lcov.info
+        # Este action detecta tu sonar-project.properties y busca coverage/lcov.info
 
       # 7) Comprobar Quality Gate de SonarQube
       - name: SonarQube Quality Gate Check
@@ -65,45 +64,42 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}
 
-      # 8) Mostrar el estado del Quality Gate en la salida
+      # 8) Mostrar estado del Quality Gate en la salida
       - name: Show Quality Gate Status
         run: |
           echo "🎯 Quality Gate Status: ${{ steps.quality-gate.outputs.quality-gate-status }}"
 
-      # 9) Fallar el job si el Quality Gate devolvió FAILED
+      # 9) Falla el job si el Quality Gate está en FAILED
       - name: Fail if Quality Gate FAILED
         if: ${{ steps.quality-gate.outputs.quality-gate-status == 'FAILED' }}
         run: |
           echo "::error ::🚫 Quality Gate ha FALLADO"
           exit 1
 
-      # 10) Advertencia si el Quality Gate devolvió WARN
+      # 10) Advertencia si el Quality Gate está en WARN
       - name: Warn if Quality Gate WARN
         if: ${{ steps.quality-gate.outputs.quality-gate-status == 'WARN' }}
         run: |
           echo "::warning ::⚠️ Quality Gate está en estado WARN"
 
-  # ---------- JOB #2: Deploy a SAP Cloud Foundry (solo si el JOB #1 fue exitoso) ----------
+  # ---------- JOB #2: Deploy a SAP Cloud Foundry (si JOB #1 sale OK) ----------
   deploy-to-cf:
     name: 🚢 Deploy to SAP Cloud Foundry (staging_julian)
     runs-on: ubuntu-latest
 
-    # Solo ejecuta este job si "test-and-sonar" finalizó con éxito
     needs: test-and-sonar
     if: ${{ needs.test-and-sonar.result == 'success' }}
 
     steps:
-      # 1) Obtener el código
+      # 1) Clonar repositorio (esta vez no hace falta historial completo)
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       # 2) Instalar Node.js v18
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       # 3) Instalar dependencias
       - name: Install dependencies
@@ -114,11 +110,11 @@ jobs:
         run: npm run lint
         continue-on-error: true
 
-      # 5) Ejecutar tests nuevamente (opcional)
+      # 5) Ejecutar tests nuevamente (para comprobar, opcional)
       - name: Run Tests (check)
         run: npm test
 
-      # 6) Construir el bundle de producción
+      # 6) Construir el frontend para producción
       - name: Build Frontend
         run: npm run build
         env:
@@ -131,14 +127,13 @@ jobs:
           sudo apt-get install -y wget gnupg
           wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key \
             | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] \
-            https://packages.cloudfoundry.org/debian stable main" \
+          echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" \
             | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
           sudo apt-get update
           sudo apt-get install -y cf8-cli
           cf version
 
-      # 8) Autenticación y Target en Cloud Foundry
+      # 8) Autenticación y target en Cloud Foundry
       - name: Authenticate & Target CF
         env:
           CF_USERNAME: ${{ secrets.CF_USERNAME }}
