@@ -260,6 +260,11 @@ export default function Usuarios() {
   const eliminarUsuariosSeleccionados = async () => {
     for (let id of usuariosSeleccionados) {
       await deleteUsuario(id);
+      agregarNotificacion(
+        "success",
+        `Usuario con ID ${id} eliminado correctamente`,
+        setNotificaciones
+      );
     }
     setUsuariosSeleccionados([]);
     await loadUsuarios();

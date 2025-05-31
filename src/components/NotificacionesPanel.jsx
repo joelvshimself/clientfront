@@ -94,25 +94,6 @@ const NotificacionesPanel = () => {
                 </Button>
               </div>
             ))}
-
-            <Button
-              style={{ minHeight: 40, marginTop: "1rem" }}
-              onClick={() => handleAgregarNotificacion("success", mensajesNotificaciones.exito)}
-            >
-              Agregar Éxito
-            </Button>
-            <Button
-              style={{ minHeight: 40 }}
-              onClick={() => handleAgregarNotificacion("info", mensajesNotificaciones.info)}
-            >
-              Agregar Info
-            </Button>
-            <Button
-              style={{ minHeight: 40 }}
-              onClick={() => handleAgregarNotificacion("error", mensajesNotificaciones.error)}
-            >
-              Agregar Error
-            </Button>
           </FlexBox>
         </Popover>
       )}
