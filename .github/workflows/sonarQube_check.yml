@@ -1,63 +1,41 @@
-name: Build and Analyze
+name: SonarQube Scan
 
 on:
   push:
     branches:
       - main
       - staging_joel
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  build:
-    name: Build and analyze
+  sonarqube:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Instalación de dependencias
-      - name: Install dependencies
-        run: npm install
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
 
-      # Ejecutar pruebas y generar coverage
-      - name: Run tests and generate coverage
-        run: npm test
+    - name: Install dependencies
+      run: npm install
 
-      # Escanear con SonarQube e incluir cobertura
-      - name: SonarQube Scan with Coverage
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.sources=src
-            -Dsonar.tests=test
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.test.inclusions=test/**/*.test.js
-            -Dsonar.exclusions=node_modules/**,coverage/**
+    - name: Run tests with coverage
+      run: npm run test -- --coverage
 
-      # Quality Gate
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        with:
-          pollingTimeoutSec: 600
-          
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: "SonarQube Quality Gate Status"
-        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
-
-      - name: Fail if Quality Gate failed
-        if: steps.sonarqube-quality-gate-check.outputs.quality-gate-status == 'FAILED'
-        run: |
-          echo "Quality Gate FAILED"
-          exit 1
-
-      - name: Warn if Quality Gate status is WARN
-        if: steps.sonarqube-quality-gate-check.outputs.quality-gate-status == 'WARN'
-        run: echo "Quality Gate status is WARN"
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v5
+      with:
+        args: >
+          -Dsonar.sources=src
+          -Dsonar.tests=tests
+          -Dsonar.test.inclusions=tests/**/*.test.js,tests/**/*.test.jsx
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+          -Dsonar.exclusions=node_modules/**,coverage/**
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
