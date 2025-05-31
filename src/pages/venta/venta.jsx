@@ -5,25 +5,19 @@ import {
   Title,
   Input,
   Button,
-  Dialog,
-  Select,
-  Option
+  Dialog
 } from "@ui5/webcomponents-react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import {
   getVentas,
-  venderProductos,
-  eliminarVenta,
-  editarVenta
+  eliminarVenta
 } from "../../services/ventaService";
 
 export default function Venta() {
   const navigate = useNavigate();
   const [ventas, setVentas] = useState([]);
   const [ventasSeleccionadas, setVentasSeleccionadas] = useState([]);
-  const [openEditar, setOpenEditar] = useState(false);
-  const [ventaEditar, setVentaEditar] = useState(null);
   const [detalleVenta, setDetalleVenta] = useState(null);
   const [busqueda, setBusqueda] = useState("");
 
@@ -153,8 +147,8 @@ export default function Venta() {
             preventOutsideClose
           >
             <FlexBox direction="Column" style={{ padding: "1rem" }}>
-              {agruparProductos(detalleVenta.productos || []).map((p, idx) => (
-                <div key={idx} style={{ marginBottom: "0.75rem", fontSize: "0.95rem" }}>
+              {agruparProductos(detalleVenta.productos || []).map((p) => (
+                <div key={p.nombre} style={{ marginBottom: "0.75rem", fontSize: "0.95rem" }}>
                   <strong>Producto:</strong> {p.nombre} <br />
                   <strong>Cantidad:</strong> {p.cantidad} <br />
                   <strong>Precio unitario:</strong> ${p.precio} <br />

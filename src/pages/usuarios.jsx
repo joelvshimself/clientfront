@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { FlexBox } from "@ui5/webcomponents-react";
-import { ShellBar, SideNavigation, SideNavigationItem } from "@ui5/webcomponents-react"
-import { Card, Title, Input } from "@ui5/webcomponents-react";
-import { Button } from "@ui5/webcomponents-react";
-import { Dialog, Select, Option } from "@ui5/webcomponents-react";
-import "@ui5/webcomponents-icons/dist/home.js";
-import "@ui5/webcomponents-icons/dist/retail-store.js";
-import "@ui5/webcomponents-icons/dist/employee.js";
-import "@ui5/webcomponents-icons/dist/shipping-status.js";
-import "@ui5/webcomponents-icons/dist/cart.js";
-import "@ui5/webcomponents-icons/dist/navigation-right-arrow.js";
+import React, { useState, useEffect } from "react";
+import {
+  FlexBox,
+  Card,
+  Title,
+  Input,
+  Button,
+  Dialog,
+  Select,
+  Option
+} from "@ui5/webcomponents-react";
 import "@ui5/webcomponents-icons/dist/delete.js";
 import "@ui5/webcomponents-icons/dist/add.js";
-import { useNavigate } from "react-router-dom";
+import "@ui5/webcomponents-icons/dist/edit.js";
+import PropTypes from "prop-types";
 import {
   getUsuarios,
   createUsuario,
@@ -21,14 +21,177 @@ import {
 } from "../services/usersService";
 import Layout from "../components/Layout";
 
+// --- COMPONENTES REUTILIZABLES FUERA DEL PRINCIPAL ---
 
+function UsuarioForm({ usuario, onChange, incluirPassword }) {
+  return (
+    <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
+      <Input
+        placeholder="Nombre"
+        name="nombre"
+        value={usuario.nombre}
+        onInput={(e) => onChange({ ...usuario, nombre: e.target.value })}
+      />
+      <Input
+        placeholder="Correo"
+        name="correo"
+        value={usuario.correo}
+        onInput={(e) => onChange({ ...usuario, correo: e.target.value })}
+      />
+      {incluirPassword && (
+        <Input
+          placeholder={
+            usuario.password !== undefined
+              ? "Contraseña (dejar vacío para no cambiar)"
+              : "Contraseña"
+          }
+          name="password"
+          type="password"
+          value={usuario.password || ""}
+          onInput={(e) => onChange({ ...usuario, password: e.target.value })}
+        />
+      )}
+      <Select
+        name="rol"
+        value={usuario.rol}
+        onChange={(e) => onChange({ ...usuario, rol: e.target.value })}
+      >
+        <Option value="Owner">Owner</Option>
+        <Option value="Proveedor">Proveedor</Option>
+        <Option value="Detallista">Detallista</Option>
+      </Select>
+    </FlexBox>
+  );
+}
 
+UsuarioForm.propTypes = {
+  usuario: PropTypes.shape({
+    nombre: PropTypes.string,
+    correo: PropTypes.string,
+    password: PropTypes.string,
+    rol: PropTypes.string
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  incluirPassword: PropTypes.bool
+};
 
-const drawerWidth = 240;
+function UsuarioModal({ open, onClose, onSave, usuario, setUsuario, titulo }) {
+  return (
+    <Dialog
+      headerText={titulo}
+      open={open}
+      onAfterClose={onClose}
+      footer={
+        <Button design="Emphasized" onClick={onSave}>
+          Guardar
+        </Button>
+      }
+    >
+      <UsuarioForm usuario={usuario} onChange={setUsuario} incluirPassword={true} />
+    </Dialog>
+  );
+}
+
+UsuarioModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  usuario: PropTypes.object.isRequired,
+  setUsuario: PropTypes.func.isRequired,
+  titulo: PropTypes.string.isRequired
+};
+
+function UsuarioRow({ usuario, usuariosSeleccionados, setUsuariosSeleccionados, index }) {
+  const handleCheckbox = (e) => {
+    const checked = e.target.checked;
+    setUsuariosSeleccionados((prevSeleccionados) => {
+      if (checked && !prevSeleccionados.includes(usuario.id)) {
+        return [...prevSeleccionados, usuario.id];
+      } else {
+        return prevSeleccionados.filter((id) => id !== usuario.id);
+      }
+    });
+  };
+
+  return (
+    <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>
+      <td style={{ padding: "12px" }}>
+        <input
+          type="checkbox"
+          checked={usuariosSeleccionados.includes(usuario.id)}
+          onChange={handleCheckbox}
+        />
+      </td>
+      <td style={{ padding: "12px" }}>{usuario.nombre}</td>
+      <td style={{ padding: "12px" }}>{usuario.correo}</td>
+      <td style={{ padding: "12px" }}>
+        <span
+          style={{
+            backgroundColor: getColorFondo(usuario.rol),
+            color: "#000",
+            padding: "4px 10px",
+            borderRadius: "12px",
+            fontSize: "0.8rem",
+            fontWeight: 500,
+          }}
+        >
+          {usuario.rol}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+UsuarioRow.propTypes = {
+  usuario: PropTypes.object.isRequired,
+  usuariosSeleccionados: PropTypes.array.isRequired,
+  setUsuariosSeleccionados: PropTypes.func.isRequired,
+  index: PropTypes.number.isRequired,
+};
+
+// --- FUNCIONES AUXILIARES ---
+function getColorFondo(rol) {
+  if (rol?.toLowerCase() === "owner") return "#e0d4fc";
+  if (rol?.toLowerCase() === "proveedor") return "#d0fce0";
+  if (rol?.toLowerCase() === "detallista") return "#ffe0b2";
+  return "#f5f5f5";
+}
+
+function OrdenSelect({ value, onChange, resetOthers }) {
+  return (
+    <select
+      value={value || ""}
+      onChange={e => {
+        onChange(e.target.value);
+        resetOthers();
+      }}
+      style={{
+        border: "1px solid #ccc",
+        background: "white",
+        fontSize: "0.9rem",
+        cursor: "pointer",
+        color: "#000",
+        fontWeight: "bold",
+        borderRadius: "4px",
+        marginLeft: "8px"
+      }}
+    >
+      <option value="">⇅</option>
+      <option value="asc">↑ A-Z</option>
+      <option value="desc">↓ Z-A</option>
+    </select>
+  );
+}
+
+OrdenSelect.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  resetOthers: PropTypes.func.isRequired,
+};
+
+// --- COMPONENTE PRINCIPAL ---
 
 export default function Usuarios() {
-  const navigate = useNavigate();
-  const [isSidebarOpen] = useState(true);
   const [openCrear, setOpenCrear] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
@@ -38,29 +201,23 @@ export default function Usuarios() {
   const [ordenCorreo, setOrdenCorreo] = useState(null);
   const [ordenTipo, setOrdenTipo] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
+  const [nuevoUsuario, setNuevoUsuario] = useState({
+    nombre: "",
+    correo: "",
+    password: "",
+    rol: "Owner"
+  });
 
-
-
-
-
-
-
-
-  //Placeholders
   const loadUsuarios = async () => {
-    const data = await getUsuarios(); // Llamada al backend
-    console.log("👉 Data cruda desde API:", data); // <--- AQUI
-  
+    const data = await getUsuarios();
     const usuariosMapeados = data.map((u) => ({
-      id: u.ID_USUARIO, // ✅ aquí está tu ID correcto
+      id: u.ID_USUARIO,
       nombre: u.NOMBRE,
       correo: u.EMAIL,
       rol: u.ROL
-    }));    
-  
+    }));
     setUsuarios(usuariosMapeados);
   };
-  
 
   useEffect(() => {
     loadUsuarios();
@@ -68,18 +225,18 @@ export default function Usuarios() {
 
   const agregarUsuario = async () => {
     if (!nuevoUsuario.rol) {
-      setNuevoUsuario({ ...nuevoUsuario, rol: "Owner" }); // Valor predeterminado
+      setNuevoUsuario({ ...nuevoUsuario, rol: "Owner" });
     }
     const nuevo = {
       nombre: nuevoUsuario.nombre,
       email: nuevoUsuario.correo,
-      password: "123456",
+      password: nuevoUsuario.password,
       rol: nuevoUsuario.rol
     };
     const ok = await createUsuario(nuevo);
     if (ok) {
       await loadUsuarios();
-      setNuevoUsuario({ nombre: "", correo: "", rol: "Owner" }); // Reinicia con valor predeterminado
+      setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "Owner" });
     }
   };
 
@@ -93,119 +250,26 @@ export default function Usuarios() {
 
   const handleEditarGuardar = async () => {
     if (!usuarioEditar) return;
-
     const actualizado = {
       nombre: usuarioEditar.nombre,
       email: usuarioEditar.correo,
-      password: "", // No cambia si no se especifica
+      password: usuarioEditar.password || "",
       rol: usuarioEditar.rol
     };
-
     const ok = await updateUsuario(usuarioEditar.id, actualizado);
     if (ok) {
-      await loadUsuarios(); // Recarga la lista de usuarios desde la base de datos
-      setOpenEditar(false); // Cierra el modal
-      setUsuariosSeleccionados([]); // Limpia la selección
+      await loadUsuarios();
+      setOpenEditar(false);
+      setUsuariosSeleccionados([]);
     } else {
       console.error("Error al actualizar el usuario");
     }
   };
 
-
-
-  const [nuevoUsuario, setNuevoUsuario] = useState({
-    nombre: "",
-    correo: "",
-    rol: "Owner" // Valor predeterminado
-  });
-
-  const handleNavigationClick = (event) => {
-    const selected = event.detail.item.dataset.route;
-    if (selected) navigate(selected);
-  };
-
-  const handleInputChange = (e) => {
-    setNuevoUsuario({ ...nuevoUsuario, [e.target.name]: e.target.value });
-  };
-
-  {/* Box Crear Usuarios */ }
-  <Dialog
-    headerText="Agregar Usuario"
-    open={openCrear}
-    onAfterClose={() => setOpenCrear(false)}
-    footer={
-      <Button design="Emphasized" onClick={() => {
-        agregarUsuario();
-        setOpenCrear(false);
-      }}>Guardar</Button>
-    }
-  >
-    <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-      <Input
-        placeholder="Nombre"
-        name="nombre"
-        value={nuevoUsuario.nombre}
-        onInput={handleInputChange}
-      />
-      <Input
-        placeholder="Correo"
-        name="correo"
-        value={nuevoUsuario.correo}
-        onInput={handleInputChange}
-      />
-      <Select
-        name="rol"
-        value={nuevoUsuario.rol}
-        onChange={(e) =>
-          setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })
-        }
-      >
-        <Option value="Owner">Owner</Option>
-        <Option value="Proveedor">Proveedor</Option>
-        <Option value="Detallista">Detallista</Option>
-      </Select>
-    </FlexBox>
-  </Dialog>
-
-  {/* Box editar usuarios */ }
-  <Dialog
-    headerText="Editar Usuario"
-    open={openEditar}
-    onAfterClose={() => setOpenEditar(false)}
-    footer={
-      <Button design="Emphasized" onClick={handleEditarGuardar}>Guardar</Button>
-    }
-  >
-    {usuarioEditar && (
-      <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-        <Input
-          placeholder="Nombre"
-          value={usuarioEditar.nombre}
-          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
-        />
-        <Input
-          placeholder="Correo"
-          value={usuarioEditar.correo}
-          onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-        />
-        <Select
-          value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-          onChange={(e) =>
-            setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })
-          }
-        >
-          <Option value="Owner">Owner</Option>
-          <Option value="Proveedor">Proveedor</Option>
-          <Option value="Detallista">Detallista</Option>
-        </Select>
-      </FlexBox>
-    )}
-  </Dialog>
-
+  // --- RENDER ---
   return (
     <Layout>
       <Title level="H3" style={{ marginBottom: "1rem" }}>Usuarios</Title>
-      {/* Barra */}
       <FlexBox direction="Row" justifyContent="SpaceBetween" style={{ marginBottom: "1rem" }}>
         <Input
           placeholder="Buscar por Nombre"
@@ -227,7 +291,7 @@ export default function Usuarios() {
           <Button
             design="Attention"
             icon="edit"
-            disabled={usuariosSeleccionados.length !== 1} // Solo habilitado si hay uno
+            disabled={usuariosSeleccionados.length !== 1}
             onClick={() => {
               const userToEdit = usuarios.find(u => u.id === usuariosSeleccionados[0]);
               if (userToEdit) {
@@ -241,7 +305,6 @@ export default function Usuarios() {
         </FlexBox>
       </FlexBox>
 
-      {/* Tabla de usuarios */}
       <Card style={{ padding: "1rem", marginTop: "1rem" }}>
         <Title level="H5" style={{ marginBottom: "1rem", padding: "12px" }}>
           Base de Datos de Usuarios
@@ -258,97 +321,42 @@ export default function Usuarios() {
               <tr>
                 <th style={{ padding: "12px" }}></th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     Nombre
-                    <select
-                      value={ordenNombre || ""}
-                      onChange={(e) => {
-                        setOrdenNombre(e.target.value);
+                    <OrdenSelect
+                      value={ordenNombre}
+                      onChange={setOrdenNombre}
+                      resetOthers={() => {
                         setOrdenCorreo(null);
+                        setOrdenTipo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     Correo
-                    <select
-                      value={ordenCorreo || ""}
-                      onChange={(e) => {
-                        setOrdenCorreo(e.target.value);
+                    <OrdenSelect
+                      value={ordenCorreo}
+                      onChange={setOrdenCorreo}
+                      resetOthers={() => {
                         setOrdenNombre(null);
+                        setOrdenTipo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
                 <th style={{ textAlign: "left", padding: "12px", color: "#000" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     Tipo
-                    <select
-                      value={ordenTipo || ""}
-                      onChange={(e) => {
-                        setOrdenTipo(e.target.value);
+                    <OrdenSelect
+                      value={ordenTipo}
+                      onChange={setOrdenTipo}
+                      resetOthers={() => {
                         setOrdenNombre(null);
                         setOrdenCorreo(null);
                       }}
-                      style={{
-                        border: "1px solid #ccc",
-                        background: "white",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        color: "#000",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <option value="">⇅</option>
-                      <option value="asc">↑ A-Z</option>
-                      <option value="desc">↓ Z-A</option>
-                    </select>
+                    />
                   </div>
                 </th>
               </tr>
@@ -356,143 +364,64 @@ export default function Usuarios() {
             <tbody>
               {[...usuarios]
                 .filter((u) =>
-                  u.nombre.toLowerCase().includes(busqueda.toLowerCase())
+                  (u.nombre ?? "").toLowerCase().includes(busqueda.toLowerCase())
                 )
                 .sort((a, b) => {
                   if (ordenNombre) {
                     return ordenNombre === "asc"
-                      ? a.nombre.localeCompare(b.nombre)
-                      : b.nombre.localeCompare(a.nombre);
+                      ? (a.nombre ?? "").localeCompare(b.nombre ?? "")
+                      : (b.nombre ?? "").localeCompare(a.nombre ?? "");
                   }
                   if (ordenCorreo) {
                     return ordenCorreo === "asc"
-                      ? a.correo.localeCompare(b.correo)
-                      : b.correo.localeCompare(a.correo);
+                      ? (a.correo ?? "").localeCompare(b.correo ?? "")
+                      : (b.correo ?? "").localeCompare(a.correo ?? "");
                   }
                   if (ordenTipo) {
                     return ordenTipo === "asc"
-                      ? a.rol.localeCompare(b.rol)
-                      : b.rol.localeCompare(a.rol);
+                      ? (a.rol ?? "").localeCompare(b.rol ?? "")
+                      : (b.rol ?? "").localeCompare(a.rol ?? "");
                   }
                   return 0;
                 })
                 .map((usuario, index) => (
-                  <tr key={usuario.id ?? `temp-${index}`} style={{ borderBottom: "1px solid #eee" }}>                 
-                    <td style={{ padding: "12px" }}>
-                      <input
-                        type="checkbox"
-                        checked={usuariosSeleccionados.includes(usuario.id)}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-
-                          setUsuariosSeleccionados((prevSeleccionados) => {
-                            if (checked && !prevSeleccionados.includes(usuario.id)) {
-                              return [...prevSeleccionados, usuario.id];
-                            } else {
-                              return prevSeleccionados.filter((id) => id !== usuario.id);
-                            }
-                          });
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: "12px" }}>{usuario.nombre}</td>
-                    <td style={{ padding: "12px" }}>{usuario.correo}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span
-                        style={{
-                          backgroundColor:
-                            usuario.rol.toLowerCase() === "owner"
-                              ? "#e0d4fc"
-                              : usuario.rol.toLowerCase() === "proveedor"
-                                ? "#d0fce0"
-                                : usuario.rol.toLowerCase() === "detallista"
-                                  ? "#ffe0b2"
-                                  : "#f5f5f5",
-                          color: "#000",
-                          padding: "4px 10px",
-                          borderRadius: "12px",
-                          fontSize: "0.8rem",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {usuario.rol}
-                      </span>
-                    </td>
-                  </tr>
+                  <UsuarioRow
+                    key={usuario.id ?? `temp-${index}`}
+                    usuario={usuario}
+                    usuariosSeleccionados={usuariosSeleccionados}
+                    setUsuariosSeleccionados={setUsuariosSeleccionados}
+                    index={index}
+                  />
                 ))}
             </tbody>
           </table>
         </div>
       </Card>
 
-
       {/* MODAL: Crear Usuario */}
-      <Dialog
-        headerText="Agregar Usuario"
+      <UsuarioModal
         open={openCrear}
-        onAfterClose={() => setOpenCrear(false)}
-        footer={
-          <Button design="Emphasized" onClick={() => {
-            agregarUsuario();
-            setOpenCrear(false);
-          }}>Guardar</Button>
-        }
-      >
-        <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-          <Input
-            placeholder="Nombre"
-            name="nombre"
-            value={nuevoUsuario.nombre}
-            onInput={handleInputChange}
-          />
-          <Input
-            placeholder="Correo"
-            name="correo"
-            value={nuevoUsuario.correo}
-            onInput={handleInputChange}
-          />
-          <Select name="rol" value={nuevoUsuario.rol} onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
-            <Option value="Owner">Owner</Option>
-            <Option value="Proveedor">Proveedor</Option>
-            <Option value="Detallista">Detallista</Option>
-          </Select>
-        </FlexBox>
-      </Dialog>
+        onClose={() => setOpenCrear(false)}
+        onSave={() => {
+          agregarUsuario();
+          setOpenCrear(false);
+        }}
+        usuario={nuevoUsuario}
+        setUsuario={setNuevoUsuario}
+        titulo="Agregar Usuario"
+      />
 
       {/* MODAL: Editar Usuario */}
-      <Dialog
-        headerText="Editar Usuario"
-        open={openEditar}
-        onAfterClose={() => setOpenEditar(false)}
-        footer={
-          <Button design="Emphasized" onClick={handleEditarGuardar}>
-            Guardar
-          </Button>
-        }
-      >
-        {usuarioEditar && (
-          <FlexBox style={{ padding: "1rem", gap: "1rem" }}>
-            <Input
-              placeholder="Nombre"
-              value={usuarioEditar.nombre}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
-            />
-            <Input
-              placeholder="Correo"
-              value={usuarioEditar.correo}
-              onInput={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
-            />
-            <Select
-              value={usuarioEditar?.rol || "Owner"} // Valor predeterminado si está vacío
-              onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
-            >
-              <Option value="Owner">Owner</Option>
-              <Option value="Proveedor">Proveedor</Option>
-              <Option value="Detallista">Detallista</Option>
-            </Select>
-          </FlexBox>
-        )}
-      </Dialog>
+      {usuarioEditar && (
+        <UsuarioModal
+          open={openEditar}
+          onClose={() => setOpenEditar(false)}
+          onSave={handleEditarGuardar}
+          usuario={usuarioEditar}
+          setUsuario={setUsuarioEditar}
+          titulo="Editar Usuario"
+        />
+      )}
     </Layout>
   );
 }

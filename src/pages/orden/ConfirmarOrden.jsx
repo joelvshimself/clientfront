@@ -19,12 +19,18 @@ export default function ConfirmarOrden() {
 
   const productoSeleccionado =
     location.state?.productoSeleccionado ||
-    JSON.parse(localStorage.getItem("productoSeleccionado"));
+    JSON.parse(localStorage.getItem("productoSeleccionado") ?? "null");
 
-  const productos = productoSeleccionado ? [productoSeleccionado] : [];
+  // Permitir arreglo de productos
+  let productos = [];
+  if (Array.isArray(productoSeleccionado)) {
+    productos = productoSeleccionado;
+  } else if (productoSeleccionado) {
+    productos = [productoSeleccionado];
+  }
 
   const costoTotal = productos.reduce(
-    (acc, p) => acc + parseFloat(p.precio || 0) * parseInt(p.cantidad || 0),
+    (acc, p) => acc + parseFloat(p?.precio || 0) * parseInt(p?.cantidad || 0),
     0
   );
 
@@ -45,7 +51,8 @@ export default function ConfirmarOrden() {
       productos: productos.map((p) => ({
         producto: p.producto,
         cantidad: Number(p.cantidad),
-        precio: Number(p.precio)
+        precio: Number(p.precio),
+        fechaCaducidad: p.fechaCaducidad
       }))
     };
 
@@ -58,7 +65,7 @@ export default function ConfirmarOrden() {
 
     try {
       const response = await createOrden(payload);
-      if (response && response.id_orden) {
+      if (response?.id_orden) {
         localStorage.removeItem("proveedorSeleccionado");
         localStorage.removeItem("productoSeleccionado");
         alert(`Orden creada exitosamente con ID: ${response.id_orden}`);
@@ -67,6 +74,7 @@ export default function ConfirmarOrden() {
         alert("Error al crear orden");
       }
     } catch (error) {
+      console.error(error);
       alert("Error al crear orden");
     }
   };
@@ -109,8 +117,8 @@ export default function ConfirmarOrden() {
               </tr>
             </thead>
             <tbody>
-              {productos.map((item, index) => (
-                <tr key={index}>
+              {productos.map((item) => (
+                <tr key={item.producto + "-" + item.fechaCaducidad}>
                   <td style={bodyCellStyle}>{item.producto}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>{item.cantidad}</td>
                   <td style={{ ...bodyCellStyle, textAlign: "center" }}>${item.precio}</td>
