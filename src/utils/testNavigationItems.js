@@ -11,6 +11,7 @@ const protectedRoutes = [
   { path: "/orden/nueva/confirmar", roles: ["detallista"], label: "Confirmar Orden" },
   { path: "/venta/nueva", roles: ["detallista"], label: "Nueva Venta" },
   { path: "/venta/nueva/confirmar", roles: ["detallista"], label: "Confirmar Venta" },
+  { path: "/profile", roles: ["owner", "detallista", "admin", "proveedor"], label: "Profile"}
 ];
 
 function getIconForRoute(route) {
