@@ -12,6 +12,8 @@ import Layout from "../components/Layout";
 import { getUsuarios, updateUsuario } from "../services/usersService";
 import { useNavigate } from "react-router-dom";
 
+import { getCookie } from "../utils/getCookie"; // adjust the path
+
 function getInitials(nombre) {
   if (!nombre) return "?";
   return nombre
@@ -31,11 +33,27 @@ export default function PerfilUsuario() {
 
   // Carga datos de usuario al montar
   useEffect(() => {
-    const correo = localStorage.getItem("correo");
+    const userDataString = getCookie("UserData");
+    if (!userDataString) {
+      navigate("/login");
+      return;
+    }
+
+    let userData;
+    try {
+      userData = JSON.parse(userDataString);
+    } catch (e) {
+      console.error("Invalid UserData cookie:", e);
+      navigate("/login");
+      return;
+    }
+
+    const correo = userData.email;
     if (!correo) {
       navigate("/login");
       return;
     }
+
     getUsuarios().then((usuarios) => {
       const encontrado = usuarios.find(
         (u) =>
