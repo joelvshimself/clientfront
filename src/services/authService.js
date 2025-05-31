@@ -47,7 +47,7 @@ const isAuthenticated = async () => {
   try {
     const response = await fetch(`${API_URL}/check-auth`, {
       method: "GET",
-      credentials: "include", // 👈 get cookies
+      credentials: "include", // get cookies
     });
 
     return response.ok;
@@ -68,4 +68,20 @@ const logout = async () => {
   }
 };
 
-export { login, register, logout, isAuthenticated };
+const getUserInfo = async () => {
+  try {
+    const response = await fetch(`${API_URL}/user-info`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error("Not authorized");
+
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, data: null };
+  }
+};
+
+export { login, register, logout, isAuthenticated, getUserInfo };
