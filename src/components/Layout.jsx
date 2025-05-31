@@ -35,7 +35,6 @@ export default function Layout({ children, role }) {
     } catch (error) {
       console.error("Error al hacer logout:", error);
     }
-    localStorage.clear();
     navigate("/login");
   };
 
