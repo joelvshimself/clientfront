@@ -11,9 +11,12 @@ import {
 } from "@ui5/webcomponents-react";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton } from "@mui/material";
-import { login } from "../services/authService"; 
+import { login, getUserInfo } from "../services/authService"; 
+
+import { useAuth } from "../utils/useAuth";
 
 export default function Login() {
+  const { setUser } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
@@ -27,9 +30,7 @@ export default function Login() {
 
     const result = await login(form.email, form.password);
     if (result.success) {
-      setError(false);
-      localStorage.setItem("correo", form.email);
-      navigate("/2fa", { state: { email: form.email } });
+      window.location.reload();
     } else {
       setError(true);
     }

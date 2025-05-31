@@ -1,44 +1,55 @@
-// App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import { Suspense } from "react";
 
 // COMPONENTES
 import Login from "./components/login";
 import TwoFAScreen from "./components/TwoFAScreen";
 
-// PÁGINAS
-import Home from "./pages/home";
-import Usuarios from "./pages/usuarios";
-import PerfilUsuario from "./pages/PerfilUsuario";
+// AUTH
+import { ProtectedRoute } from "./utils/protectedRoute";
 
-// ORDEN
-import Ordenes from "./pages/orden/orden";
-import SeleccionProveedor from "./pages/orden/SeleccionProveedor";
-import SeleccionProducto from "./pages/orden/SeleccionProducto";
-import ConfirmarOrden from "./pages/orden/ConfirmarOrden";
+// ROUTE CONFIG
+import { protectedRoutes } from "./utils/routesConfig";
 
-// VENTA
-import Venta from "./pages/venta/venta";
-import SeleccionVenta from "./pages/venta/SeleccionVenta";
-import ConfirmarVenta from "./pages/venta/ConfirmarVenta";
+import { AuthProvider } from "./utils/authContext"; 
+import { PublicRoute } from "./utils/publicRoute";
+import { PreAuthRoute } from "./utils/preAuthRoute";
+
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/usuarios" element={<Usuarios />} />
-        <Route path="/orden" element={<Ordenes />} />
-        <Route path="/venta" element={<Venta />} />
-        <Route path="/orden/nueva/proveedor" element={<SeleccionProveedor />} />
-        <Route path="/orden/nueva/producto" element={<SeleccionProducto />} />
-        <Route path="/orden/nueva/confirmar" element={<ConfirmarOrden />} />
-        <Route path="/venta/nueva" element={<SeleccionVenta />} />
-        <Route path="/venta/nueva/confirmar" element={<ConfirmarVenta />} />
-        <Route path="/2fa" element={<TwoFAScreen />} />
-        <Route path="/profile" element={<PerfilUsuario />} />
-      </Routes>
+      <AuthProvider>
+        <Suspense fallback={<div>Cargando...</div>}>
+          <Routes>
+            <Route path="/" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/login" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/2fa" element={
+              <PreAuthRoute>
+                <TwoFAScreen />
+              </PreAuthRoute>
+            } />
+
+            {/* Protected Routes */}
+            {protectedRoutes.map(({ path, element, roles }) => (
+              <Route
+                key={path}
+                path={path}
+                element={<ProtectedRoute allowedRoles={roles}>{element}</ProtectedRoute>}
+              />
+            ))}
+          </Routes>
+        </Suspense>
+      </AuthProvider>
     </Router>
   );
 }

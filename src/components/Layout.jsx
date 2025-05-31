@@ -12,11 +12,18 @@ import logIcon from "@ui5/webcomponents-icons/dist/log.js";
 import "@ui5/webcomponents-icons/dist/employee.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../services/authService";
+import { getNavigationItemsForRole } from "../utils/navigationItems";
 
-export default function Layout({ children }) {
+import { getCookie } from "../utils/getCookie"; // adjust the path
+
+export default function Layout({ children, role }) {
+  // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userData = JSON.parse(getCookie("UserData"));
+  const navItems = getNavigationItemsForRole(userData.role); // [{ label, route, icon }]
+  
   const handleNavigationClick = (e) => {
     const route = e.detail.item.dataset.route;
     if (route) navigate(route);
@@ -72,30 +79,14 @@ export default function Layout({ children }) {
             onSelectionChange={handleNavigationClick}
             selectedKey={location.pathname}
           >
-            <SideNavigationItem
-              key="/home"
-              icon="home"
-              text="Dashboard"
-              data-route="/home"
-            />
-            <SideNavigationItem
-              key="/usuarios"
-              icon="employee"
-              text="Usuarios"
-              data-route="/usuarios"
-            />
-            <SideNavigationItem
-              key="/orden"
-              icon="shipping-status"
-              text="Órdenes"
-              data-route="/orden"
-            />
-            <SideNavigationItem
-              key="/venta"
-              icon="cart"
-              text="Ventas"
-              data-route="/venta"
-            />
+            {navItems.map((item) => (
+              <SideNavigationItem
+                key={item.route}
+                icon={item.icon}
+                text={item.label}
+                data-route={item.route}
+              />
+            ))}
           </SideNavigation>
         </div>
 

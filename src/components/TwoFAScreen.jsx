@@ -47,7 +47,7 @@ export default function TwoFAScreen() {
 
     const data = await res.json();
     if (data.success) {
-      navigate("/home");
+      window.location.reload();
     } else {
       alert("❌ Código incorrecto");
     }
