@@ -32,6 +32,7 @@ export default function Layout({ children, role }) {
   const handleLogout = async () => {
     try {
       await logout();
+      window.location.reload();
     } catch (error) {
       console.error("Error al hacer logout:", error);
     }
