@@ -1,30 +1,27 @@
 // tests/App.selenium.test.js
-import { Builder, By } from "selenium-webdriver";
-import chrome from "selenium-webdriver/chrome";
-import path from "path";
-import os from "os";
+
+import 'chromedriver';                  // Asegura que Selenium-WebDriver encuentre el binario de ChromeDriver
+import { Builder, By, until } from 'selenium-webdriver';
+import chrome from 'selenium-webdriver/chrome';
 
 let driver;
 
 beforeAll(
   async () => {
-    // Creamos un directorio temporal único para Chrome
-    const userDataDir = path.join(os.tmpdir(), `chrome-user-data-${Date.now()}`);
+    // Configuramos Chrome en modo headless con los flags necesarios
+    const options = new chrome.Options().addArguments(
+      '--headless',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--window-size=1280,800'
+    );
 
-    // Configuramos Chrome en modo headless
-    const options = new chrome.Options()
-      .addArguments("--headless=new")           // Usa nuevo headless mode
-      .addArguments("--no-sandbox")              // Requerido en algunos entornos CI
-      .addArguments("--disable-dev-shm-usage")   // Mejora estabilidad en contenedores
-      .addArguments(`--user-data-dir=${userDataDir}`);
-
-    // Construimos el WebDriver para Chrome
     driver = await new Builder()
-      .forBrowser("chrome")
+      .forBrowser('chrome')
       .setChromeOptions(options)
       .build();
   },
-  20000 // Timeout para la creación del driver (hasta 20s)
+  60000 // espera hasta 60 seg para arrancar ChromeDriver
 );
 
 afterAll(async () => {
@@ -33,19 +30,20 @@ afterAll(async () => {
   }
 });
 
-// Si quieres ejecutar localmente, quita el ".skip".
-// Para CI, mantenlo así para que no falle en GitHub Actions.
-test.skip(
-  "App Component (Selenium) → debe renderizar '¡Bienvenido a Logiviba!'",
+test(
+  "App carga y muestra el logo de 'Carnes ViBa' en la página de Ventas",
   async () => {
-    // Asegúrate de levantar tu App localmente en http://localhost:3000 (npm run dev)
-    await driver.get("http://localhost:3000");
+    // 1) Navega a /venta (ajusta el puerto si tu servidor no corre en 5173)
+    await driver.get('http://localhost:5173/venta');
 
-    // Busca el elemento que contenga el texto. Ajusta la XPATH si tu heading es distinto.
-    const element = await driver.findElement(
-      By.xpath("//*[contains(text(), '¡Bienvenido a Logiviba!')]")
+    // 2) Espera hasta 5s a que aparezca el <img alt="Carnes ViBa">
+    const logo = await driver.wait(
+      until.elementLocated(By.css("img[alt='Carnes ViBa']")),
+      5000
     );
-    expect(element).toBeDefined();
+
+    // 3) Verifica que el elemento <img> existe
+    expect(logo).toBeDefined();
   },
-  30000 // Timeout del test (30s)
+  20000 // timeout máximo para este test: 20 segundos
 );

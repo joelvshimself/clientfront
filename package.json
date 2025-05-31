@@ -10,7 +10,7 @@
     "lint": "eslint src",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "test:log": "node testlog.js"
+    "test:selenium": "vitest run tests/App.selenium.test.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
