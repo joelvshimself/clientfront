@@ -8,11 +8,18 @@ import {
 import logIcon from "@ui5/webcomponents-icons/dist/log.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../services/authService";
+import { getNavigationItemsForRole } from "../utils/navigationItems";
 
-export default function Layout({ children }) {
+import { getCookie } from "../utils/getCookie"; // adjust the path
+
+export default function Layout({ children, role }) {
+  // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userData = JSON.parse(getCookie("UserData"));
+  const navItems = getNavigationItemsForRole(userData.role); // [{ label, route, icon }]
+  
   const handleNavigationClick = (e) => {
     const route = e.detail.item.dataset.route;
     if (route) {
@@ -32,7 +39,6 @@ export default function Layout({ children }) {
 
   return (
     <div style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
-      {/* ShellBar fija con botón de logout visible */}
       <ShellBar
         logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
         primaryTitle="Bienvenido a ViBa"
@@ -54,9 +60,7 @@ export default function Layout({ children }) {
         />
       </ShellBar>
 
-      {/* Contenedor general: barra lateral + contenido */}
       <FlexBox direction="Row" style={{ height: "100%", marginTop: "3.5rem" }}>
-        {/* Barra lateral */}
         <div
           style={{
             width: 260,
@@ -68,35 +72,17 @@ export default function Layout({ children }) {
             onSelectionChange={handleNavigationClick}
             selectedKey={location.pathname}
           >
-            <SideNavigationItem
-              key="/home"
-              icon="home"
-              text="Dashboard"
-              data-route="/home"
-            />
-          
-            <SideNavigationItem
-              key="/usuarios"
-              icon="employee"
-              text="Usuarios"
-              data-route="/usuarios"
-            />
-            <SideNavigationItem
-              key="/orden"
-              icon="shipping-status"
-              text="Órdenes"
-              data-route="/orden"
-            />
-            <SideNavigationItem
-              key="/venta"
-              icon="cart"
-              text="Ventas"
-              data-route="/venta"
-            />
+            {navItems.map((item) => (
+              <SideNavigationItem
+                key={item.route}
+                icon={item.icon}
+                text={item.label}
+                data-route={item.route}
+              />
+            ))}
           </SideNavigation>
         </div>
 
-        {/* Área de contenido */}
         <div
           style={{
             flexGrow: 1,
