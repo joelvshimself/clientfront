@@ -596,64 +596,6 @@ export default function Home() {
       </Card>
 
       {/* Notificaciones */}
-      <div style={{ position: "fixed", top: 10, right: 60, zIndex: 1500 }}>
-        <Button
-          icon="bell"
-          design="Transparent"
-          ref={notiButtonRef}
-          onClick={() => setOpenNotificaciones(true)}
-        />
-        <span
-          style={{
-            position: "absolute",
-            top: -4,
-            right: -4,
-            backgroundColor: "red",
-            color: "white",
-            borderRadius: "50%",
-            padding: "2px 6px",
-            fontSize: 10,
-            fontWeight: "bold"
-          }}
-        >
-          {notificaciones.length}
-        </span>
-      </div>
-      {notiButtonRef.current && (
-        <Popover
-          headerText="Notificaciones recientes"
-          open={openNotificaciones}
-          opener={notiButtonRef.current}
-          onClose={() => setOpenNotificaciones(false)}
-        >
-          <FlexBox
-            direction="Column"
-            style={{ padding: "1rem", gap: "0.5rem", maxHeight: 300, overflowY: "auto" }}
-          >
-            {notificaciones.map(n => (
-              <div key={n.id} style={{ padding: "0.5rem", borderBottom: "1px solid #ccc" }}>
-                <Text>{n.mensaje}</Text>
-              </div>
-            ))}
-            <Button
-              onClick={() => agregarNotificacion("success", mensajesNotificaciones.exito, setNotificaciones)}
-            >
-              Agregar Éxito
-            </Button>
-            <Button
-              onClick={() => agregarNotificacion("info", mensajesNotificaciones.info, setNotificaciones)}
-            >
-              Agregar Info
-            </Button>
-            <Button
-              onClick={() => agregarNotificacion("error", mensajesNotificaciones.error, setNotificaciones)}
-            >
-              Agregar Error
-            </Button>
-          </FlexBox>
-        </Popover>
-      )}
-      <Toaster position="top-center" reverseOrder={false} />
     </Layout>
   );
 }

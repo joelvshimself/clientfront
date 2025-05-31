@@ -9,10 +9,13 @@ import {
 } from "@ui5/webcomponents-react";
 import Layout from "../../components/Layout";
 import { venderProductos } from "../../services/ventaService";
+import { useNotificaciones } from "../../utils/NotificacionesContext";
+import { agregarNotificacion} from "../../components/Notificaciones";
 
 export default function ConfirmarVenta() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setNotificaciones } = useNotificaciones();
 
   const productos = location.state?.productos || [];
   const fecha_emision = location.state?.fecha_emision;
@@ -40,11 +43,19 @@ export default function ConfirmarVenta() {
 
     try {
       const response = await venderProductos(payload);
-      alert(`✅ Venta creada con éxito. ID: ${response.id_venta}`);
+      agregarNotificacion(
+        "success",
+        `Venta creada con éxito. ID: ${response.id_venta}`,
+        setNotificaciones
+      )//alert(`✅ Venta creada con éxito. ID: ${response.id_venta}`);
       navigate("/venta");
     } catch (error) {
       console.error("Error al crear venta:", error);
-      alert("❌ Error al crear venta");
+      agregarNotificacion(
+        "error",
+        "Error al crear la venta. Inténtalo de nuevo.",
+        setNotificaciones
+      ); //alert("❌ Error al crear la venta. Inténtalo de nuevo.");
     }
   };
 

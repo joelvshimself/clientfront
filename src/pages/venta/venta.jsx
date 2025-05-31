@@ -14,6 +14,7 @@ import {
   eliminarVenta
 } from "../../services/ventaService";
 
+
 export default function Venta() {
   const navigate = useNavigate();
   const [ventas, setVentas] = useState([]);
