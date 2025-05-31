@@ -22,31 +22,28 @@ export const guardarNotificaciones = (notificaciones) => {
 // Agregar una notificación nueva
 export const agregarNotificacionStorage = (tipo, mensaje) => {
   const actuales = obtenerNotificaciones();
+
   const nueva = {
-    id: Date.now(),
+    id: crypto.randomUUID(), // ✅ ID único más robusto que Date.now()
     mensaje,
     tipo,
+    fecha: new Date().toISOString(), // (opcional) puedes mostrar la hora después
   };
+
   const actualizadas = [...actuales, nueva];
   guardarNotificaciones(actualizadas);
   return actualizadas;
 };
 
-// Limpiar (si necesitas eliminar todas)
+// Eliminar una notificación por ID
+export const eliminarNotificacionStorage = (id) => {
+  const actuales = obtenerNotificaciones();
+  const nuevas = actuales.filter((noti) => noti.id !== id);
+  guardarNotificaciones(nuevas);
+  return nuevas;
+};
+
+// Limpiar todas las notificaciones
 export const limpiarNotificaciones = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
-
-export const eliminarNotificacionStorage = (id) => {
-  // Obtenemos las notificaciones del localStorage
-  const notificaciones = JSON.parse(localStorage.getItem("notificaciones")) || [];
-
-  // Filtramos la notificación con el id proporcionado
-  const nuevasNotificaciones = notificaciones.filter((noti) => noti.id !== id);
-
-  // Guardamos las notificaciones actualizadas en el localStorage
-  localStorage.setItem("notificaciones", JSON.stringify(nuevasNotificaciones));
-
-  return nuevasNotificaciones;  // Devolvemos las notificaciones actualizadas
-};
-
