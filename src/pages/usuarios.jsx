@@ -58,9 +58,10 @@ function UsuarioForm({ usuario, onChange, incluirPassword }) {
         value={usuario.rol}
         onChange={(e) => onChange({ ...usuario, rol: e.target.value })}
       >
-        <Option value="Owner">Owner</Option>
-        <Option value="Proveedor">Proveedor</Option>
-        <Option value="Detallista">Detallista</Option>
+        <Option value="owner">Owner</Option>
+        <Option value="proveedor">Proveedor</Option>
+        <Option value="detallista">Detallista</Option>
+        <Option value="admin">Admin</Option>
       </Select>
     </FlexBox>
   );
