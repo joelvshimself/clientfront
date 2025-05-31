@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - stage
+      - staging_joel
 
 jobs:
   build:
