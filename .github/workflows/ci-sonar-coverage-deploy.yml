@@ -1,16 +1,16 @@
 name: CI → Tests + Coverage + SonarQube + Deploy to CF
 
-# Se dispara en cada push o pull request a la rama main
+# Se dispara en cada push o pull request a la rama staging_julian
 on:
   push:
-    branches: [ main ]
+    branches: [ staging_julian ]
   pull_request:
-    branches: [ main ]
+    branches: [ staging_julian ]
 
 jobs:
   # ---------- JOB #1: Tests + Coverage + SonarQube ----------
   test-and-sonar:
-    name: 🚀 Tests, Coverage & SonarQube
+    name: 🚀 Tests, Coverage & SonarQube (staging_julian)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -50,8 +50,8 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}   # ej. http://20.115.80.90:9002
-          SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}      # tu token (por ejemplo, sqp_xxxx)
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}
         # El action lee automáticamente tu sonar-project.properties y el coverage/lcov.info
 
       # 7) Comprobar Quality Gate de SonarQube
@@ -59,7 +59,7 @@ jobs:
         id: quality-gate
         uses: sonarsource/sonarqube-quality-gate-action@master
         with:
-          pollingTimeoutSec: 600   # espera hasta 10 minutos a que Sonar termine el análisis
+          pollingTimeoutSec: 600
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}
@@ -84,7 +84,7 @@ jobs:
 
   # ---------- JOB #2: Deploy a SAP Cloud Foundry (solo si el JOB #1 fue exitoso) ----------
   deploy-to-cf:
-    name: 🚢 Deploy to SAP Cloud Foundry
+    name: 🚢 Deploy to SAP Cloud Foundry (staging_julian)
     runs-on: ubuntu-latest
 
     # Solo ejecuta este job si "test-and-sonar" finalizó con éxito
