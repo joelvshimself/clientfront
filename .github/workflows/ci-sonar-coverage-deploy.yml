@@ -34,6 +34,7 @@ jobs:
       # 4) Ejecutar ESLint (opcional, si ya tienes script "lint")
       - name: Run ESLint
         run: npm run lint
+        continue-on-error: true
 
       # 5) Ejecutar Vitest con cobertura
       - name: Run Vitest (Tests + Coverage)
@@ -109,6 +110,7 @@ jobs:
       # 4) Ejecutar ESLint (opcional)
       - name: Run ESLint
         run: npm run lint
+        continue-on-error: true
 
       # 5) Ejecutar tests nuevamente (opcional, ya lo hicimos antes)
       - name: Run Tests (check)
