@@ -39,13 +39,13 @@ jobs:
       # 5) Ejecutar Vitest con cobertura
       - name: Run Vitest (Tests + Coverage)
         run: |
-          # Asegúrate de que esté instalado el plugin de cobertura para Vitest
+          # Asegúrate de tener instalado @vitest/coverage-istanbul
           npm install --save-dev @vitest/coverage-istanbul
 
           # Ejecutar Vitest y generar coverage/lcov.info
           npx vitest run --coverage
 
-        # NOTA: el comando anterior creará, entre otros, el archivo coverage/lcov.info
+        # -> Esto generará coverage/lcov.info
 
       # 6) Llamar al SonarQube Scanner
       - name: SonarQube Scan
@@ -53,7 +53,7 @@ jobs:
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN:    ${{ secrets.SONAR_TOKEN }}
-        # El action lee automáticamente tu sonar-project.properties y el coverage/lcov.info
+        # El action detectará tu sonar-project.properties y el coverage/lcov.info
 
       # 7) Comprobar Quality Gate de SonarQube
       - name: SonarQube Quality Gate Check
@@ -96,6 +96,8 @@ jobs:
       # 1) Obtener el código
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # 2) Instalar Node.js v18
       - name: Setup Node.js
@@ -112,7 +114,7 @@ jobs:
         run: npm run lint
         continue-on-error: true
 
-      # 5) Ejecutar tests nuevamente (opcional, ya lo hicimos antes)
+      # 5) Ejecutar tests nuevamente (opcional)
       - name: Run Tests (check)
         run: npm test
 
@@ -127,8 +129,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget gnupg
-          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key \
+            | sudo gpg --dearmor -o /usr/share/keyrings/cli.cloudfoundry.org.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cli.cloudfoundry.org.gpg] \
+            https://packages.cloudfoundry.org/debian stable main" \
+            | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
           sudo apt-get update
           sudo apt-get install -y cf8-cli
           cf version

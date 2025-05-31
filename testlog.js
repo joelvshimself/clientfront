@@ -1,31 +1,33 @@
-import { exec } from 'child_process';
-import { mkdirSync, existsSync, createWriteStream } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+// testlog.js
 
-// Determinar __dirname correctamente en ES Modules
+import { exec } from "child_process";
+import { mkdirSync, existsSync, createWriteStream } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// --- 1) Obtenemos el directorio actual con ES Modules:
 const __filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(__filename);
+const __dirname = dirname(__filename);
 
-// Generar timestamp seguro para nombres de archivo
+// --- 2) Timestamp para nombrar archivos de forma única:
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
-// Definir carpeta de logs y nombres de archivo
-const logDir = join(_dirname, "logs/test-runs");
+// --- 3) Definimos dónde guardaremos los logs:
+const logDir = join(__dirname, "logs", "test-runs");
 const logFile = join(logDir, `test-log-${timestamp}.log`);
 const jsonFile = join(logDir, `test-report-${timestamp}.json`);
 
-// Crear el directorio de logs si no existe
+// --- 4) Creamos la carpeta si no existe:
 if (!existsSync(logDir)) {
   mkdirSync(logDir, { recursive: true });
 }
 
-// Construir el comando para Vitest:
-//  - --coverage ➞ generar coverage (lcov.info en coverage/)
-//  - --json --outputFile=${jsonFile} ➞ generar JSON con resultados de tests
-const cmd = `npx vitest run --coverage --json --outputFile=${jsonFile}`;
+// --- 5) Comando para ejecutar Vitest con cobertura y generar reporte JSON (lcov + JSON):
+//     - --coverage -> genera lcov.info en coverage/
+//     - --reporter=json    --outputFile=... -> genera un JSON legible (usualmente para CI)
+const cmd = `npx vitest run --coverage --reporter=json --outputFile=${jsonFile}`;
 
-console.log(`🧪 Ejecutando Vitest...
+console.log(`🧪 Ejecutando Vitest con cobertura...
 🗂 Guardando log en: ${logFile}
 📦 Guardando reporte JSON en: ${jsonFile}
 `);
@@ -33,13 +35,13 @@ console.log(`🧪 Ejecutando Vitest...
 const stream = createWriteStream(logFile);
 const child = exec(cmd);
 
-// Redirigir stdout y stderr de Vitest hacia el archivo de log
+// --- 6) Redirigimos stdout y stderr a nuestro archivo de log:
 child.stdout.pipe(stream);
 child.stderr.pipe(stream);
 
 child.on("exit", (code) => {
-  console.log(`✅ Pruebas terminadas con código: ${code}`);
-  if (code !== 0) {
-    console.error(`⚠️ Vitest salió con código ${code}. Revisa ${logFile}`);
-  }
+  console.log(`✅ Vitest / Coverage terminado con código: ${code}`);
+  console.log(`   - Revisa ${logFile} para ver detalles del log.`);
+  console.log(`   - JSON de cobertura: ${jsonFile}`);
+  process.exit(code);
 });
