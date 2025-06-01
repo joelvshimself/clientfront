@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - staging_joel
+      - staging_julian2
   pull_request:
     types: [opened, synchronize, reopened]
 
