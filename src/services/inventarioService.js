@@ -6,12 +6,16 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export function getInventario() {
   return axios
-    .get(`${API}/inventario`)
+    .get(`${API}/inventario`, {
+      withCredentials: true,
+    })
     .then(res => res.data);
 }
 
 export function getInventarioVendido() {
   return axios
-    .get(`${API}/inventario/vendido`)
+    .get(`${API}/inventario/vendido`, {
+      withCredentials: true,
+    })
     .then(res => res.data);
 }
