@@ -3,17 +3,12 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import Ordenes from "../src/pages/orden/orden";
-import {
-  getOrdenes,
-  deleteOrden,
-  updateOrden,
-  completarOrden,
-} from "../src/services/ordenesService";
+import { getOrdenes, deleteOrden, updateOrden, completarOrden } from "../src/services/ordenesService";
 
 // Inyectamos React en el scope global para evitar “React is not defined”
-global.React = require("react");
+global.React = React;
 
-// Mock de "@ui5/webcomponents-react" para que use elementos tipo <div>, <h1>, <input> y <button>
+// Mock de "@ui5/webcomponents-react" para evitar warnings por props no reconocidas
 jest.mock("@ui5/webcomponents-react", () => ({
   FlexBox: ({ children, ...props }) => <div data-testid="flexbox" {...props}>{children}</div>,
   Card: ({ children, ...props }) => <div data-testid="card" {...props}>{children}</div>,
@@ -27,7 +22,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
   ),
 }));
 
-// Mock de Layout para que solo renderice sus children
+// Mock de Layout para renderizar solo sus children
 jest.mock("../src/components/Layout", () => ({ children }) => (
   <div data-testid="layout">{children}</div>
 ));
@@ -46,7 +41,7 @@ jest.mock("../src/services/ordenesService", () => ({
   completarOrden: jest.fn(),
 }));
 
-describe("Ordenes – Interacciones y cobertura adicional", () => {
+describe("Ordenes – Pruebas completas (interacción + cobertura)", () => {
   // Ajustamos sampleApiResponse para que coincida con las propiedades que Ordenes.jsx espera:
   //   ID_ORDEN, FECHA_EMISION, FECHA_RECEPCION, FECHA_RECEPCION_ESTIMADA, ESTADO,
   //   SUBTOTAL, COSTO_COMPRA, ID_USUARIO_SOLICITA, ID_USUARIO_PROVEE
@@ -85,12 +80,33 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
     completarOrden.mockResolvedValue({ message: "Completada" });
   });
 
-  it("habilita el botón 'Eliminar' al marcar checkbox y llama a deleteOrden", async () => {
+  it("renderiza título y filas de ejemplo", async () => {
     render(<Ordenes />);
     // Espera a que getOrdenes() sea llamado
     await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
 
-    // Encuentra todos los checkboxes (<input type="checkbox">)
+    // Verifica que el título aparece
+    const titulo = screen.getByText("Órdenes");
+    expect(titulo).toBeTruthy();
+
+    // Verifica que las filas con IDs 101 y 102 aparezcan
+    const fila101 = await screen.findByText("101");
+    const fila102 = await screen.findByText("102");
+    expect(fila101).toBeTruthy();
+    expect(fila102).toBeTruthy();
+
+    // Verifica estado y usuarios también
+    expect(screen.getByText("pendiente")).toBeTruthy();
+    expect(screen.getByText("completada")).toBeTruthy();
+    expect(screen.getByText("juan.perez")).toBeTruthy();
+    expect(screen.getByText("proveedorA")).toBeTruthy();
+  });
+
+  it("habilita el botón 'Eliminar' al seleccionar checkboxes y llama a deleteOrden", async () => {
+    render(<Ordenes />);
+    await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
+
+    // Busca todos los checkbox (<input type="checkbox">) que representan cada fila de orden
     const checkboxes = await screen.findAllByRole("checkbox");
     expect(checkboxes.length).toBe(2);
 
@@ -122,17 +138,17 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
     await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
 
     const btnCrear = screen.getByRole("button", { name: /Crear/i });
-    expect(btnCrear).not.toBeNull();
+    expect(btnCrear).toBeTruthy();
 
     fireEvent.click(btnCrear);
     expect(mockNavigate).toHaveBeenCalledWith("/orden/nueva/proveedor");
   });
 
-  it("abre el diálogo de edición al marcar una fila y hacer clic en 'Editar'", async () => {
+  it("abre el diálogo de edición al seleccionar una fila y hacer clic en 'Editar'", async () => {
     render(<Ordenes />);
     await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
 
-    // Marca el checkbox de la segunda fila (índice 1)
+    // Selecciona la segunda fila (ID 102) marcando su checkbox
     const checkboxes = await screen.findAllByRole("checkbox");
     fireEvent.click(checkboxes[1]);
 
@@ -145,23 +161,20 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
 
     // Ahora debe aparecer un diálogo (<div role="dialog">)
     const dialog = await screen.findByRole("dialog");
-    expect(dialog).not.toBeNull();
+    expect(dialog).toBeTruthy();
 
-    // Dentro del diálogo, debe haber inputs con valores correspondientes
-    // El primer input corresponde a ID_ORDEN = "102"
+    // Dentro del diálogo, debe haber inputs con valores correspondientes (ID y Estado de la fila 102)
     const inputId = screen.getByDisplayValue("102");
-    expect(inputId).not.toBeNull();
-
-    // El siguiente input de estado debe mostrar "completada"
     const inputEstado = screen.getByDisplayValue("completada");
-    expect(inputEstado).not.toBeNull();
+    expect(inputId).toBeTruthy();
+    expect(inputEstado).toBeTruthy();
   });
 
   it("guarda cambios de edición en el diálogo y llama a updateOrden", async () => {
     render(<Ordenes />);
     await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
 
-    // Marca el checkbox de la primera fila (índice 0) y abre el diálogo
+    // Selecciona la primera fila (ID 101) y abre el diálogo de edición
     const checkboxes = await screen.findAllByRole("checkbox");
     fireEvent.click(checkboxes[0]);
     const btnEditar = screen.getByRole("button", { name: /Editar/i });
@@ -191,11 +204,11 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
     });
   });
 
-  it("completa la orden al marcar el checkbox y hacer clic en 'Completar' y llama a completarOrden", async () => {
+  it("completa la orden al hacer clic en 'Completar' y llama a completarOrden", async () => {
     render(<Ordenes />);
     await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
 
-    // Marca el checkbox de la primera fila (índice 0)
+    // Selecciona la primera fila y haz clic en "Completar"
     const checkboxes = await screen.findAllByRole("checkbox");
     fireEvent.click(checkboxes[0]);
 
@@ -221,21 +234,20 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
 
     // El input de búsqueda tiene placeholder "Buscar por Estado"
     const inputBusqueda = screen.getByPlaceholderText(/Buscar por Estado/i);
-    expect(inputBusqueda).not.toBeNull();
+    expect(inputBusqueda).toBeTruthy();
 
-    // Marca ambos checkboxes para asegurar que están cargadas las filas
-    const checkboxes = await screen.findAllByRole("checkbox");
-    expect(checkboxes.length).toBe(2);
+    // Inicialmente, ambos IDs (101 y 102) deberían estar visibles
+    expect(screen.getByText("101")).toBeTruthy();
+    expect(screen.getByText("102")).toBeTruthy();
 
     // Escribe "completada" en el input de búsqueda (filtra por ESTADO)
     fireEvent.change(inputBusqueda, { target: { value: "completada" } });
     expect(inputBusqueda.value).toBe("completada");
 
-    // Ahora sólo debe mostrarse la fila con ESTADO "completada" (ID_ORDEN = 102)
+    // Ahora sólo debe mostrarse la fila con estado "completada" (ID 102)
     await waitFor(() => {
-      // buscar el texto "102" en la tabla
       expect(screen.queryByText("101")).toBeNull();
-      expect(screen.getByText("102")).not.toBeNull();
+      expect(screen.getByText("102")).toBeTruthy();
     });
   });
 
@@ -246,16 +258,37 @@ describe("Ordenes – Interacciones y cobertura adicional", () => {
     // Encuentra todos los <select> (role="combobox") y toma el tercero (índice 2) que corresponde a "Estado"
     const selects = screen.getAllByRole("combobox");
     const selectEstado = selects[2];
-    expect(selectEstado).not.toBeNull();
+    expect(selectEstado).toBeTruthy();
 
     // Cambia a "asc" (A-Z o ascendente)
     fireEvent.change(selectEstado, { target: { value: "asc" } });
 
-    // Después de ordenar, la fila con ID 102 (ESTADO "completada") debería mostrarse antes que la de 101
-    // Obtenemos las celdas de texto "101" y "102"
+    // Después de ordenar, la fila con ID 102 (estado "completada") debería mostrarse antes que la de 101
     const celdas = await screen.findAllByText(/101|102/);
     const index102 = celdas.findIndex((el) => el.textContent === "102");
     const index101 = celdas.findIndex((el) => el.textContent === "101");
     expect(index102).toBeLessThan(index101);
+  });
+
+  it("simula un error en completarOrden y cubre la rama catch (alert)", async () => {
+    // Hacemos que completarOrden rechace
+    completarOrden.mockRejectedValue(new Error("Fallo al completar"));
+    // Espiamos alert
+    window.alert = jest.fn();
+
+    render(<Ordenes />);
+    await waitFor(() => expect(getOrdenes).toHaveBeenCalledTimes(1));
+
+    // Selecciona la primera fila y haz clic en "Completar"
+    const checkboxes = await screen.findAllByRole("checkbox");
+    fireEvent.click(checkboxes[0]);
+
+    const btnCompletar = screen.getByRole("button", { name: /Completar/i });
+    fireEvent.click(btnCompletar);
+
+    // Espera a que alert sea llamado con mensaje de error
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Error al completar la orden");
+    });
   });
 });
