@@ -16,6 +16,7 @@ import { AuthProvider } from "./utils/authContext";
 import { PublicRoute } from "./utils/publicRoute";
 import { PreAuthRoute } from "./utils/preAuthRoute";
 
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
                 element={<ProtectedRoute allowedRoles={roles}>{element}</ProtectedRoute>}
               />
             ))}
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </AuthProvider>
