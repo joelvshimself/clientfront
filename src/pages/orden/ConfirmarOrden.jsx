@@ -9,6 +9,8 @@ import {
 import Layout from "../../components/Layout";
 import { createOrden } from "../../services/ordenesService";
 
+import { getCookie } from "../../utils/getCookie"
+
 export default function ConfirmarOrden() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +37,10 @@ export default function ConfirmarOrden() {
   );
 
   const handleConfirmar = async () => {
-    const correo_solicita = localStorage.getItem("correo");
+    const userData = JSON.parse(getCookie("UserData"))
+    //console.log(userData)
+    //console.log(userData.email)
+    const correo_solicita = userData.email;
     const correo_provee = proveedorSeleccionado;
 
     const hoy = new Date();
@@ -58,6 +63,7 @@ export default function ConfirmarOrden() {
 
     if (!correo_solicita || !correo_provee || !productos.length || !fecha_emision) {
       alert("Faltan datos para crear la orden.");
+      console.log(correo_solicita,correo_provee,productos.length, fecha_emision)
       return;
     }
 
