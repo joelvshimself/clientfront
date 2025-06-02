@@ -1,5 +1,6 @@
 import { useAuth } from "./useAuth";
 import { Navigate } from "react-router-dom";
+import NotFound from "../pages/NotFound"
 
 export const ProtectedRoute = ({ allowedRoles, children }) => {
   const { user, loading } = useAuth();
@@ -7,7 +8,7 @@ export const ProtectedRoute = ({ allowedRoles, children }) => {
   if (loading) return <p>Cargando...</p>;
   if (!user) return <Navigate to="/login" />;
   if(!user.twoFa) return <Navigate to="/2fa" />;
-  if (!allowedRoles.includes(user.role) || !user.twoFa) return <p>Acceso denegado</p>;
+  if (!allowedRoles.includes(user.role) || !user.twoFa) return <NotFound />;
 
   return children;
 };
