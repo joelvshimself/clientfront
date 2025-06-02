@@ -22,6 +22,7 @@ export const getUsuarios = async () => {
 export const createUsuario = async (usuario) => {
   const response = await fetch(`${API_URL}/usuarios`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
     },
