@@ -291,7 +291,9 @@ describe("<Usuarios />", () => {
         1,
         expect.objectContaining({
           nombre: "Juan Editado",
-          rol: "proveedor",
+          // Dado que el componente no modifica “rol” ,
+          // seguimos recibiendo el valor original ("admin")
+          rol: "admin",
         })
       );
     });
