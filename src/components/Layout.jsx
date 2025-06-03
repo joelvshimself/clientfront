@@ -16,7 +16,6 @@ import { getCookie } from "../utils/getCookie";
 import { getNavigationItemsForRole } from "../utils/navigationItems";
 import NotificacionesPanel from "./NotificacionesPanel";
 
-import { getCookie } from "../utils/getCookie"; // adjust the path
 
 export default function Layout({ children }) {
   // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout

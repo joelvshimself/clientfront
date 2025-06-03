@@ -594,8 +594,6 @@ export default function Home() {
           />
         )}
       </Card>
-
-      {/* Notificaciones */}
     </Layout>
   );
 }
