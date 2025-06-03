@@ -1,36 +1,17 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/components/NotificacionesPanel.jsx
+import React, { useRef, useState } from "react";
 import { Button, Popover, FlexBox, Text } from "@ui5/webcomponents-react";
 import { Toaster, toast } from "react-hot-toast";
-
+import { useNotificaciones } from "../utils/NotificacionesContext";
 import {
-  obtenerNotificaciones,
   eliminarNotificacionStorage,
-} from "../utils/notificacionesStorage"; // Ajusta ruta si es necesario
-
-import { mensajesNotificaciones, agregarNotificacion } from "./Notificaciones"; // Importa la función correcta
+} from "../utils/notificacionesStorage";
 
 const NotificacionesPanel = () => {
   const notiButtonRef = useRef(null);
-  const [notificaciones, setNotificaciones] = useState([]);
   const [openNotificaciones, setOpenNotificaciones] = useState(false);
+  const { notificaciones, setNotificaciones } = useNotificaciones(); // 👉 ahora viene del contexto
 
-  // Cargar notificaciones desde localStorage al iniciar
-  useEffect(() => {
-    const cargadas = obtenerNotificaciones();
-    setNotificaciones(cargadas);
-  }, []);
-
-  // Función para agregar notificación y actualizar estado (ahora async)
-  const handleAgregarNotificacion = async (tipo, mensaje) => {
-    try {
-      await agregarNotificacion(tipo, mensaje, setNotificaciones);
-    } catch (error) {
-      toast.error("Error al agregar notificación");
-      console.error(error);
-    }
-  };
-
-  // Función para eliminar notificación y actualizar estado
   const handleEliminarNotificacion = (id) => {
     const nuevas = eliminarNotificacionStorage(id);
     setNotificaciones(nuevas);
@@ -88,7 +69,11 @@ const NotificacionesPanel = () => {
                 <Text>{noti.mensaje}</Text>
                 <Button
                   onClick={() => handleEliminarNotificacion(noti.id)}
-                  style={{ marginTop: "0.5rem", backgroundColor: "red", color: "white" }}
+                  style={{
+                    marginTop: "0.5rem",
+                    backgroundColor: "red",
+                    color: "white",
+                  }}
                 >
                   Eliminar
                 </Button>

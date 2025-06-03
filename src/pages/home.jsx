@@ -15,7 +15,6 @@ import { Toaster } from "react-hot-toast";
 import PropTypes from "prop-types";
 
 import "./home.css";
-import { agregarNotificacion, mensajesNotificaciones } from "../components/Notificaciones";
 import { getOrdenes } from "../services/ordenesService";
 import { getInventario, getInventarioVendido } from "../services/inventarioService";
 import { getForecast } from "../services/forecastService";

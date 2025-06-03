@@ -15,10 +15,9 @@ import { logout } from "../services/authService";
 import { getCookie } from "../utils/getCookie";
 import { getNavigationItemsForRole } from "../utils/navigationItems";
 import NotificacionesPanel from "./NotificacionesPanel";
-
+import { limpiarNotificaciones } from "../utils/notificacionesStorage"; // ✅ Importación añadida
 
 export default function Layout({ children }) {
-  // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,8 +27,8 @@ export default function Layout({ children }) {
     role: "Invitado"
   };
 
-  // Obtener ítems de navegación según el roln
-  const navItems = getNavigationItemsForRole(userData.role); // [{ label, route, icon }]
+  // Obtener ítems de navegación según el rol
+  const navItems = getNavigationItemsForRole(userData.role);
 
   const handleNavigationClick = (e) => {
     const route = e.detail.item.dataset.route;
@@ -39,10 +38,12 @@ export default function Layout({ children }) {
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.reload();
+      limpiarNotificaciones(); // 🧹 Borrar notificaciones del localStorage
+      window.location.reload(); // 🔄 Recargar para limpiar estado
     } catch (error) {
       console.error("Error al hacer logout:", error);
     }
+
     navigate("/login");
   };
 
@@ -120,3 +121,4 @@ export default function Layout({ children }) {
 Layout.propTypes = {
   children: PropTypes.node.isRequired
 };
+

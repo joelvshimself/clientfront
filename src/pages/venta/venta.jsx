@@ -14,6 +14,8 @@ import {
   eliminarVenta,
   editarVenta
 } from "../../services/ventaService";
+import { useNotificaciones } from "../../utils/NotificacionesContext";
+import { agregarNotificacion } from "../../components/Notificaciones";
 
 
 export default function Venta() {
@@ -24,6 +26,7 @@ export default function Venta() {
   const [busqueda, setBusqueda] = useState("");
   const [openEditar, setOpenEditar] = useState(false);
   const [ventaEditar, setVentaEditar] = useState(null);
+  const { setNotificaciones } = useNotificaciones();
 
   useEffect(() => {
     const cargarVentas = async () => {
@@ -47,16 +50,27 @@ export default function Venta() {
       const nuevasVentas = ventas.filter(v => !ventasSeleccionadas.includes(v.id));
       setVentas(nuevasVentas);
       setVentasSeleccionadas([]);
-      alert("Ventas eliminadas correctamente");
+      agregarNotificacion(
+        "success",
+        "Ventas eliminadas correctamente",
+        setNotificaciones)
     } catch (error) {
       // Si después del error las ventas ya no están, muestra éxito
       const nuevasVentas = ventas.filter(v => !ventasSeleccionadas.includes(v.id));
       setVentas(nuevasVentas);
       setVentasSeleccionadas([]);
       if (nuevasVentas.length < ventas.length) {
-        alert("Ventas eliminadas correctamente (con advertencia del servidor)");
+        agregarNotificacion(
+          "success",
+          "Ventas eliminadas correctamente",
+          setNotificaciones
+        )
       } else {
-        alert("Error al eliminar ventas. Inténtalo de nuevo.");
+        agregarNotificacion(
+          "error",
+          "Error al eliminar las ventas. Inténtalo de nuevo.",
+          setNotificaciones
+        );
       }
       console.error(error);
     }
@@ -90,9 +104,15 @@ export default function Venta() {
       setVentaEditar(null);
       setVentasSeleccionadas([]);
 
-      alert(`Venta ${ventaEditar.id} actualizada correctamente`);
+      agregarNotificacion(
+        "success",
+        `Venta ${ventaEditar.id} actualizada correctamente`,
+        setNotificaciones);
     } catch (error) {
-      alert("Error al actualizar la venta");
+      agregarNotificacion(
+        "error",
+        "Error al actualizar la venta. Inténtalo de nuevo.",
+        setNotificaciones);
       console.error("Error al actualizar la venta:", error);
     }
   };
