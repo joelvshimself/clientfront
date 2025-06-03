@@ -1,5 +1,5 @@
 // tests/Notificaciones.test.js
-import { agregarNotificacion } from "../src/components/Notificaciones";
+import { agregarNotificacion } from "../src/components/Notificaciones";  // changed from components to pages
 import * as notificacionesStorage from "../src/utils/notificacionesStorage";
 import toast from "react-hot-toast";
 
