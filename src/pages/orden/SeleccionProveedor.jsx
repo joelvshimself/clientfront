@@ -22,10 +22,6 @@ export default function SeleccionProveedor() {
         );
         setProveedores(proveedoresFiltrados);
       })
-      .catch(() => {
-        alert("No autorizado. Inicia sesión.");
-        navigate("/login");
-      });
   }, []);
 
   const handleContinuar = () => {

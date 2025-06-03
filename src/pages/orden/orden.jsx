@@ -11,6 +11,9 @@ import {
 import Layout from "../../components/Layout";
 import { getOrdenes, deleteOrden, updateOrden, completarOrden } from "../../services/ordenesService";
 import PropTypes from "prop-types";
+import { useNotificaciones } from "../../utils/NotificacionesContext";
+import { agregarNotificacion} from "../../components/Notificaciones";
+
 
 // Componente auxiliar para encabezados de tabla con ordenamiento
 function SortableTh({ label, value, setValue, clearAllSorts }) {
@@ -166,6 +169,7 @@ export default function Ordenes() {
   const [costoSort, setCostoSort] = useState(null);
   const [solicitanteSort, setSolicitanteSort] = useState(null);
   const [proveedorSort, setProveedorSort] = useState(null);
+  const { setNotificaciones } = useNotificaciones();
 
   const setters = [
     setOrdenIdSort,
@@ -203,6 +207,7 @@ export default function Ordenes() {
   const eliminarOrdenesSeleccionadas = async () => {
     for (let id of ordenesSeleccionadas) {
       await deleteOrden(id);
+      agregarNotificacion("success", `Orden ${id} eliminada correctamente`, setNotificaciones);
     }
     setOrdenesSeleccionadas([]);
     await loadOrdenes();
@@ -218,7 +223,7 @@ export default function Ordenes() {
     const ordenId = ordenesSeleccionadas[0];
     try {
       const respuesta = await completarOrden(ordenId, fecha_recepcion);
-      alert(respuesta?.message || `Orden ${ordenId} completada.`);
+      agregarNotificacion("success", `Orden ${ordenId} completada correctamente`, setNotificaciones);
       await loadOrdenes();
       setOrdenesSeleccionadas([]);
     } catch (error) {
@@ -232,9 +237,9 @@ export default function Ordenes() {
       await loadOrdenes();
       setOpenEditar(false);
       setOrdenesSeleccionadas([]);
-      alert("Orden actualizada correctamente");
+      agregarNotificacion("success", `Orden ${ordenEditar.id} actualizada correctamente`, setNotificaciones);
     } else {
-      alert("Error al actualizar orden");
+      agregarNotificacion("error", "Error al actualizar la orden", setNotificaciones);
     }
   };
 

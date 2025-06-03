@@ -12,18 +12,24 @@ import logIcon from "@ui5/webcomponents-icons/dist/log.js";
 import "@ui5/webcomponents-icons/dist/employee.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../services/authService";
+import { getCookie } from "../utils/getCookie";
 import { getNavigationItemsForRole } from "../utils/navigationItems";
+import NotificacionesPanel from "./NotificacionesPanel";
+import { limpiarNotificaciones } from "../utils/notificacionesStorage"; // ✅ Importación añadida
 
-import { getCookie } from "../utils/getCookie"; // adjust the path
-
-export default function Layout({ children, role }) {
-  // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout
+export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userData = JSON.parse(getCookie("UserData"));
-  const navItems = getNavigationItemsForRole(userData.role); // [{ label, route, icon }]
-  
+  // Obtener datos del usuario desde la cookie
+  const userData = JSON.parse(getCookie("UserData")) || {
+    nombre: "Usuario",
+    role: "Invitado"
+  };
+
+  // Obtener ítems de navegación según el rol
+  const navItems = getNavigationItemsForRole(userData.role);
+
   const handleNavigationClick = (e) => {
     const route = e.detail.item.dataset.route;
     if (route) navigate(route);
@@ -32,10 +38,12 @@ export default function Layout({ children, role }) {
   const handleLogout = async () => {
     try {
       await logout();
+      limpiarNotificaciones(); // 🧹 Borrar notificaciones del localStorage
+      window.location.reload(); // 🔄 Recargar para limpiar estado
     } catch (error) {
       console.error("Error al hacer logout:", error);
     }
-    localStorage.clear();
+
     navigate("/login");
   };
 
@@ -45,9 +53,11 @@ export default function Layout({ children, role }) {
 
   return (
     <div style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
+      {/* Barra superior */}
       <ShellBar
         logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
         primaryTitle="Bienvenido a ViBa"
+        secondaryTitle={`${userData.nombre} - ${userData.role}`}
         profile={<Avatar icon="employee" />}
         onProfileClick={handleProfileClick}
         style={{
@@ -60,13 +70,15 @@ export default function Layout({ children, role }) {
           zIndex: 1201
         }}
       >
-        <ShellBarItem
-          icon={logIcon}
-          text="Salir"
-          onClick={handleLogout}
-        />
+        <ShellBarItem icon={logIcon} text="Salir" onClick={handleLogout} />
       </ShellBar>
 
+      {/* Botón y panel de notificaciones */}
+      <div style={{ position: "fixed", top: 10, right: 20, zIndex: 1300 }}>
+        <NotificacionesPanel />
+      </div>
+
+      {/* Layout principal con navegación y contenido */}
       <FlexBox direction="Row" style={{ height: "100%", marginTop: "3.5rem" }}>
         <div
           style={{
@@ -106,7 +118,7 @@ export default function Layout({ children, role }) {
   );
 }
 
-// ✅ Validación de props
 Layout.propTypes = {
   children: PropTypes.node.isRequired
 };
+
