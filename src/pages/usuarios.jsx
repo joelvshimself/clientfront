@@ -19,6 +19,8 @@ import {
   updateUsuario,
   deleteUsuario
 } from "../services/usersService";
+import { useNotificaciones } from "../utils/NotificacionesContext";
+import { agregarNotificacion} from "../components/Notificaciones";
 import Layout from "../components/Layout";
 
 // --- COMPONENTES REUTILIZABLES FUERA DEL PRINCIPAL ---
@@ -192,6 +194,7 @@ OrdenSelect.propTypes = {
 
 // --- COMPONENTE PRINCIPAL ---
 
+
 export default function Usuarios() {
   const [openCrear, setOpenCrear] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
@@ -202,12 +205,15 @@ export default function Usuarios() {
   const [ordenCorreo, setOrdenCorreo] = useState(null);
   const [ordenTipo, setOrdenTipo] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
+  const { setNotificaciones } = useNotificaciones(); // 🔥 FALTA ESTO EN TU CÓDIGO
   const [nuevoUsuario, setNuevoUsuario] = useState({
     nombre: "",
     correo: "",
     password: "",
     rol: "Owner"
   });
+
+  
 
   const loadUsuarios = async () => {
     const data = await getUsuarios();
@@ -238,12 +244,28 @@ export default function Usuarios() {
     if (ok) {
       await loadUsuarios();
       setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "Owner" });
+      agregarNotificacion(
+        "success",
+        "Usuario creado correctamente",
+        setNotificaciones
+      );
+    } else {
+      agregarNotificacion(
+        "error",
+        "Error al crear el usuario",
+        setNotificaciones
+      );
     }
   };
 
   const eliminarUsuariosSeleccionados = async () => {
     for (let id of usuariosSeleccionados) {
       await deleteUsuario(id);
+      agregarNotificacion(
+        "success",
+        `Usuario con ID ${id} eliminado correctamente`,
+        setNotificaciones
+      );
     }
     setUsuariosSeleccionados([]);
     await loadUsuarios();
@@ -262,8 +284,17 @@ export default function Usuarios() {
       await loadUsuarios();
       setOpenEditar(false);
       setUsuariosSeleccionados([]);
+      agregarNotificacion(
+        "success",
+        "Usuario actualizado correctamente",
+        setNotificaciones
+      );
     } else {
-      console.error("Error al actualizar el usuario");
+      agregarNotificacion(
+        "error",
+        "Error al actualizar el usuario",
+        setNotificaciones
+      )
     }
   };
 
@@ -285,6 +316,8 @@ export default function Usuarios() {
             icon="delete"
             onClick={eliminarUsuariosSeleccionados}
             disabled={usuariosSeleccionados.length === 0}
+            
+            
           >
             Eliminar
           </Button>

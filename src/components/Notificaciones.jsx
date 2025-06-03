@@ -1,19 +1,16 @@
-// Notificaciones.jsx
+// src/pages/Notificaciones.jsx
 import toast from "react-hot-toast";
-
-export const mensajesNotificaciones = {
-  exito: "Operación exitosa",
-  info: "Mensaje informativo",
-  error: "Operación fallida",
-};
+import { guardarNotificaciones } from "../utils/notificacionesStorage";
 
 export const agregarNotificacion = (tipo, mensaje, setNotificaciones) => {
-  setNotificaciones((prev) => [
-    ...prev,
-    { tipo, mensaje, id: Date.now() },
-  ]);
+  const nueva = { tipo, mensaje, id: Date.now() };
 
-  // Mostrar el toast dependiendo del tipo
+  setNotificaciones((prev) => {
+    const actualizadas = [...prev, nueva];
+    guardarNotificaciones(actualizadas);
+    return actualizadas;
+  });
+
   switch (tipo) {
     case "success":
       toast.success(mensaje);
