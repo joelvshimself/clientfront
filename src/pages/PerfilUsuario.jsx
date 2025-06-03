@@ -32,41 +32,30 @@ export default function PerfilUsuario() {
   const navigate = useNavigate();
 
   // Carga datos de usuario al montar
+  const userDataString = getCookie("UserData")
+
+  let userData;
+  try {
+    userData = JSON.parse(userDataString);
+    console.log("id",userData.Id)
+  } catch (e) {
+    console.error("Invalid UserData cookie:", e);
+    
+    return;
+  }
+
   useEffect(() => {
-    const userDataString = getCookie("UserData");
-    if (!userDataString) {
-      navigate("/login");
-      return;
+    if (userData) {
+      setUsuario({
+        ID: userData.userId,
+        NOMBRE: userData.nombre,
+        EMAIL: userData.email,
+        ROL: userData.role
+      });
+      setNewName(userData.nombre);
     }
+  }, []);
 
-    let userData;
-    try {
-      userData = JSON.parse(userDataString);
-    } catch (e) {
-      console.error("Invalid UserData cookie:", e);
-      navigate("/login");
-      return;
-    }
-
-    const correo = userData.email;
-    if (!correo) {
-      navigate("/login");
-      return;
-    }
-
-    getUsuarios().then((usuarios) => {
-      const encontrado = usuarios.find(
-        (u) =>
-          (u.EMAIL === correo) ||
-          (u.email === correo) ||
-          (u.correo === correo)
-      );
-      if (encontrado) {
-        setUsuario(encontrado);
-        setNewName(encontrado.NOMBRE || encontrado.nombre);
-      }
-    });
-  }, [navigate]);
 
   const handleSave = async () => {
     if (!newName.trim()) {
@@ -75,12 +64,12 @@ export default function PerfilUsuario() {
     if (!newPassword.trim()) {
       return alert("La contraseña no puede estar vacía");
     }
-    const id = usuario.ID_USUARIO || usuario.id;
+    const id = userData.userId;
     const payload = {
       nombre: newName,
-      email: usuario.EMAIL || usuario.email || usuario.correo,
+      email: userData.email,
       password: newPassword,
-      rol: usuario.ROL || usuario.rol
+      rol: userData.role 
     };
     const success = await updateUsuario(id, payload);
     if (success) {
@@ -95,7 +84,7 @@ export default function PerfilUsuario() {
 
   const handleCancel = () => {
     if (usuario) {
-      setNewName(usuario.NOMBRE || usuario.nombre);
+      setNewName(userData.nombre);
     }
     setNewPassword("");
     setEditing(false);
@@ -147,7 +136,7 @@ export default function PerfilUsuario() {
                 border: "4px solid #fff"
               }}
             >
-              {getInitials(usuario?.NOMBRE || usuario?.nombre)}
+              {getInitials(userData?.nombre)}
             </div>
             <Title level="H2" style={{ marginBottom: "0.5rem", color: "#3a3a6a", fontWeight: 700 }}>
               Perfil de Usuario
@@ -191,7 +180,7 @@ export default function PerfilUsuario() {
                       />
                     ) : (
                       <Text style={{ fontSize: "1rem", color: "#3a3a6a", fontWeight: 500 }}>
-                        {usuario.NOMBRE || usuario.nombre}
+                        {userData.nombre}
                       </Text>
                     )}
                   </div>
@@ -221,14 +210,14 @@ export default function PerfilUsuario() {
                     <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Correo:</Text>
                     <br />
                     <Text style={{ color: "#3a3a6a", fontSize: "1rem" }}>
-                      {usuario.EMAIL || usuario.email || usuario.correo}
+                      {usuario.EMAIL || usuario.email || userData.email}
                     </Text>
                   </div>
 
                   <div style={{ padding: "0.5rem 0.8rem" }}>
                     <Text style={{ fontWeight: "bold", color: "#6a82fb" }}>Rol:</Text>
                     <br />
-                    <Text style={{ color: "#3a3a6a", fontSize: "1rem" }}>{usuario.ROL || usuario.rol}</Text>
+                    <Text style={{ color: "#3a3a6a", fontSize: "1rem" }}>{usuario.ROL || userData.role}</Text>
                   </div>
                 </FlexBox>
 

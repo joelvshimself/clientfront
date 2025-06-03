@@ -16,7 +16,7 @@ import { getNavigationItemsForRole } from "../utils/navigationItems";
 
 import { getCookie } from "../utils/getCookie"; // adjust the path
 
-export default function Layout({ children, role }) {
+export default function Layout({ children }) {
   // Mejor guardar otra cookie no protegida por js que guarde el rol para el layout
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +48,7 @@ export default function Layout({ children, role }) {
       <ShellBar
         logo={<img src="/viba1.png" alt="ViBa" style={{ height: 40 }} />}
         primaryTitle="Bienvenido a ViBa"
+        secondaryTitle={`${userData.nombre} - ${userData.role}`}
         profile={<Avatar icon="employee" />}
         onProfileClick={handleProfileClick}
         style={{
