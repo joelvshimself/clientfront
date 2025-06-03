@@ -97,7 +97,7 @@ describe("<Usuarios />", () => {
   test("el botón Eliminar se habilita solo al seleccionar usuarios", async () => {
     render(<Usuarios />);
 
-    // Primero espero a que aparezca "Juan Pérez" en la tabla
+    // Espero a que aparezca "Juan Pérez" en la tabla para asegurarme de que cargó
     expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
 
     // Ahora sí ya existe el botón en el DOM
@@ -112,5 +112,92 @@ describe("<Usuarios />", () => {
     // Desmarca la casilla
     fireEvent.click(checkbox);
     expect(btnEliminar).toBeDisabled();
+  });
+
+  test("agrega un usuario correctamente y muestra notificación de éxito", async () => {
+    const { createUsuario } = require("../src/services/usersService");
+    createUsuario.mockResolvedValue(true);
+
+    render(<Usuarios />);
+
+    // Abre el modal de crear usuario
+    fireEvent.click(screen.getByRole("button", { name: /Crear/i }));
+
+    // Espero a que aparezca el primer campo del formulario en el modal:
+    expect(await screen.findByPlaceholderText("Nombre")).toBeInTheDocument();
+
+    // Completa el formulario
+    fireEvent.input(screen.getByPlaceholderText("Nombre"), {
+      target: { value: "Nuevo Usuario" },
+    });
+    fireEvent.input(screen.getByPlaceholderText("Correo"), {
+      target: { value: "nuevo@correo.com" },
+    });
+    fireEvent.input(screen.getByPlaceholderText(/Contraseña/i), {
+      target: { value: "123456" },
+    });
+
+    // Ahora obtengo el select que sí tiene name="rol":
+    const allComboboxes = screen.getAllByRole("combobox");
+    const rolSelect = allComboboxes.find((el) => el.getAttribute("name") === "rol");
+    expect(rolSelect).toBeInTheDocument();
+
+    // Cambia el rol
+    fireEvent.change(rolSelect, { target: { value: "admin" } });
+
+    // Guarda
+    fireEvent.click(screen.getByRole("button", { name: /Guardar/i }));
+
+    // Espero a que createUsuario sea llamado con el payload correcto
+    await waitFor(() => {
+      expect(createUsuario).toHaveBeenCalledWith({
+        nombre: "Nuevo Usuario",
+        email: "nuevo@correo.com",
+        password: "123456",
+        rol: "admin",
+      });
+    });
+
+    // Verifica que se muestre la notificación de éxito
+    const { agregarNotificacion } = require("../src/components/Notificaciones");
+    expect(agregarNotificacion).toHaveBeenCalledWith(
+      "success",
+      "Usuario creado correctamente",
+      expect.any(Function)
+    );
+  });
+
+  test("elimina usuarios seleccionados y muestra notificación de éxito", async () => {
+    const { deleteUsuario } = require("../src/services/usersService");
+    deleteUsuario.mockResolvedValue(true);
+
+    render(<Usuarios />);
+
+    // Espera a que los usuarios estén en la tabla
+    expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
+
+    // Marca la casilla del primer usuario
+    const checkbox = screen.getAllByRole("checkbox")[0];
+    fireEvent.click(checkbox);
+
+    // El botón Eliminar debe estar habilitado
+    const btnEliminar = screen.getByRole("button", { name: /Eliminar/i });
+    expect(btnEliminar).not.toBeDisabled();
+
+    // Haz clic en Eliminar
+    fireEvent.click(btnEliminar);
+
+    // Espera a que deleteUsuario sea llamado
+    await waitFor(() => {
+      expect(deleteUsuario).toHaveBeenCalledWith(1);
+    });
+
+    // Verifica que se muestre la notificación de éxito
+    const { agregarNotificacion } = require("../src/components/Notificaciones");
+    expect(agregarNotificacion).toHaveBeenCalledWith(
+      "success",
+      "Usuario con ID 1 eliminado correctamente",
+      expect.any(Function)
+    );
   });
 });
