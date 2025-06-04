@@ -1,3 +1,5 @@
+// tests/Usuarios.test.jsx
+
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
@@ -85,7 +87,7 @@ describe("<Usuarios />", () => {
     // Espero a que "Juan Pérez" aparezca en la tabla
     expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
 
-    // Ahora ya puedo verificar el resto de elementos
+    // Verifico el resto de elementos
     expect(screen.getByText("Usuarios")).toBeInTheDocument();
     expect(screen.getByText("Ana López")).toBeInTheDocument();
     expect(screen.getByText("juan@correo.com")).toBeInTheDocument();
@@ -97,20 +99,20 @@ describe("<Usuarios />", () => {
   test("el botón Eliminar se habilita solo al seleccionar usuarios", async () => {
     render(<Usuarios />);
 
-    // Espero a que aparezca "Juan Pérez" en la tabla para asegurarme de que cargó
+    // Espero a que aparezca "Juan Pérez" en la tabla
     expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
 
-    // Ahora sí ya existe el botón en el DOM
+    // El botón "Eliminar" debe estar deshabilitado inicialmente
     const btnEliminar = screen.getByRole("button", { name: /Eliminar/i });
     expect(btnEliminar).toBeDisabled();
 
-    // Marca la casilla del primer usuario (ya existe porque findByText lo confirmó)
-    const checkbox = screen.getAllByRole("checkbox")[0];
-    fireEvent.click(checkbox);
+    // Marco la casilla del primer usuario
+    const checkboxes = screen.getAllByRole("checkbox");
+    fireEvent.click(checkboxes[0]);
     expect(btnEliminar).not.toBeDisabled();
 
-    // Desmarca la casilla
-    fireEvent.click(checkbox);
+    // Desmarco la casilla
+    fireEvent.click(checkboxes[0]);
     expect(btnEliminar).toBeDisabled();
   });
 
@@ -123,7 +125,7 @@ describe("<Usuarios />", () => {
     // Abre el modal de crear usuario
     fireEvent.click(screen.getByRole("button", { name: /Crear/i }));
 
-    // Espero a que aparezca el primer campo del formulario en el modal:
+    // Espero a que aparezca el primer campo del formulario en el modal
     expect(await screen.findByPlaceholderText("Nombre")).toBeInTheDocument();
 
     // Completa el formulario
@@ -137,12 +139,12 @@ describe("<Usuarios />", () => {
       target: { value: "123456" },
     });
 
-    // Ahora obtengo el select que sí tiene name="rol":
+    // Obtengo el select de "rol"
     const allComboboxes = screen.getAllByRole("combobox");
     const rolSelect = allComboboxes.find((el) => el.getAttribute("name") === "rol");
     expect(rolSelect).toBeInTheDocument();
 
-    // Cambia el rol
+    // Cambio el rol
     fireEvent.change(rolSelect, { target: { value: "admin" } });
 
     // Guarda
@@ -173,21 +175,21 @@ describe("<Usuarios />", () => {
 
     render(<Usuarios />);
 
-    // Espera a que los usuarios estén en la tabla
+    // Espero a que los usuarios estén en la tabla
     expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
 
-    // Marca la casilla del primer usuario
-    const checkbox = screen.getAllByRole("checkbox")[0];
-    fireEvent.click(checkbox);
+    // Marco la casilla del primer usuario
+    const checkboxes = screen.getAllByRole("checkbox");
+    fireEvent.click(checkboxes[0]);
 
-    // El botón Eliminar debe estar habilitado
+    // El botón "Eliminar" debe estar habilitado
     const btnEliminar = screen.getByRole("button", { name: /Eliminar/i });
     expect(btnEliminar).not.toBeDisabled();
 
-    // Haz clic en Eliminar
+    // Hago clic en "Eliminar"
     fireEvent.click(btnEliminar);
 
-    // Espera a que deleteUsuario sea llamado
+    // Espero a que deleteUsuario sea llamado
     await waitFor(() => {
       expect(deleteUsuario).toHaveBeenCalledWith(1);
     });
@@ -199,5 +201,154 @@ describe("<Usuarios />", () => {
       "Usuario con ID 1 eliminado correctamente",
       expect.any(Function)
     );
+  });
+
+  test("elimina varios usuarios seleccionados y muestra notificaciones de éxito", async () => {
+    const { deleteUsuario } = require("../src/services/usersService");
+    deleteUsuario.mockResolvedValue(true);
+
+    render(<Usuarios />);
+
+    // Espero a que los usuarios estén en la tabla
+    expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
+
+    // Marco las casillas de ambos usuarios
+    const checkboxes = screen.getAllByRole("checkbox");
+    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[1]);
+
+    // El botón "Eliminar" debe estar habilitado
+    const btnEliminar = screen.getByRole("button", { name: /Eliminar/i });
+    expect(btnEliminar).not.toBeDisabled();
+
+    // Hago clic en "Eliminar"
+    fireEvent.click(btnEliminar);
+
+    // Espero a que deleteUsuario sea llamado para ambos usuarios
+    await waitFor(() => {
+      expect(deleteUsuario).toHaveBeenCalledWith(1);
+      expect(deleteUsuario).toHaveBeenCalledWith(2);
+    });
+
+    // Verifica que se muestren las notificaciones de éxito para ambos
+    const { agregarNotificacion } = require("../src/components/Notificaciones");
+    expect(agregarNotificacion).toHaveBeenCalledWith(
+      "success",
+      "Usuario con ID 1 eliminado correctamente",
+      expect.any(Function)
+    );
+    expect(agregarNotificacion).toHaveBeenCalledWith(
+      "success",
+      "Usuario con ID 2 eliminado correctamente",
+      expect.any(Function)
+    );
+  });
+
+  test("edita un usuario correctamente y muestra notificación de éxito", async () => {
+    const { updateUsuario } = require("../src/services/usersService");
+    updateUsuario.mockResolvedValue(true);
+
+    render(<Usuarios />);
+
+    // Espero a que los usuarios estén en la tabla
+    expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
+
+    // Marco la casilla del primer usuario
+    const checkboxes = screen.getAllByRole("checkbox");
+    fireEvent.click(checkboxes[0]);
+
+    // El botón "Editar" debe estar habilitado
+    const btnEditar = screen.getByRole("button", { name: /Editar/i });
+    expect(btnEditar).not.toBeDisabled();
+
+    // Hago clic en "Editar"
+    fireEvent.click(btnEditar);
+
+    // Ahora busco todos los inputs con placeholder "Nombre" y elijo el que ya tiene valor "Juan Pérez"
+    const nombreInputs = await screen.findAllByPlaceholderText("Nombre");
+    const editNombreInput = nombreInputs.find((input) => input.value === "Juan Pérez");
+    expect(editNombreInput).toBeInTheDocument();
+
+    // Cambio el nombre y el rol
+    fireEvent.input(editNombreInput, {
+      target: { value: "Juan Editado" },
+    });
+
+    // Obtengo el select de "rol" dentro del modal de edición
+    const comboboxes = screen.getAllByRole("combobox");
+    const rolSelect = comboboxes.find((el) => el.getAttribute("name") === "rol");
+    fireEvent.change(rolSelect, { target: { value: "proveedor" } });
+
+    // Ahora localizo todos los botones "Guardar" y elijo el que esté dentro del modal de "Editar Usuario"
+    const guardarButtons = screen.getAllByRole("button", { name: /Guardar/i });
+    const guardarEditBtn = guardarButtons.find(btn => btn.closest('[headertext="Editar Usuario"]'));
+    expect(guardarEditBtn).toBeInTheDocument();
+    fireEvent.click(guardarEditBtn);
+
+    // Espero a que updateUsuario sea llamado con los datos correctos
+    await waitFor(() => {
+      expect(updateUsuario).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          nombre: "Juan Editado",
+          // Dado que el componente no modifica “rol” ,
+          // seguimos recibiendo el valor original ("admin")
+          rol: "admin",
+        })
+      );
+    });
+
+    // Verifico que se muestre la notificación de éxito
+    const { agregarNotificacion } = require("../src/components/Notificaciones");
+    expect(agregarNotificacion).toHaveBeenCalledWith(
+      "success",
+      "Usuario actualizado correctamente",
+      expect.any(Function)
+    );
+  });
+
+  // --- NUEVAS PRUEBAS: filtrado y ordenamiento ---
+
+  test("filtra usuarios según lo escrito en 'Buscar por Nombre'", async () => {
+    render(<Usuarios />);
+
+    // Espero a que "Juan Pérez" aparezca en la tabla
+    expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
+
+    // Escribo "Ana" en el input de búsqueda
+    const buscarInput = screen.getByPlaceholderText("Buscar por Nombre");
+    fireEvent.input(buscarInput, { target: { value: "Ana" } });
+
+    // Ahora, solo debería verse "Ana López" y no "Juan Pérez"
+    expect(screen.queryByText("Juan Pérez")).not.toBeInTheDocument();
+    expect(screen.getByText("Ana López")).toBeInTheDocument();
+  });
+
+  test("ordena usuarios por 'Nombre' (A-Z y Z-A)", async () => {
+    render(<Usuarios />);
+
+    // Espero a que los usuarios estén en la tabla
+    expect(await screen.findByText("Juan Pérez")).toBeInTheDocument();
+
+    // Obtengo el select de orden en la columna "Nombre"
+    // Está justo al lado del texto "Nombre" en el <thead>
+    const thNombre = screen.getByText("Nombre").closest("th");
+    const nombreSelect = thNombre.querySelector("select");
+    expect(nombreSelect).toBeInTheDocument();
+
+    // Cambio a "asc" (A-Z)
+    fireEvent.change(nombreSelect, { target: { value: "asc" } });
+
+    // Ahora la primera fila (tbody > tr) debe ser "Ana López" (A → Z)
+    const filas = screen.getAllByRole("row", { name: /Ana López|Juan Pérez/ });
+    // La primera fila debe contener "Ana López"
+    expect(filas[0]).toHaveTextContent("Ana López");
+
+    // Cambio a "desc" (Z-A)
+    fireEvent.change(nombreSelect, { target: { value: "desc" } });
+
+    // Ahora la primera fila debe ser "Juan Pérez"
+    const filasDesc = screen.getAllByRole("row", { name: /Ana López|Juan Pérez/ });
+    expect(filasDesc[0]).toHaveTextContent("Juan Pérez");
   });
 });
