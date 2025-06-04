@@ -7,9 +7,7 @@ import "@testing-library/jest-dom";
 import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 
-//
-// ─── MOCK DE UI5 COMPONENTS ─────────────────────────────────────────────────────────────
-// (Debes incluir TODOS los que usa tu componente Venta.jsx para que React no reciba undefined)
+
 jest.mock("@ui5/webcomponents-react", () => {
   const React = require("react");
   return {

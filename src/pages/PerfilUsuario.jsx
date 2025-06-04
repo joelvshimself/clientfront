@@ -9,7 +9,7 @@ import {
   CheckBox
 } from "@ui5/webcomponents-react";
 import Layout from "../components/Layout";
-import { getUsuarios, updateUsuario } from "../services/usersService";
+import { updateSelf } from "../services/usersService";
 import { useNavigate } from "react-router-dom";
 
 import { getCookie } from "../utils/getCookie"; // adjust the path
@@ -37,7 +37,7 @@ export default function PerfilUsuario() {
   let userData;
   try {
     userData = JSON.parse(userDataString);
-    console.log("id",userData.Id)
+    //console.log("id",userData.userId)
   } catch (e) {
     console.error("Invalid UserData cookie:", e);
     
@@ -71,7 +71,7 @@ export default function PerfilUsuario() {
       password: newPassword,
       rol: userData.role 
     };
-    const success = await updateUsuario(id, payload);
+    const success = await updateSelf(id, payload);
     if (success) {
       alert("Perfil actualizado correctamente");
       setUsuario({ ...usuario, NOMBRE: newName });
