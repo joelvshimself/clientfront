@@ -258,3 +258,70 @@ describe("<SmallKPI />", () => {
     expect(screen.getByTestId("extra")).toBeInTheDocument();
   });
 });
+
+describe("<Home /> hooks y parseMes>", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("parseMes convierte correctamente mes y año a Date", () => {
+    const { parseMes } = require("../src/components/Home.jsx");
+    // Enero 2024
+    expect(parseMes("ene. 2024")).toEqual(new Date(2024, 0, 1));
+    // Marzo 2023
+    expect(parseMes("mar. 2023")).toEqual(new Date(2023, 2, 1));
+    // Mes inválido
+    expect(parseMes("zzz 2022")).toEqual(new Date(2022, 0, 1));
+    // String vacío
+    expect(parseMes("")).toEqual(new Date(0, 0, 1));
+  });
+
+  test("useEffect de inventario actualiza el estado", async () => {
+    getInventario.mockResolvedValue([{ PRODUCTO: "Test", CANTIDAD: 1 }]);
+    getOrdenes.mockResolvedValue([]);
+    getInventarioVendido.mockResolvedValue([]);
+    getForecast.mockResolvedValue([]);
+
+    render(<Home />);
+    expect(await screen.findByText("Test")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+  });
+
+  test("useEffect de ordenes actualiza ordenesChartData correctamente", async () => {
+    // Simula 2 órdenes en el mismo mes
+    const now = new Date();
+    const mesActual = now.toLocaleString("es-MX", { year: "numeric", month: "short" });
+    getInventario.mockResolvedValue([]);
+    getOrdenes.mockResolvedValue([
+      { FECHA_EMISION: now.toISOString(), COSTO_COMPRA: 100 },
+      { FECHA_EMISION: now.toISOString(), COSTO_COMPRA: 200 }
+    ]);
+    getInventarioVendido.mockResolvedValue([]);
+    getForecast.mockResolvedValue([]);
+
+    render(<Home />);
+    // Busca el KPI de órdenes del mes actual
+    await waitFor(() => {
+      expect(screen.getByText(mesActual)).toBeInTheDocument();
+    });
+  });
+
+  test("useEffect de costos compra actualiza costChartData correctamente", async () => {
+    // Simula una orden en el mes más antiguo
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 35, 1);
+    const mesAntiguo = start.toLocaleString("es-MX", { year: "numeric", month: "short" });
+    getInventario.mockResolvedValue([]);
+    getOrdenes.mockResolvedValue([
+      { FECHA_EMISION: start.toISOString(), COSTO_COMPRA: 999 }
+    ]);
+    getInventarioVendido.mockResolvedValue([]);
+    getForecast.mockResolvedValue([]);
+
+    render(<Home />);
+    // Busca el KPI de costos del mes más antiguo
+    await waitFor(() => {
+      expect(screen.getByText(mesAntiguo)).toBeInTheDocument();
+    });
+  });
+});
