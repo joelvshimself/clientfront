@@ -54,3 +54,21 @@ export const deleteUsuario = async (id) => {
   });
   return response.ok;
 };
+
+export const updateSelf = async (id, payload) => {
+  try {
+    const res = await fetch(`${API_URL}/updateSelf`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload),
+      credentials: "include" // <-- Ensures cookies (like Auth) are sent
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error("Error updating self:", error);
+    return false;
+  }
+};
