@@ -8,6 +8,7 @@ on:
       - staging_joel
       - staging_julian2
       - J_front
+      - A_front
   pull_request:
     types: [opened, synchronize, reopened]
 
