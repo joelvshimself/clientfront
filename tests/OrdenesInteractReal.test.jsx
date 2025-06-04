@@ -374,4 +374,67 @@ describe("🧪 <Ordenes /> – Cobertura completa de interacciones (delete, comp
       expect(primerID).toBe("1");
     });
   });
+
+  test("✅ Ordena correctamente cuando hay fechas o números nulos/undefined", async () => {
+    // Agregamos órdenes con fechas y números nulos/undefined
+    const servicios = require("../src/services/ordenesService");
+    servicios.getOrdenes.mockResolvedValue([
+      {
+        ID_ORDEN: 10,
+        FECHA_EMISION: null,
+        FECHA_RECEPCION: undefined,
+        FECHA_RECEPCION_ESTIMADA: "",
+        ESTADO: "pendiente",
+        SUBTOTAL: null,
+        COSTO_COMPRA: undefined,
+        ID_USUARIO_SOLICITA: "usuarioX",
+        ID_USUARIO_PROVEE: "proveedorX",
+      },
+      {
+        ID_ORDEN: 11,
+        FECHA_EMISION: "2025-06-10",
+        FECHA_RECEPCION: "2025-06-11",
+        FECHA_RECEPCION_ESTIMADA: "2025-06-12",
+        ESTADO: "completada",
+        SUBTOTAL: 0,
+        COSTO_COMPRA: 0,
+        ID_USUARIO_SOLICITA: "usuarioY",
+        ID_USUARIO_PROVEE: "proveedorY",
+      }
+    ]);
+
+    render(
+      <BrowserRouter>
+        <Ordenes />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(servicios.getOrdenes).toHaveBeenCalledTimes(1);
+    });
+
+    // Ordenar por "Fecha Emisión" ascendente (null/undefined/"" deben ir primero)
+    const thFecha = screen.getByText("Fecha Emisión").closest("th");
+    const selectFecha = within(thFecha).getByRole("combobox");
+    fireEvent.change(selectFecha, { target: { value: "asc" } });
+
+    await waitFor(() => {
+      const filas = screen.getAllByRole("row").filter(r => r.querySelector('input[type="checkbox"]'));
+      // La fila con FECHA_EMISION null debe ir primero
+      const primerID = filas[0].querySelectorAll("td")[1].textContent;
+      expect(primerID).toBe("10");
+    });
+
+    // Ordenar por "Subtotal" ascendente (null/undefined/0 deben ir primero)
+    const thSubtotal = screen.getByText("Subtotal").closest("th");
+    const selectSubtotal = within(thSubtotal).getByRole("combobox");
+    fireEvent.change(selectSubtotal, { target: { value: "asc" } });
+
+    await waitFor(() => {
+      const filas = screen.getAllByRole("row").filter(r => r.querySelector('input[type="checkbox"]'));
+      // Ambos tienen subtotal 0, pero el primero debe seguir siendo el de ID=10 por orden estable
+      const primerID = filas[0].querySelectorAll("td")[1].textContent;
+      expect(primerID).toBe("10");
+    });
+  });
 });
