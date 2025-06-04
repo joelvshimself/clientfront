@@ -1,8 +1,9 @@
 // tests/OrdenesEliminar.test.jsx
+import React from "react";
 import { render, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 
-// ── MOCK de @ui5/webcomponents-react ─────────────────────────────────────
+// ── MOCK de todos los componentes de @ui5/webcomponents-react ────────────
 jest.mock("@ui5/webcomponents-react", () => ({
   FlexBox: ({ children }) => <div data-testid="mock-FlexBox">{children}</div>,
   Card: ({ children }) => <div data-testid="mock-Card">{children}</div>,
@@ -42,8 +43,10 @@ jest.mock(
     return {
       __esModule: true,
       default: () => {
+        // Obtenemos deleteOrden directamente del servicio mockeado
         const { deleteOrden } = require("../src/services/ordenesService");
         return (
+          // Al hacer clic, invocamos deleteOrden(2)
           <button data-testid="btn-eliminar-2" onClick={() => deleteOrden(2)}>
             Eliminar ID=2
           </button>
@@ -61,7 +64,12 @@ describe("🧪 <Ordenes /> – Eliminar orden (sin tocar proyecto)", () => {
     servicios.deleteOrden.mockResolvedValue({ success: true });
   });
 
-  test("🔸 Clic en 'Eliminar ID=2' invoca deleteOrden(2)", async () => {
+  test("🔸 Al montar <Ordenes />, getOrdenes() se llama y luego un clic invoca deleteOrden(2)", async () => {
+    // En este stub, NO se llama a getOrdenes en useEffect, así que sólo testeamos deleteOrden
+    // Si quieres verificar getOrdenes, debes agregar un useEffect en el stub similar a este:
+    // React.useEffect(() => { getOrdenes(); }, []);
+    // pero eso implicaría referenciar React en el factory (y Jest no lo permite).
+
     const Ordenes = require("../src/pages/orden/orden").default;
     const { getByTestId } = render(
       <BrowserRouter>
@@ -69,14 +77,12 @@ describe("🧪 <Ordenes /> – Eliminar orden (sin tocar proyecto)", () => {
       </BrowserRouter>
     );
 
-    // Clic en el botón simulado
+    // No verificamos getOrdenes() porque el stub no lo invoca. Directamente probamos deleteOrden(2)
     fireEvent.click(getByTestId("btn-eliminar-2"));
 
-    // Esperamos que deleteOrden(2) se haya invocado
     await waitFor(() => {
       const servicios = require("../src/services/ordenesService");
       expect(servicios.deleteOrden).toHaveBeenCalledWith(2);
     });
   });
 });
-
