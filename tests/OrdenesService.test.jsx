@@ -1,12 +1,6 @@
-// Mock import.meta.env para Jest
+// Configura variable de entorno para la API
 beforeAll(() => {
-  Object.defineProperty(global, 'import.meta', {
-    value: {
-      env: {
-        VITE_API_URL: 'http://localhost/api'
-      }
-    }
-  });
+  process.env.VITE_API_URL = 'http://localhost/api';
 });
 
 // Ahora importa el servicio

@@ -4,6 +4,9 @@ module.exports = {
   },
   moduleFileExtensions: ['js', 'jsx'],
   testEnvironment: 'jest-environment-jsdom',
-  transformIgnorePatterns: ['/node_modules/'],
+  transformIgnorePatterns: [],
+  moduleNameMapper: {
+    '\\.(css)$': 'identity-obj-proxy'
+  },
   setupFilesAfterEnv: ['./jest.setup.js'], // Aquí tu polyfill
 };
