@@ -1,3 +1,15 @@
+// Mock import.meta.env para Jest
+beforeAll(() => {
+  Object.defineProperty(global, 'import.meta', {
+    value: {
+      env: {
+        VITE_API_URL: 'http://localhost/api'
+      }
+    }
+  });
+});
+
+// Ahora importa el servicio
 import { getOrdenes, createOrden, deleteOrden, updateOrden, completarOrden } from "../src/services/ordenesService";
 import axios from "axios";
 
@@ -46,5 +58,56 @@ describe("🧪 ordenesService", () => {
       expect.any(Object)
     );
     expect(res).toEqual({ ok: true });
+  });
+
+  test("createOrden retorna null y loguea error si axios.post falla", async () => {
+    const error = { response: { data: "fail" }, message: "fail" };
+    axios.post.mockRejectedValueOnce(error);
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const res = await createOrden({ correo_solicita: "a" });
+    expect(res).toBeNull();
+    expect(spy).toHaveBeenCalledWith(
+      "Error al crear orden:",
+      "fail"
+    );
+    spy.mockRestore();
+  });
+
+  test("deleteOrden retorna false y loguea error si axios.delete falla", async () => {
+    const error = { response: { data: "fail" }, message: "fail" };
+    axios.delete.mockRejectedValueOnce(error);
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const res = await deleteOrden(1);
+    expect(res).toBe(false);
+    expect(spy).toHaveBeenCalledWith(
+      "Error al eliminar orden:",
+      "fail"
+    );
+    spy.mockRestore();
+  });
+
+  test("updateOrden retorna false y loguea error si axios.put falla", async () => {
+    const error = { response: { data: "fail" }, message: "fail" };
+    axios.put.mockRejectedValueOnce(error);
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const res = await updateOrden(1, {});
+    expect(res).toBe(false);
+    expect(spy).toHaveBeenCalledWith(
+      "Error al actualizar orden:",
+      "fail"
+    );
+    spy.mockRestore();
+  });
+
+  test("completarOrden lanza error y loguea si axios.post falla", async () => {
+    const error = { response: { data: "fail" }, message: "fail" };
+    axios.post.mockRejectedValueOnce(error);
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    await expect(completarOrden(1, "2025-06-05")).rejects.toEqual(error);
+    expect(spy).toHaveBeenCalledWith(
+      "Error al completar orden:",
+      "fail"
+    );
+    spy.mockRestore();
   });
 });
