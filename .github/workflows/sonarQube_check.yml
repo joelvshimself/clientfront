@@ -7,7 +7,7 @@ on:
       - AdrianCambios
       - staging_joel
       - staging_julian2
-      - J_test
+      - J_front
   pull_request:
     types: [opened, synchronize, reopened]
 

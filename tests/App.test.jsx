@@ -13,11 +13,14 @@ jest.mock('../src/utils/publicRoute', () => ({
 jest.mock('../src/utils/preAuthRoute', () => ({
   PreAuthRoute: ({ children }) => <div>Mock PreAuthRoute {children}</div>,
 }));
-jest.mock('../src/utils/routesConfig', () => ({
-  protectedRoutes: [
-    { path: '/mock', element: <div>Mock Protected</div>, roles: ['user'] },
-  ],
-}));
+jest.mock('../src/utils/routesConfig', () => {
+  const React = require('react');
+  return {
+    protectedRoutes: [
+      { path: '/mock', element: React.createElement('div', null, 'Mock Protected'), roles: ['user'] },
+    ],
+  };
+});
 jest.mock('../src/utils/authContext', () => ({
   AuthProvider: ({ children }) => <div>Mock AuthProvider {children}</div>,
 }));
