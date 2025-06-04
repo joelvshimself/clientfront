@@ -1,89 +1,77 @@
+jest.mock("../src/pages/home.css", () => ({}));
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import Home from "../src/pages/home";
+import { getOrdenes } from "../src/services/ordenesService";
+import { agregarNotificacion } from "../src/components/Notificaciones";
 
-// Mock de @ui5/webcomponents-react
+// ── Mocks de @ui5/webcomponents-react y @ui5/webcomponents-react-charts ─────────────────────────────
 jest.mock("@ui5/webcomponents-react", () => ({
-  FlexBox: ({ children }) => <div data-testid="mock-FlexBox">{children}</div>,
-  Card: ({ children }) => <div data-testid="mock-Card">{children}</div>,
-  Title: ({ children }) => <div data-testid="mock-Title">{children}</div>,
-  Text: ({ children }) => <span data-testid="mock-Text">{children}</span>,
-  Icon: ({ name }) => <span data-testid="mock-Icon">{name}</span>,
+  Title: () => <div data-testid="mock-title">Title</div>,
 }));
 
-// Mock de Layout
-jest.mock("../src/components/Layout", () => ({ children }) => (
-  <div data-testid="mock-Layout">{children}</div>
-));
+jest.mock("@ui5/webcomponents-react-charts", () => ({
+  LineChart: (props) => <div data-testid={props["data-testid"]}>LineChart</div>,
+  PieChart: (props) => <div data-testid={props["data-testid"]}>PieChart</div>,
+}));
 
-// Mock de servicios
+// ── Mock de getOrdenes para éxito y para error ─────────────────────────────────────────────────────
 jest.mock("../src/services/ordenesService", () => ({
   getOrdenes: jest.fn(),
 }));
-jest.mock("../src/services/inventarioService", () => ({
-  getInventario: jest.fn(),
-  getInventarioVendido: jest.fn(),
-}));
-jest.mock("../src/services/forecastService", () => ({
-  getForecast: jest.fn(),
+
+jest.mock("../src/components/Notificaciones", () => ({
+  agregarNotificacion: jest.fn(),
 }));
 
-import Home from "../src/pages/home.jsx";
-import { getOrdenes } from "../src/services/ordenesService";
-import { getInventario, getInventarioVendido } from "../src/services/inventarioService";
-import { getForecast } from "../src/services/forecastService";
-
-describe("<Home />", () => {
+describe("Home component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    getOrdenes.mockResolvedValue([
-      { ID_ORDEN: 1, FECHA_EMISION: "2025-06-01", ESTADO: "pendiente", COSTO_COMPRA: 100, ID_USUARIO_SOLICITA: "A", ID_USUARIO_PROVEE: "B" },
-      { ID_ORDEN: 2, FECHA_EMISION: "2025-05-01", ESTADO: "completada", COSTO_COMPRA: 200, ID_USUARIO_SOLICITA: "C", ID_USUARIO_PROVEE: "D" },
-    ]);
-    getInventario.mockResolvedValue([
-      { PRODUCTO: "ProdA", STOCK: 10 },
-      { PRODUCTO: "ProdB", STOCK: 5 },
-    ]);
-    getInventarioVendido.mockResolvedValue([
-      { PRODUCTO: "ProdA", CANTIDAD: 7 },
-      { PRODUCTO: "ProdB", CANTIDAD: 3 },
-    ]);
-    getForecast.mockResolvedValue([
-      { TIME: "2025-06-01", FORECAST: 10, PREDICTION_INTERVAL_MAX: 12, PREDICTION_INTERVAL_MIN: 8 },
-      { TIME: "2025-06-02", FORECAST: 15, PREDICTION_INTERVAL_MAX: 18, PREDICTION_INTERVAL_MIN: 12 },
-    ]);
   });
 
-  test("renderiza el layout y los títulos principales", async () => {
+  test("renderiza los títulos y los tres gráficos cuando getOrdenes resuelve correctamente", async () => {
+    // 1) Hacemos que getOrdenes resuelva con un arreglo de órdenes ficticias
+    getOrdenes.mockResolvedValueOnce([
+      { fecha: "2023-01-01", costo: 100 },
+      { fecha: "2023-02-01", costo: 120 },
+    ]);
+
     render(<Home />);
-    expect(screen.getByTestId("mock-Layout")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-Title")).toHaveTextContent(/Bienvenido/i);
-    expect(screen.getByTestId("mock-Text")).toHaveTextContent(/gestión logística/i);
-    // Espera a que se carguen datos
-    await waitFor(() => expect(getOrdenes).toHaveBeenCalled());
-    await waitFor(() => expect(getInventario).toHaveBeenCalled());
-    await waitFor(() => expect(getInventarioVendido).toHaveBeenCalled());
-    await waitFor(() => expect(getForecast).toHaveBeenCalled());
+
+    // 2) Comprobamos que, inicialmente, aparezcan los tres títulos (con el mock de Title)
+    //    Dado que Title está mockeado como un <div data-testid="mock-title">Title</div>,
+    //    habrá 3 apariciones de ese mismo testid.
+    const allTitles = await screen.findAllByTestId("mock-title");
+    expect(allTitles).toHaveLength(3);
+
+    // 3) Comprobamos que los charts aparecen (con sus respectivos data-testid)
+    //    Como el componente usa dos <LineChart data-testid="line-chart" /> y
+    //    un <PieChart data-testid="pie-chart" />:
+    await waitFor(() => {
+      expect(screen.getAllByTestId("line-chart")).toHaveLength(2);
+      expect(screen.getByTestId("pie-chart")).toBeInTheDocument();
+    });
+
+    // 4) Nos cercioramos de que getOrdenes se haya llamado exactamente 1 vez
+    expect(getOrdenes).toHaveBeenCalledTimes(1);
   });
 
-  test("muestra los KPIs y tarjetas de stock", async () => {
+  test("si getOrdenes falla, llama a agregarNotificacion con tipo 'error'", async () => {
+    // Hacemos que getOrdenes rechace para simular error
+    getOrdenes.mockRejectedValueOnce(new Error("fallo al obtener"));
+    
     render(<Home />);
-    await waitFor(() => expect(getInventario).toHaveBeenCalled());
-    // Busca los productos de inventario mockeados
-    expect(screen.getByText("ProdA")).toBeInTheDocument();
-    expect(screen.getByText("ProdB")).toBeInTheDocument();
-  });
 
-  test("muestra los productos más vendidos", async () => {
-    render(<Home />);
-    await waitFor(() => expect(getInventarioVendido).toHaveBeenCalled());
-    expect(screen.getByText("ProdA")).toBeInTheDocument();
-    expect(screen.getByText("ProdB")).toBeInTheDocument();
-  });
+    // Esperamos que, al rechazar, se dispare agregarNotificacion("Error al cargar órdenes", "error")
+    await waitFor(() => {
+      expect(agregarNotificacion).toHaveBeenCalledWith(
+        "Error al cargar órdenes",
+        "error"
+      );
+    });
 
-  test("muestra la predicción de forecast", async () => {
-    render(<Home />);
-    await waitFor(() => expect(getForecast).toHaveBeenCalled());
-    expect(screen.getByText(/Predicción próximos 6 días/i)).toBeInTheDocument();
+    // También podemos asegurarnos de que, incluso con el error, intente renderizar los títulos
+    const allTitlesOnError = await screen.findAllByTestId("mock-title");
+    expect(allTitlesOnError).toHaveLength(3);
   });
 });

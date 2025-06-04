@@ -1,5 +1,4 @@
 // tests/OrdenesEliminar.test.jsx
-import React from "react";
 import { render, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 
@@ -88,7 +87,7 @@ describe("🧪 <Ordenes /> – Eliminar orden (sin tocar proyecto)", () => {
 });
 // tests/OrdenesEliminar.test.jsx
 import React from "react";
-import { render, waitFor, fireEvent } from "@testing-library/react";
+import { waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 
 // ── MOCK de @ui5/webcomponents-react ─────────────────────────────────────
