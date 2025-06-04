@@ -10,10 +10,13 @@ import Layout from "../../components/Layout";
 import { createOrden } from "../../services/ordenesService";
 
 import { getCookie } from "../../utils/getCookie"
+import { useNotificaciones } from "../../utils/NotificacionesContext";
+import { agregarNotificacion} from "../../components/Notificaciones";
 
 export default function ConfirmarOrden() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setNotificaciones } = useNotificaciones();
 
   const proveedorSeleccionado =
     location.state?.proveedorSeleccionado ||
@@ -74,7 +77,11 @@ export default function ConfirmarOrden() {
       if (response?.id_orden) {
         localStorage.removeItem("proveedorSeleccionado");
         localStorage.removeItem("productoSeleccionado");
-        alert(`Orden creada exitosamente con ID: ${response.id_orden}`);
+        agregarNotificacion(
+          "success",
+          `Orden creada exitosamente con ID: ${response.id_orden}`,
+          setNotificaciones // No se necesita setNotificaciones aquí, ya que no hay contexto de notificaciones
+        )
         navigate("/orden");
       } else {
         alert("Error al crear orden");

@@ -2,51 +2,52 @@
 
 const STORAGE_KEY = "notificaciones";
 
-// Obtener notificaciones guardadas
+/**
+ * Devuelve el array de notificaciones almacenado en localStorage.
+ * @returns {Array<{id:number, mensaje:string, tipo:string}>}
+ */
 export const obtenerNotificaciones = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) return [];
-    return JSON.parse(data);
-  } catch (e) {
-    console.error("Error al obtener notificaciones del localStorage:", e);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error al obtener notificaciones:", error);
     return [];
   }
 };
 
-// Guardar lista completa
+/**
+ * Persiste en localStorage el array recibido.
+ * @param {Array<{id:number, mensaje:string, tipo:string}>} notificaciones
+ */
 export const guardarNotificaciones = (notificaciones) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notificaciones));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notificaciones));
+  } catch (error) {
+    console.error("Error al guardar notificaciones:", error);
+  }
 };
 
-// Agregar una notificación nueva
-export const agregarNotificacionStorage = (tipo, mensaje) => {
-  const actuales = obtenerNotificaciones();
-  const nueva = {
-    id: Date.now(),
-    mensaje,
-    tipo,
-  };
-  const actualizadas = [...actuales, nueva];
-  guardarNotificaciones(actualizadas);
-  return actualizadas;
-};
-
-// Limpiar (si necesitas eliminar todas)
-export const limpiarNotificaciones = () => {
-  localStorage.removeItem(STORAGE_KEY);
-};
-
+/**
+ * Elimina la notificación con el id indicado y devuelve el array resultante.
+ * @param {number} id
+ * @returns {Array} Array actualizado sin la notificación borrada.
+ */
 export const eliminarNotificacionStorage = (id) => {
-  // Obtenemos las notificaciones del localStorage
-  const notificaciones = JSON.parse(localStorage.getItem("notificaciones")) || [];
-
-  // Filtramos la notificación con el id proporcionado
-  const nuevasNotificaciones = notificaciones.filter((noti) => noti.id !== id);
-
-  // Guardamos las notificaciones actualizadas en el localStorage
-  localStorage.setItem("notificaciones", JSON.stringify(nuevasNotificaciones));
-
-  return nuevasNotificaciones;  // Devolvemos las notificaciones actualizadas
+  const actuales = obtenerNotificaciones();
+  const nuevas = actuales.filter((n) => n.id !== id);
+  guardarNotificaciones(nuevas);
+  return nuevas;
 };
 
+/**
+ * 🧹 Borra TODAS las notificaciones del localStorage.
+ * Úsala, por ejemplo, al hacer logout.
+ */
+export const limpiarNotificaciones = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error("Error al limpiar notificaciones:", error);
+  }
+};
