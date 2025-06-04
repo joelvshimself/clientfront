@@ -8,5 +8,6 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css)$': 'identity-obj-proxy'
   },
-  setupFilesAfterEnv: ['./jest.setup.js'], // Aquí tu polyfill
+  setupFiles: ['./jest.setup.js'],               // ⬅️ antes del entorno
+  setupFilesAfterEnv: ['./jest.setupAfterEnv.js'] // ⬅️ después del entorno (donde sí existe `expect`)
 };
