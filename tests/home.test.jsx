@@ -61,7 +61,7 @@ jest.mock("@ui5/webcomponents-icons/dist/bell.js", () => ({}));
 jest.mock("@ui5/webcomponents-icons/dist/navigation-right-arrow.js", () => ({}));
 jest.mock("@ui5/webcomponents-icons/dist/employee.js", () => ({}));
 
-import Home, { SmallKPI } from "../src/components/Home.jsx";
+import Home, { SmallKPI } from "../src/pages/home.jsx";
 import { getInventario, getInventarioVendido } from "../src/services/inventarioService.js";
 import { getOrdenes } from "../src/services/ordenesService.js";
 import { getForecast } from "../src/services/forecastService.js";
