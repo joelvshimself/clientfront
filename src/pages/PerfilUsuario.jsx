@@ -39,10 +39,9 @@ export default function PerfilUsuario() {
     userData = JSON.parse(userDataString);
     //console.log("id",userData.userId)
   } catch (e) {
-    console.error("Invalid UserData cookie:", e);
-    
-    return;
-  }
+  console.error("Invalid UserData cookie:", e);
+  setIsValid(false); // no hacemos return
+}
 
   useEffect(() => {
     if (userData) {

@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - main
-      - AdrianCambios
-      - staging_joel
-      - staging_julian2
-      - J_front
+      - Nsns 
+
   pull_request:
     types: [opened, synchronize, reopened]
 

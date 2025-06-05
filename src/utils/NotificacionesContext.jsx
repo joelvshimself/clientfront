@@ -1,4 +1,5 @@
 // src/context/NotificacionesContext.jsx
+import PropTypes from 'prop-types';
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { obtenerNotificaciones } from "./notificacionesStorage";
 
@@ -18,4 +19,8 @@ export const NotificacionesProvider = ({ children }) => {
       {children}
     </NotificacionesContext.Provider>
   );
+};
+
+NotificacionesProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
