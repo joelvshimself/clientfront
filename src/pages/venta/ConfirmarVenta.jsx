@@ -42,21 +42,25 @@ export default function ConfirmarVenta() {
     console.log("🟡 Enviando payload de venta: ", payload);
 
     try {
-      const response = await venderProductos(payload);
-      agregarNotificacion(
-        "success",
-        `Venta creada con éxito. ID: ${response.id_venta}`,
-        setNotificaciones
-      )//alert(`✅ Venta creada con éxito. ID: ${response.id_venta}`);
-      navigate("/venta");
-    } catch (error) {
-      console.error("Error al crear venta:", error);
-      agregarNotificacion(
-        "error",
-        "Error al crear la venta. Inténtalo de nuevo.",
-        setNotificaciones
-      ); //alert("❌ Error al crear la venta. Inténtalo de nuevo.");
-    }
+  const response = await venderProductos(payload);
+
+  agregarNotificacion(
+      "success",
+      `Venta creada con éxito. ID: ${response.id_venta}`,
+      setNotificaciones
+    );
+
+    navigate("/venta");
+  } catch (error) {
+    console.error("Error al crear venta:", error);
+
+  agregarNotificacion(
+      "error",
+      "Error al crear la venta. Inténtalo de nuevo.",
+      setNotificaciones
+    );
+  }
+
   };
 
   return (

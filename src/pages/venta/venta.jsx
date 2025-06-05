@@ -251,7 +251,7 @@ export default function Venta() {
             {/* Aquí puedes agregar los campos para editar los productos de la venta */}
             <FlexBox direction="Column" style={{ padding: "1rem" }}>
               {ventaEditar.productos.map((p, idx) => (
-                <div key={idx} style={{ marginBottom: "0.75rem" }}>
+                <div key={`${p.nombre}-${p.cantidad}-${p.costo_unitario}`} style={{ marginBottom: "0.75rem" }}>
                   <Input
                     value={p.nombre}
                     placeholder="Nombre"

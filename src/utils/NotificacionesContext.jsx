@@ -14,8 +14,13 @@ export const NotificacionesProvider = ({ children }) => {
     setNotificaciones(obtenerNotificaciones());
   }, []);
 
+  const value = useMemo(() => ({
+    notificaciones,
+    setNotificaciones
+  }), [notificaciones]);
+
   return (
-    <NotificacionesContext.Provider value={{ notificaciones, setNotificaciones }}>
+    <NotificacionesContext.Provider value={value}>
       {children}
     </NotificacionesContext.Provider>
   );
