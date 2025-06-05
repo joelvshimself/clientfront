@@ -74,8 +74,6 @@ const sparkConfig = {
   }
 };
 
-const drawerWidth = 240;
-
 // Componente reutilizable para KPI pequeño
 export function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
   return (
@@ -100,10 +98,6 @@ SmallKPI.propTypes = {
 };
 
 export default function Home() {
-  const notiButtonRef = useRef(null);
-  const [openNotificaciones, setOpenNotificaciones] = useState(false);
-  const [notificaciones, setNotificaciones] = useState([]);
-
   // Stock
   const [inventario, setInventario] = useState([]);
   useEffect(() => {
