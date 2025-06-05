@@ -5,13 +5,10 @@ import {
   Title,
   Text,
   FlexBox,
-  Button,
-  Popover,
   Card,
   Icon
 } from "@ui5/webcomponents-react";
 import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
-import { Toaster } from "react-hot-toast";
 import PropTypes from "prop-types";
 
 import "./home.css";

@@ -223,6 +223,9 @@ export default function Ordenes() {
     const ordenId = ordenesSeleccionadas[0];
     try {
       const respuesta = await completarOrden(ordenId, fecha_recepcion);
+      if (!respuesta) {
+        throw new Error("No se pudo completar la orden");
+      }
       agregarNotificacion("success", `Orden ${ordenId} completada correctamente`, setNotificaciones);
       await loadOrdenes();
       setOrdenesSeleccionadas([]);
