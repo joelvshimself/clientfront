@@ -1,6 +1,6 @@
 // src/components/Home.jsx
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Title,
   Text,
