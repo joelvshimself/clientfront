@@ -2,6 +2,8 @@
 import { Navigate } from "react-router-dom";
 import { roleToPath } from "./routesConfig";
 import { useAuth } from "./useAuth";
+import PropTypes from "prop-types";
+
 
 export const PreAuthRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -18,4 +20,8 @@ export const PreAuthRoute = ({ children }) => {
       }
 
     return children;
+};
+
+PreAuthRoute.propTypes = {
+    children: PropTypes.node.isRequired,
 };

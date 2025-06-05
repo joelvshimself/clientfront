@@ -2,6 +2,8 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
 import { roleToPath } from "./routesConfig";
+import PropTypes from "prop-types";
+
 
 export const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -18,4 +20,8 @@ export const PublicRoute = ({ children }) => {
   }
 
   return children; // Not logged in, show public page (e.g., login)
+};
+
+PublicRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };

@@ -10,8 +10,6 @@ import {
 } from "@ui5/webcomponents-react";
 import Layout from "../components/Layout";
 import { updateSelf } from "../services/usersService";
-import { useNavigate } from "react-router-dom";
-
 import { getCookie } from "../utils/getCookie"; // adjust the path
 
 function getInitials(nombre) {
@@ -29,7 +27,7 @@ export default function PerfilUsuario() {
   const [newName, setNewName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [editing, setEditing] = useState(false);
-  const navigate = useNavigate();
+
 
   // Carga datos de usuario al montar
   const userDataString = getCookie("UserData")
@@ -39,10 +37,9 @@ export default function PerfilUsuario() {
     userData = JSON.parse(userDataString);
     //console.log("id",userData.userId)
   } catch (e) {
-    console.error("Invalid UserData cookie:", e);
-    
-    return;
-  }
+  console.error("Invalid UserData cookie:", e);
+  setIsValid(false); // no hacemos return
+}
 
   useEffect(() => {
     if (userData) {

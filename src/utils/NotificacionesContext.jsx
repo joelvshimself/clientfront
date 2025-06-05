@@ -1,4 +1,5 @@
 // src/context/NotificacionesContext.jsx
+import PropTypes from 'prop-types';
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { obtenerNotificaciones } from "./notificacionesStorage";
 
@@ -13,9 +14,18 @@ export const NotificacionesProvider = ({ children }) => {
     setNotificaciones(obtenerNotificaciones());
   }, []);
 
+  const value = useMemo(() => ({
+    notificaciones,
+    setNotificaciones
+  }), [notificaciones]);
+
   return (
-    <NotificacionesContext.Provider value={{ notificaciones, setNotificaciones }}>
+    <NotificacionesContext.Provider value={value}>
       {children}
     </NotificacionesContext.Provider>
   );
+};
+
+NotificacionesProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

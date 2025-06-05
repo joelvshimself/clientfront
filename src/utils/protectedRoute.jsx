@@ -1,6 +1,7 @@
 import { useAuth } from "./useAuth";
 import { Navigate } from "react-router-dom";
 import NotFound from "../pages/NotFound"
+import PropTypes from "prop-types";
 
 export const ProtectedRoute = ({ allowedRoles, children }) => {
   const { user, loading } = useAuth();
@@ -11,4 +12,9 @@ export const ProtectedRoute = ({ allowedRoles, children }) => {
   if (!allowedRoles.includes(user.role) || !user.twoFa) return <NotFound />;
 
   return children;
+};
+
+ProtectedRoute.propTypes = {
+  allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
+  children: PropTypes.node.isRequired,
 };

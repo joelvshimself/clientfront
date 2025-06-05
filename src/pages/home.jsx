@@ -1,17 +1,14 @@
 // src/components/Home.jsx
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Title,
   Text,
   FlexBox,
-  Button,
-  Popover,
   Card,
   Icon
 } from "@ui5/webcomponents-react";
 import { LineChart, PieChart } from "@ui5/webcomponents-react-charts";
-import { Toaster } from "react-hot-toast";
 import PropTypes from "prop-types";
 
 import "./home.css";
@@ -77,8 +74,6 @@ const sparkConfig = {
   }
 };
 
-const drawerWidth = 240;
-
 // Componente reutilizable para KPI pequeño
 export function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {
   return (
@@ -103,10 +98,6 @@ SmallKPI.propTypes = {
 };
 
 export default function Home() {
-  const notiButtonRef = useRef(null);
-  const [openNotificaciones, setOpenNotificaciones] = useState(false);
-  const [notificaciones, setNotificaciones] = useState([]);
-
   // Stock
   const [inventario, setInventario] = useState([]);
   useEffect(() => {
