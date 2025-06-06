@@ -1,6 +1,6 @@
 // src/context/NotificacionesContext.jsx
 import PropTypes from 'prop-types';
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { obtenerNotificaciones } from "./notificacionesStorage";
 
 const NotificacionesContext = createContext();
