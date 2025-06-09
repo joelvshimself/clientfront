@@ -180,7 +180,7 @@ export default function Venta() {
         <Card style={{ padding: "1rem", marginTop: "1rem" }}>
           <Title level="H5" style={{ marginBottom: "1rem", padding: "12px" }}>Base de Datos de Ventas</Title>
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {ventas.map((venta, i) => (
+            {ventas.map((venta, _i) => (
               <li key={venta.id} style={{
                 background: "#fff",
                 marginBottom: "10px",

@@ -45,34 +45,7 @@ function getChartConfig({ title, yAxisTitle = "Valor", dataLabel = true, xAxisTi
   };
 }
 
-// Sparkline config para KPIs
-const sparkConfig = {
-  legend: { visible: false },
-  xAxis: {
-    visible: false,
-    title: { visible: false },
-    label: { visible: false },
-    grid: { visible: false },
-    line: { visible: false },    // oculta la línea del eje X
-    tick: { visible: false }     // oculta las marcas del eje X
-  },
-  yAxis: {
-    visible: false,
-    title: { visible: false },
-    label: { visible: false },
-    grid: { visible: false },
-    line: { visible: false },    // oculta la línea del eje Y
-    tick: { visible: false }     // oculta las marcas del eje Y
-  },
-  tooltip: { visible: false },
-  dataLabel: { visible: false },
-  grid: {
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0
-  }
-};
+
 
 // Componente reutilizable para KPI pequeño
 export function SmallKPI({ icon, iconStyle, label, value, valueStyle, extra }) {

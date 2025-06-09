@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Input,
   Button,
@@ -11,13 +10,10 @@ import {
 } from "@ui5/webcomponents-react";
 import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton } from "@mui/material";
-import { login, getUserInfo } from "../services/authService"; 
+import { login } from "../services/authService"; 
 
-import { useAuth } from "../utils/useAuth";
 
 export default function Login() {
-  const { setUser } = useAuth();
-  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
 

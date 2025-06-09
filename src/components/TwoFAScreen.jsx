@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+
 
 const API_URL = process.env.VITE_API_URL || "http://localhost:3000";
 
@@ -7,7 +7,6 @@ const API_URL = process.env.VITE_API_URL || "http://localhost:3000";
 export default function TwoFAScreen() {
   const [qr, setQr] = useState(null);
   const [token, setToken] = useState("");
-  const navigate = useNavigate();
 
 
   useEffect(() => {
