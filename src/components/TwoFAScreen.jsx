@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 
+import { useNavigate } from "react-router-dom"; 
+import { useAuth } from "../utils/useAuth";
+
+
 
 const API_URL = process.env.VITE_API_URL || "http://localhost:3000";
-
+import { roleToPath } from "../utils/routesConfig";
+import { getUserInfo } from "../services/authService"
 
 export default function TwoFAScreen() {
   const [qr, setQr] = useState(null);
@@ -36,6 +41,7 @@ export default function TwoFAScreen() {
     setQr(data.qr);
   };
 
+  const { setUser } = useAuth();
 
   const verify2FA = async () => {
     const res = await fetch(`${API_URL}/auth/2fa/verify`, {
@@ -45,12 +51,16 @@ export default function TwoFAScreen() {
       body: JSON.stringify({ token }), // only send token (6-digit code)
     });
 
-    const data = await res.json();
-    if (data.success) {
-      window.location.reload();
-    } else {
-      alert("❌ Código incorrecto");
-    }
+  const data = await res.json();
+  if (data.success) {
+    const userInfo = await getUserInfo(); 
+    setUser(userInfo.data)
+    const redirectPath = roleToPath[userInfo.data.role] || "/";
+    navigate(redirectPath);             
+  }
+  else {
+        alert("❌ Código incorrecto");
+      }
   };
 
 
