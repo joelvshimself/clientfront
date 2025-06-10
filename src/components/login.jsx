@@ -12,26 +12,32 @@ import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton } from "@mui/material";
 import { login } from "../services/authService"; 
 
+import { useAuth } from "../utils/useAuth";
+import { useNavigate } from "react-router-dom"; // 👈 IMPORTANTE
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
+  const navigate = useNavigate();
+
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const result = await login(form.email, form.password);
-    if (result.success) {
-      window.location.reload();
-    } else {
-      setError(true);
-    }
-  };
+  const result = await login(form.email, form.password);
   
+  if (result.success) {
+    // 🔒 Solo tienes cookie PreAuth en este punto
+    navigate("/2fa"); // ✅ vas a pantalla de 2FA para continuar el flujo
+  } else {
+    setError(true);
+  }
+};
 
   return (
   <div style={{ height: "100vh", width: "100vw" }}>
