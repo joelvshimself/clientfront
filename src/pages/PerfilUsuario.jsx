@@ -38,7 +38,6 @@ export default function PerfilUsuario() {
     //console.log("id",userData.userId)
   } catch (e) {
   console.error("Invalid UserData cookie:", e);
-  setIsValid(false); // no hacemos return
 }
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function PerfilUsuario() {
       });
       setNewName(userData.nombre);
     }
-  }, []);
+  }, [userData]);
 
 
   const handleSave = async () => {

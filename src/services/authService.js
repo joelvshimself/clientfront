@@ -80,7 +80,9 @@ const getUserInfo = async () => {
     const data = await response.json();
     return { ok: true, data };
   } catch (err) {
+    console.error("Error al obtener información del usuario:", err);
     return { ok: false, data: null };
+
   }
 };
 

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom"; 
 import { useAuth } from "../utils/useAuth";
+
+
 
 const API_URL = process.env.VITE_API_URL || "http://localhost:3000";
 import { roleToPath } from "../utils/routesConfig";
@@ -9,7 +12,6 @@ import { getUserInfo } from "../services/authService"
 export default function TwoFAScreen() {
   const [qr, setQr] = useState(null);
   const [token, setToken] = useState("");
-  const navigate = useNavigate();
 
 
   useEffect(() => {
