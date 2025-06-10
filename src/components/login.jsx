@@ -12,26 +12,47 @@ import GoogleIcon from "@mui/icons-material/Google";
 import { Button as MuiButton } from "@mui/material";
 import { login } from "../services/authService"; 
 
+import { useAuth } from "../utils/useAuth";
+import { useNavigate } from "react-router-dom"; // 👈 IMPORTANTE
+
+import { getUserInfo } from "../services/authService"
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
+  const navigate = useNavigate();
+
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const result = await login(form.email, form.password);
-    if (result.success) {
-      window.location.reload();
-    } else {
-      setError(true);
+  const result = await login(form.email, form.password);
+
+  if (result.success) {
+    // 👇 espera a que la cookie esté usable
+    try {
+      const userInfo = await getUserInfo(); 
+      console.log(userInfo)
+      console.log(userInfo.data.twoFa)
+      setUser(userInfo.data)
+      if (userInfo.data.twoFa === false) {
+        console.log("Checar esto")
+        navigate("/2fa");
+      } else {
+        console.error("Cookie no activa aún, intenta recargar.");
+      }
+    } catch (err) {
+      console.error("Error verificando cookie:", err);
     }
-  };
-  
+  } else {
+    setError(true);
+  }
+};
 
   return (
   <div style={{ height: "100vh", width: "100vw" }}>

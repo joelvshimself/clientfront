@@ -12,6 +12,8 @@ import { getUserInfo } from "../services/authService"
 export default function TwoFAScreen() {
   const [qr, setQr] = useState(null);
   const [token, setToken] = useState("");
+  
+  const navigate = useNavigate(); // 👈 Te falta esto
 
 
   useEffect(() => {
