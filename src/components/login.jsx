@@ -15,6 +15,8 @@ import { login } from "../services/authService";
 import { useAuth } from "../utils/useAuth";
 import { useNavigate } from "react-router-dom"; // 👈 IMPORTANTE
 
+import { getUserInfo } from "../services/authService"
+
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
@@ -30,10 +32,23 @@ export default function Login() {
   e.preventDefault();
 
   const result = await login(form.email, form.password);
-  
+
   if (result.success) {
-    // 🔒 Solo tienes cookie PreAuth en este punto
-    navigate("/2fa"); // ✅ vas a pantalla de 2FA para continuar el flujo
+    // 👇 espera a que la cookie esté usable
+    try {
+      const userInfo = await getUserInfo(); 
+      console.log(userInfo)
+      console.log(userInfo.data.twoFa)
+      setUser(userInfo.data)
+      if (userInfo.data.twoFa === false) {
+        console.log("Checar esto")
+        navigate("/2fa");
+      } else {
+        console.error("Cookie no activa aún, intenta recargar.");
+      }
+    } catch (err) {
+      console.error("Error verificando cookie:", err);
+    }
   } else {
     setError(true);
   }

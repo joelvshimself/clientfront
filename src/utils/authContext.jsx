@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error("No auth");
         setUser(data);
       } catch (err) {
-        console.error("Error fetching user info:", err);
+        console.log("Error fetching user info:", err);
         setUser(null);
       } finally {
         setLoading(false);
